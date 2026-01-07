@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarMonitoreo();
 
   try {
-    const res = await fetch(`http://localhost:3000/salidas/${idSalida}`);
+    const res = await fetch(`http://localhost:5001/salidas/${idSalida}`);
     const data = await res.json();
     if (!data.paciente) return;
 
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       estadoHemorragia = !estadoHemorragia;
       pintarHemorragia();
 
-      await fetch('http://localhost:3000/paciente/hemorragia',{
+      await fetch('http://localhost:5001/paciente/hemorragia',{
         method:'PUT',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!monitoreoActivo) return;
 
       try {
-        const r = await fetch(`http://localhost:3000/signos/ultimo/${idSalida}`);
+        const r = await fetch(`http://localhost:5001/signos/ultimo/${idSalida}`);
         const s = await r.json();
         if (!s) return;
 
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error tiempo real:', e);
       }
 
-    }, 3000); // ⏱️ cada 3 segundos
+    }, 5001); // ⏱️ cada 3 segundos
 
   } catch (err) {
     console.error(err);
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function actualizarMonitoreo(valor){
   const idSalida = localStorage.getItem('salida_activa');
 
-  await fetch('http://localhost:3000/salida/monitoreo',{
+  await fetch('http://localhost:5001/salida/monitoreo',{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -185,7 +185,7 @@ async function guardarSignos(){
   const ps = in_ps.value;
   const fr = in_fr.value;
 
-  await fetch('http://localhost:3000/paciente/signos',{
+  await fetch('http://localhost:5001/paciente/signos',{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -221,7 +221,7 @@ async function guardarGlasgow(){
     Number(g_v.value) +
     Number(g_m.value);
 
-  await fetch('http://localhost:3000/paciente/glasgow',{
+  await fetch('http://localhost:5001/paciente/glasgow',{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({

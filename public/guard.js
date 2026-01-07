@@ -8,7 +8,7 @@ async function protegerPagina(rolEsperado) {
   }
 
   try {
-    const res = await fetch('http://localhost:3000/auth/me', {
+    const res = await fetch('http://localhost:5001/auth/me', {
       headers: {
         Authorization: 'Bearer ' + token
       }

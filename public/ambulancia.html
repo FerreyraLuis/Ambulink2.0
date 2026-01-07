@@ -272,7 +272,7 @@ input, select{
 
 <script>
 async function cargarParamedicos(){
-  const res = await fetch('http://localhost:3000/paramedicos');
+  const res = await fetch('http://localhost:5001/paramedicos');
   const data = await res.json();
 
   chofer.innerHTML = '<option value="">Seleccionar</option>';
@@ -332,7 +332,7 @@ async function guardar(){
     return;
   }
 
-  const res = await fetch('http://localhost:3000/ambulancia/salida', {
+  const res = await fetch('http://localhost:5001/ambulancia/salida', {
     method:'POST',
     headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify(payload)
