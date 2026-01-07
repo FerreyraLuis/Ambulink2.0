@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>AMBULINK | Historial</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:#eaeaea}
+
+.app{width:95%;height:95vh;margin:20px auto;background:#059bd8;border-radius:20px;padding:18px}
+.content{width:100%;height:100%;background:#fff;border-radius:20px;padding:22px;display:flex;gap:20px}
+
+.sidebar{width:160px;background:#059bd8;border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:20px}
+.sidebar button{background:white;color:#e10600;border:none;border-radius:22px;padding:12px 0;font-weight:bold}
+
+.main{flex:1;display:flex;flex-direction:column}
+
+.top-header{display:grid;grid-template-columns:1fr 1.2fr 1.2fr auto;gap:20px}
+
+.brand{color:#e10600;font-size:30px;font-weight:800}
+.badge{background:#e10600;color:white;padding:6px 14px;border-radius:14px;font-size:13px;width:fit-content}
+
+.card{background:#004aad;color:white;border-radius:18px;padding:18px}
+.card h3{margin:0 0 10px;font-size:18px}
+
+/* 🔴 ALERTA HEMORRAGIA */
+.alert-hemorragia{
+  display:none;
+  margin-top:12px;
+  padding:10px 14px;
+  border-radius:12px;
+  background:#e10600;
+  color:white;
+  font-weight:900;
+  text-align:center;
+}
+
+.table-container{margin-top:25px;flex:1;overflow:auto}
+table{width:100%;border-spacing:12px}
+th{background:#004aad;color:white;padding:14px;border-radius:14px}
+td{background:white;border:2px solid #4f7cff;border-radius:14px;padding:14px;text-align:center}
+td.date{text-align:left}
+
+/* PDF */
+@media print{
+  body{background:white}
+  .sidebar,button,input,select{display:none!important}
+  .alert-hemorragia{display:block!important}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+<div class="content">
+
+<div class="sidebar">
+  <button onclick="location.href='monitoreo.html'">MONITOREAR</button>
+  <button onclick="location.href='ambulancia.html'">VOLVER</button>
+</div>
+
+<div class="main" id="pdfHistorial">
+
+<div class="top-header">
+
+  <div>
+    <div class="brand">AMBULINK</div>
+    <div class="badge" id="fechaActual"></div>
+
+    <input type="date" id="filtroFecha" style="margin-top:8px;padding:6px;border-radius:12px">
+    <select id="selectCaso" style="margin-top:6px;padding:6px;border-radius:12px;width:100%">
+      <option value="">Seleccionar caso</option>
+    </select>
+
+    <div class="badge" id="caseBadge" style="margin-top:6px">CASO</div>
+
+    <button id="btnPDF" style="margin-top:10px;display:none" onclick="descargarPDF()">
+      📄 DESCARGAR PDF
+    </button>
+  </div>
+
+  <div class="card">
+    <h3>DATOS DEL PACIENTE</h3>
+    <p><b>Paciente:</b> <span id="pac_nombre">--</span></p>
+    <p><b>Edad:</b> <span id="pac_edad">--</span></p>
+    <p><b>Sexo:</b> <span id="pac_sexo">--</span></p>
+    <p><b>Tipo de Sangre:</b> <span id="pac_sangre">--</span></p>
+    <p><b>Tipo de Traslado:</b> <span id="pac_traslado">--</span></p>
+    <p><b>Ubicación:</b> <span id="pac_ubicacion">--</span></p>
+
+    <!-- 🔴 HEMORRAGIA -->
+    <div id="bloqueHemorragia" class="alert-hemorragia">
+      ⚠ HEMORRAGIA REGISTRADA
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>PERSONAL ASIGNADO</h3>
+    <p id="par1">🚑 --</p>
+    <p id="par2">🚑 --</p>
+  </div>
+
+</div>
+
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Fecha y Hora</th>
+<th>Presión Diastólica</th>
+<th>Presión Sistólica</th>
+<th>Frec. Respiratoria</th>
+<th>SpO₂</th>
+<th>Temperatura</th>
+<th>Frec. Cardíaca</th>
+<th>Escala Glasgow</th>
+</tr>
+</thead>
+<tbody id="tablaHistorial"></tbody>
+</table>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="historial.js"></script>
+
+</body>
+</html>

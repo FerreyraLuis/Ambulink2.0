@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>AMBULINK | Clínica</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:#009fe3}
+
+.app{
+  width:96%;
+  height:96vh;
+  margin:12px auto;
+  background:#009fe3;
+  border-radius:20px;
+  padding:18px;
+}
+.content{
+  width:100%;
+  height:100%;
+  background:#fff;
+  border-radius:20px;
+  padding:22px;
+  display:flex;
+  gap:20px;
+}
+
+.sidebar{
+  width:160px;
+  background:#009fe3;
+  border-radius:18px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:20px;
+}
+.sidebar button{
+  background:white;
+  color:#e10600;
+  border:none;
+  border-radius:20px;
+  padding:12px;
+  font-weight:bold;
+}
+
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.brand{
+  color:#e10600;
+  font-size:32px;
+  font-weight:900;
+}
+.user{
+  background:#009fe3;
+  color:white;
+  padding:10px 18px;
+  border-radius:18px;
+  font-weight:bold;
+}
+
+.ambulancia-tag{
+  padding:10px 20px;
+  border-radius:14px;
+  color:white;
+  font-weight:900;
+  width:fit-content;
+}
+.green{background:#14b866}
+.red{background:#e10600}
+
+.grid{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:20px;
+}
+
+.paciente{
+  background:#009fe3;
+  border-radius:18px;
+  padding:18px;
+  color:white;
+  font-size:14px;
+}
+.paciente h3{
+  margin:0 0 8px;
+  font-size:16px;
+}
+
+.signos{
+  border:3px solid #009fe3;
+  border-radius:20px;
+  padding:14px;
+}
+.signos-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.signos-title{
+  color:#e10600;
+  font-weight:900;
+}
+.badges{
+  display:flex;
+  gap:10px;
+}
+.badge{
+  padding:6px 14px;
+  border-radius:14px;
+  font-size:12px;
+  font-weight:bold;
+  color:white;
+}
+
+.signos-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:14px;
+  margin-top:12px;
+}
+.signo{
+  background:#004aad;
+  border-radius:16px;
+  padding:14px;
+  color:white;
+  text-align:center;
+}
+.signo span{
+  display:block;
+  font-size:24px;
+  font-weight:900;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+<div class="content">
+
+<div class="sidebar">
+  <button onclick="location.href='histocli.html'">Historial</button>
+  <button onclick="salir()">Salir</button>
+</div>
+
+<div class="main">
+
+<div class="header">
+  <div class="brand">AMBULINK</div>
+  <div class="user">Conectado: clinica@gmail.com</div>
+</div>
+
+<div>
+<div id="ambulancia1Tag" class="ambulancia-tag red">AMBULANCIA1</div>
+
+<div class="grid">
+
+<div class="paciente">
+  <h3>PACIENTE</h3>
+  <p><b>Nombre:</b> <span id="p_nombre">---</span></p>
+  <p><b>Edad:</b> <span id="p_edad">---</span></p>
+  <p><b>Sexo:</b> <span id="p_sexo">---</span></p>
+  <p><b>Grupo sanguíneo:</b> <span id="p_sangre">---</span></p>
+  <p><b>Tipo de traslado:</b> <span id="p_traslado">---</span></p>
+  <p><b>Ubicación:</b> <span id="p_ubicacion">---</span></p>
+  <p><b>Diagnóstico:</b> <span id="p_diag">---</span></p>
+</div>
+
+<div class="signos">
+<div class="signos-header">
+  <div class="signos-title">SIGNOS VITALES · <span id="fechaHoy"></span></div>
+  <div class="badges">
+    <div id="hemorragiaBadge" class="badge red">HEMORRAGIA</div>
+    <div id="glasgowBadge" class="badge red">GLASGOW --</div>
+  </div>
+</div>
+
+<div class="signos-grid">
+  <div class="signo">PRESIÓN DIASTÓLICA<span id="pd">--</span>mmHg</div>
+  <div class="signo">PRESIÓN SISTÓLICA<span id="ps">--</span>mmHg</div>
+  <div class="signo">FREC. RESP.<span id="fr">--</span>rpm</div>
+  <div class="signo">SpO₂<span id="c_spo2">--</span>%</div>
+  <div class="signo">TEMPERATURA<span id="c_temp">--</span>°C</div>
+  <div class="signo">FREC. CARDIACA<span id="c_fc">--</span>lat/min</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+function setFecha(){
+  fechaHoy.innerText = new Date().toLocaleDateString('es-BO');
+}
+
+function actualizarColor(){
+  const c = localStorage.getItem('ambulancia1_color');
+  ambulancia1Tag.classList.remove('green','red');
+  ambulancia1Tag.classList.add(c === 'green' ? 'green' : 'red');
+}
+
+async function cargarAmbulancia1(){
+  const id = localStorage.getItem('salida_activa');
+  if(!id) return;
+
+  const res = await fetch(`http://localhost:3000/salidas/${id}`);
+  const data = await res.json();
+  const p = data.paciente;
+  if(!p) return;
+
+  p_nombre.innerText = p.nombre;
+  p_edad.innerText = `${p.edad} años`;
+  p_sexo.innerText = p.sexo;
+  p_sangre.innerText = p.tipo_sangre;
+  p_traslado.innerText = p.tipo_traslado;
+  p_ubicacion.innerText = data.ubicacion;
+  p_diag.innerText = p.diagnostico;
+
+  pd.innerText = p.presion_diastolica ?? '--';
+  ps.innerText = p.presion_sistolica ?? '--';
+  fr.innerText = p.frecuencia_respiratoria ?? '--';
+
+  glasgowBadge.innerText = 'GLASGOW ' + (p.escala_glasgow ?? '--');
+  hemorragiaBadge.className = 'badge ' + (p.hemorragia ? 'green' : 'red');
+}
+
+/* 🔥 LECTURA EN TIEMPO REAL DESDE signos_vitales */
+async function cargarSignosTiempoReal(){
+  const id = localStorage.getItem('salida_activa');
+  if(!id) return;
+
+  const res = await fetch(`http://localhost:3000/signos/ultimo/${id}`);
+  const s = await res.json();
+  if(!s) return;
+
+  c_spo2.innerText = s.spo2 ?? '--';
+  c_temp.innerText = s.temperatura ?? '--';
+  c_fc.innerText   = s.frecuencia_cardiaca ?? '--';
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  setFecha();
+  actualizarColor();
+  cargarAmbulancia1();
+  cargarSignosTiempoReal();
+
+  setInterval(()=>{
+    actualizarColor();
+    cargarAmbulancia1();
+    cargarSignosTiempoReal();
+  },3000);
+});
+
+function salir(){
+  localStorage.clear();
+  location.href='login.html';
+}
+</script>
+<script src="guard.js"></script>
+<script>XMLDocument
+  protegerPagina('clinica');
+</script>
+
+</body>
+</html>

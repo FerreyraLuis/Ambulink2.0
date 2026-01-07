@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Proyecto | Login</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* ===== MARCO AZUL CLARO ===== */
+    .login-container {
+      width: 50%;
+      height: 90%;
+      background: #0aa0df;
+      border-radius: 16px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* ===== CAJA BLANCA ===== */
+    .login-container::before {
+      content: "";
+      position: absolute;
+      inset: 30px;
+      background: white;
+      border-radius: 16px;
+    }
+
+    /* ===== CONTENIDO CENTRAL ===== */
+    .login-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== TITULO ROJO ===== */
+    .brand {
+      color: #e10600;
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 25px;
+      letter-spacing: 2px;
+    }
+
+    /* ===== BLOQUE AZUL OSCURO ===== */
+    .form-box {
+      background: #0b4aa6;
+      width: 420px;
+      padding: 45px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-box h2 {
+      color: white;
+      text-align: center;
+      margin: 0 0 25px 0;
+      letter-spacing: 1px;
+    }
+
+    .form-box label {
+      color: white;
+      font-size: 14px;
+    }
+
+    .form-box input {
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .form-box button {
+      margin-top: 25px;
+      width: 130px;
+      align-self: flex-end;
+      padding: 10px;
+      background: #e10600;
+      color: white;
+      border: none;
+      border-radius: 22px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .form-box button:hover {
+      opacity: 0.9;
+    }
+
+    .mensaje {
+      color: #ffdede;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+  </style>
+
+</head>
+<body>
+
+  <div class="login-container">
+
+    <div class="login-content">
+
+      <!-- AMBULINK FUERA DEL BLOQUE -->
+      <div class="brand">AMBULINK</div>
+
+      <!-- BLOQUE AZUL -->
+      <div class="form-box">
+        <h2>LOGIN</h2>
+
+        <label>email</label>
+        <input type="email" id="email">
+
+        <label>contraseña</label>
+        <input type="password" id="password">
+
+        <button onclick="login()">Log in</button>
+
+        <p id="mensaje" class="mensaje"></p>
+      </div>
+
+    </div>
+
+  </div>
+  </div>
+
+  <!-- ✅ SUPABASE CDN (OBLIGATORIO) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- TU LOGIN -->
+  <script src="login.js"></script>
+</body>
+</html>
