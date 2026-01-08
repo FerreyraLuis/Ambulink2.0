@@ -11,36 +11,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* =====================================================
-   🔐 SUPABASE CLIENTES (NO CAMBIA LÓGICA)
-   - supabase       → DB / service role (todo lo existente)
-   - supabaseAuth   → Auth JWT (SOLO para /auth/me)
-===================================================== */
-
-// 🛠️ Cliente principal (exactamente como antes)
+// 🔐 SUPABASE CLIENTES
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
-
-// 🔐 Cliente SOLO para validar token (OBLIGATORIO)
 const supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
 
-/* ===============================
-   EXPRESS: __dirname para import
-=============================== */
+// __dirname para import
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/* ===============================
-   SERVIR ARCHIVOS ESTÁTICOS
-=============================== */
+// SERVIR ARCHIVOS ESTÁTICOS
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta raíz: manda login.html
+// Ruta raíz
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/login.html'));
 });
@@ -123,20 +111,11 @@ app.post('/ambulancia/salida', async (req, res) => {
 =============================== */
 app.put('/paciente/signos', async (req, res) => {
   try {
-    const {
-      id_salida,
-      presion_diastolica,
-      presion_sistolica,
-      frecuencia_respiratoria
-    } = req.body;
+    const { id_salida, presion_diastolica, presion_sistolica, frecuencia_respiratoria } = req.body;
 
     await supabase
       .from('paciente')
-      .update({
-        presion_diastolica,
-        presion_sistolica,
-        frecuencia_respiratoria
-      })
+      .update({ presion_diastolica, presion_sistolica, frecuencia_respiratoria })
       .eq('id_salida', id_salida);
 
     await supabase.from('signos_vitales').insert({
@@ -242,10 +221,7 @@ app.get('/salidas/:id', async (req, res) => {
 
     const { data: paramedicos } = await supabase
       .from('salida_paramedicos')
-      .select(`
-        rol_en_la_salida,
-        paramedicos ( nombre, apellido )
-      `)
+      .select(`rol_en_la_salida, paramedicos(nombre, apellido)`)
       .eq('id_salida', id);
 
     res.json({
@@ -266,9 +242,8 @@ app.get('/salidas/:id', async (req, res) => {
 app.get('/historial/fecha/:fecha', async (req, res) => {
   try {
     const fecha = req.params.fecha;
-
     const inicio = `${fecha}T00:00:00`;
-    const fin    = `${fecha}T23:59:59`;
+    const fin = `${fecha}T23:59:59`;
 
     const { data } = await supabase
       .from('salida')
@@ -303,9 +278,9 @@ app.get('/historial/signos/:id', async (req, res) => {
   }
 });
 
-/* =====================================================
-   🟢 ÚLTIMO SIGNO VITAL
-===================================================== */
+/* ===============================
+   ÚLTIMO SIGNO VITAL
+=============================== */
 app.get('/signos/ultimo/:id', async (req, res) => {
   try {
     const { data } = await supabase
@@ -324,23 +299,57 @@ app.get('/signos/ultimo/:id', async (req, res) => {
 });
 
 /* =====================================================
-   🚑 ESTADO AMBULANCIAS (CLÍNICA) – NUEVA RUTA
+   🚑 ESTADO AMBULANCIAS COMPLETO – PACIENTES + SIGNOS
 ===================================================== */
 app.get('/clinica/ambulancias', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    // Todas las ambulancias en curso
+    const { data: salidas, error } = await supabase
       .from('salida')
-      .select('id_salida, en_camino')
-      .order('fecha', { ascending: false })
-      .limit(1);
+      .select('*')
+      .eq('estado', 'en curso')
+      .order('fecha', { ascending: false });
 
     if (error) throw error;
 
-    // simulamos ambulancia 1
-    const resultado = [{
-      id_ambulancia: 1,
-      en_camino: data.length ? data[0].en_camino : false
-    }];
+    const resultado = await Promise.all(
+      salidas.map(async (s) => {
+        // Paciente
+        const { data: paciente } = await supabase
+          .from('paciente')
+          .select('*')
+          .eq('id_salida', s.id_salida)
+          .single();
+
+        // Últimos signos vitales (manual + ESP32)
+        const { data: signos } = await supabase
+          .from('signos_vitales')
+          .select('*')
+          .eq('id_salida', s.id_salida)
+          .order('fecha', { ascending: false })
+          .limit(1)
+          .single();
+
+        // Paramédicos
+        const { data: paramedicos } = await supabase
+          .from('salida_paramedicos')
+          .select(`rol_en_la_salida, paramedicos(nombre, apellido)`)
+          .eq('id_salida', s.id_salida);
+
+        return {
+          id_salida: s.id_salida,
+          fecha: s.fecha,
+          ubicacion: s.ubicacion,
+          en_camino: s.en_camino,
+          monitoreo_activo: s.monitoreo_activo,
+          paciente: paciente || null,
+          signos: signos || {},
+          hemorragia: paciente?.hemorragia ?? false,
+          glasgow: paciente?.escala_glasgow ?? null,
+          paramedicos: paramedicos || []
+        };
+      })
+    );
 
     res.json(resultado);
 
@@ -350,9 +359,9 @@ app.get('/clinica/ambulancias', async (req, res) => {
   }
 });
 
-/* =====================================================
-   📡 ESP32 – DATOS
-===================================================== */
+/* ===============================
+   ESP32 – DATOS
+=============================== */
 app.post('/esp32/datos', async (req, res) => {
   try {
     const { spo2, frecuencia_cardiaca, temperatura } = req.body;
@@ -383,44 +392,30 @@ app.post('/esp32/datos', async (req, res) => {
   }
 });
 
-/* =====================================================
-   🔐 AUTH / ME (LOGIN REAL – CORREGIDO)
-===================================================== */
+/* ===============================
+   AUTH / ME
+=============================== */
 app.get('/auth/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ ok: false });
-    }
+    if (!authHeader) return res.status(401).json({ ok: false });
 
     const token = authHeader.replace('Bearer ', '');
 
-    // ✅ VALIDACIÓN JWT (anon key)
-    const { data: userData, error } =
-      await supabaseAuth.auth.getUser(token);
-
-    if (error || !userData?.user) {
-      return res.status(401).json({ ok: false });
-    }
+    const { data: userData, error } = await supabaseAuth.auth.getUser(token);
+    if (error || !userData?.user) return res.status(401).json({ ok: false });
 
     const email = userData.user.email;
 
-    // ✅ MISMA LÓGICA DE ROL (SIN CAMBIOS)
     const { data: usuario } = await supabase
       .from('usuarios')
       .select('tipo_rol')
       .eq('email', email)
       .single();
 
-    if (!usuario) {
-      return res.status(403).json({ ok: false });
-    }
+    if (!usuario) return res.status(403).json({ ok: false });
 
-    res.json({
-      ok: true,
-      email,
-      tipo_rol: usuario.tipo_rol
-    });
+    res.json({ ok: true, email, tipo_rol: usuario.tipo_rol });
 
   } catch (err) {
     console.error(err);
