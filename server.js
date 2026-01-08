@@ -405,5 +405,5 @@ app.get('/auth/me', async (req, res) => {
    START SERVER
 =============================== */
 app.listen(5001, () => {
-  console.log('✅ Servidor listo en http://localhost:5001');
+  console.log('✅ Servidor listo en https://ambulink.doc-ia.cloud');
 });

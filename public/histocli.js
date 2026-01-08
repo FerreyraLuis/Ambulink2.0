@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tablaHistorial.innerHTML = '';
     btnPDF.style.display = 'none';
 
-    const res = await fetch(`http://localhost:5001/historial/fecha/${fecha}`);
+    const res = await fetch(`https://ambulink.doc-ia.cloud/historial/fecha/${fecha}`);
     const casos = await res.json();
 
     selectCaso.innerHTML = '<option value="">Seleccionar caso</option>';
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     tablaHistorial.innerHTML = '';
     bloqueHemorragia.style.display = 'none';
 
-    const resCaso = await fetch(`http://localhost:5001/salidas/${id}`);
+    const resCaso = await fetch(`https://ambulink.doc-ia.cloud/salidas/${id}`);
     const data = await resCaso.json();
     const p = data.paciente;
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
     par2.innerText = pars[1] ? `🚑 ${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '🚑 --';
 
-    const resHist = await fetch(`http://localhost:5001/historial/signos/${id}`);
+    const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
     const signos = await resHist.json();
 
     signos.forEach(s=>{

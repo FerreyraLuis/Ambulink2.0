@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 =============================== */
 async function cargarEstadoAmbulancia(){
   try{
-    const res = await fetch('http://localhost:5001/clinica/ambulancias');
+    const res = await fetch('https://ambulink.doc-ia.cloud/clinica/ambulancias');
     const data = await res.json();
 
     const amb1 = data.find(a => a.id_ambulancia === 1);
@@ -41,7 +41,7 @@ async function cargarSignosTiempoReal(){
     const idSalida = localStorage.getItem('salida_activa');
     if(!idSalida) return;
 
-    const res = await fetch(`http://localhost:5001/signos/ultimo/${idSalida}`);
+    const res = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${idSalida}`);
     const signos = await res.json();
     if(!signos) return;
 
@@ -73,7 +73,7 @@ async function cargarAmbulancia1(){
   const id = localStorage.getItem('salida_activa');
   if(!id) return;
 
-  const res = await fetch(`http://localhost:5001/salidas/${id}`);
+  const res = await fetch(`https://ambulink.doc-ia.cloud/salidas/${id}`);
   const data = await res.json();
   const p = data.paciente;
   if(!p) return;

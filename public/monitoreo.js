@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   pintarMonitoreo();
 
   try {
-    const res = await fetch(`http://localhost:5001/salidas/${idSalida}`);
+    const res = await fetch(`https://ambulink.doc-ia.cloud/salidas/${idSalida}`);
     const data = await res.json();
     if (!data.paciente) return;
 
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       estadoHemorragia = !estadoHemorragia;
       pintarHemorragia();
 
-      await fetch('http://localhost:5001/paciente/hemorragia',{
+      await fetch('https://ambulink.doc-ia.cloud/paciente/hemorragia',{
         method:'PUT',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!monitoreoActivo) return;
 
       try {
-        const r = await fetch(`http://localhost:5001/signos/ultimo/${idSalida}`);
+        const r = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${idSalida}`);
         const s = await r.json();
         if (!s) return;
 
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function actualizarMonitoreo(valor){
   const idSalida = localStorage.getItem('salida_activa');
 
-  await fetch('http://localhost:5001/salida/monitoreo',{
+  await fetch('https://ambulink.doc-ia.cloud/salida/monitoreo',{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -185,7 +185,7 @@ async function guardarSignos(){
   const ps = in_ps.value;
   const fr = in_fr.value;
 
-  await fetch('http://localhost:5001/paciente/signos',{
+  await fetch('https://ambulink.doc-ia.cloud/paciente/signos',{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -221,7 +221,7 @@ async function guardarGlasgow(){
     Number(g_v.value) +
     Number(g_m.value);
 
-  await fetch('http://localhost:5001/paciente/glasgow',{
+  await fetch('https://ambulink.doc-ia.cloud/paciente/glasgow',{
     method:'PUT',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({

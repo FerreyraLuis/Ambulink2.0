@@ -45,7 +45,7 @@ async function guardarSalida() {
   }
 
   try {
-    const res = await fetch('http://localhost:5001/ambulancia/salida', {
+    const res = await fetch('https://ambulink.doc-ia.cloud/ambulancia/salida', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
