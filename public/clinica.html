@@ -163,117 +163,53 @@ body{margin:0;background:#009fe3}
 </div>
 
 <div>
-<div id="ambulancia1Tag" class="ambulancia-tag red">AMBULANCIA1</div>
+  <div id="ambulancia1Tag" class="ambulancia-tag red">AMBULANCIA 1</div>
 
-<div class="grid">
+  <div class="grid">
 
-<div class="paciente">
-  <h3>PACIENTE</h3>
-  <p><b>Nombre:</b> <span id="p_nombre">---</span></p>
-  <p><b>Edad:</b> <span id="p_edad">---</span></p>
-  <p><b>Sexo:</b> <span id="p_sexo">---</span></p>
-  <p><b>Grupo sanguíneo:</b> <span id="p_sangre">---</span></p>
-  <p><b>Tipo de traslado:</b> <span id="p_traslado">---</span></p>
-  <p><b>Ubicación:</b> <span id="p_ubicacion">---</span></p>
-  <p><b>Diagnóstico:</b> <span id="p_diag">---</span></p>
-</div>
+    <div class="paciente">
+      <h3>PACIENTE</h3>
+      <p><b>Nombre:</b> <span id="p_nombre">---</span></p>
+      <p><b>Edad:</b> <span id="p_edad">---</span></p>
+      <p><b>Sexo:</b> <span id="p_sexo">---</span></p>
+      <p><b>Grupo sanguíneo:</b> <span id="p_sangre">---</span></p>
+      <p><b>Tipo de traslado:</b> <span id="p_traslado">---</span></p>
+      <p><b>Ubicación:</b> <span id="p_ubicacion">---</span></p>
+      <p><b>Diagnóstico:</b> <span id="p_diag">---</span></p>
+    </div>
 
-<div class="signos">
-<div class="signos-header">
-  <div class="signos-title">SIGNOS VITALES · <span id="fechaHoy"></span></div>
-  <div class="badges">
-    <div id="hemorragiaBadge" class="badge red">HEMORRAGIA</div>
-    <div id="glasgowBadge" class="badge red">GLASGOW --</div>
+    <div class="signos">
+      <div class="signos-header">
+        <div class="signos-title">
+          SIGNOS VITALES · <span id="fechaHoy"></span>
+        </div>
+        <div class="badges">
+          <div id="hemorragiaBadge" class="badge red">HEMORRAGIA</div>
+          <div id="glasgowBadge" class="badge red">GLASGOW --</div>
+        </div>
+      </div>
+
+      <div class="signos-grid">
+        <div class="signo">PRESIÓN DIASTÓLICA<span id="pd">--</span>mmHg</div>
+        <div class="signo">PRESIÓN SISTÓLICA<span id="ps">--</span>mmHg</div>
+        <div class="signo">FREC. RESP.<span id="fr">--</span>rpm</div>
+        <div class="signo">SpO₂<span id="c_spo2">--</span>%</div>
+        <div class="signo">TEMPERATURA<span id="c_temp">--</span>°C</div>
+        <div class="signo">FREC. CARDIACA<span id="c_fc">--</span>lat/min</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="signos-grid">
-  <div class="signo">PRESIÓN DIASTÓLICA<span id="pd">--</span>mmHg</div>
-  <div class="signo">PRESIÓN SISTÓLICA<span id="ps">--</span>mmHg</div>
-  <div class="signo">FREC. RESP.<span id="fr">--</span>rpm</div>
-  <div class="signo">SpO₂<span id="c_spo2">--</span>%</div>
-  <div class="signo">TEMPERATURA<span id="c_temp">--</span>°C</div>
-  <div class="signo">FREC. CARDIACA<span id="c_fc">--</span>lat/min</div>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 </div>
 </div>
 
-<script>
-function setFecha(){
-  fechaHoy.innerText = new Date().toLocaleDateString('es-BO');
-}
-
-function actualizarColor(){
-  const c = localStorage.getItem('ambulancia1_color');
-  ambulancia1Tag.classList.remove('green','red');
-  ambulancia1Tag.classList.add(c === 'green' ? 'green' : 'red');
-}
-
-async function cargarAmbulancia1(){
-  const id = localStorage.getItem('salida_activa');
-  if(!id) return;
-
-  const res = await fetch(`https://ambulink.doc-ia.cloud/salidas/${id}`);
-  const data = await res.json();
-  const p = data.paciente;
-  if(!p) return;
-
-  p_nombre.innerText = p.nombre;
-  p_edad.innerText = `${p.edad} años`;
-  p_sexo.innerText = p.sexo;
-  p_sangre.innerText = p.tipo_sangre;
-  p_traslado.innerText = p.tipo_traslado;
-  p_ubicacion.innerText = data.ubicacion;
-  p_diag.innerText = p.diagnostico;
-
-  pd.innerText = p.presion_diastolica ?? '--';
-  ps.innerText = p.presion_sistolica ?? '--';
-  fr.innerText = p.frecuencia_respiratoria ?? '--';
-
-  glasgowBadge.innerText = 'GLASGOW ' + (p.escala_glasgow ?? '--');
-  hemorragiaBadge.className = 'badge ' + (p.hemorragia ? 'green' : 'red');
-}
-
-/* 🔥 LECTURA EN TIEMPO REAL DESDE signos_vitales */
-async function cargarSignosTiempoReal(){
-  const id = localStorage.getItem('salida_activa');
-  if(!id) return;
-
-  const res = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${id}`);
-  const s = await res.json();
-  if(!s) return;
-
-  c_spo2.innerText = s.spo2 ?? '--';
-  c_temp.innerText = s.temperatura ?? '--';
-  c_fc.innerText   = s.frecuencia_cardiaca ?? '--';
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  setFecha();
-  actualizarColor();
-  cargarAmbulancia1();
-  cargarSignosTiempoReal();
-
-  setInterval(()=>{
-    actualizarColor();
-    cargarAmbulancia1();
-    cargarSignosTiempoReal();
-  },5001);
-});
-
-function salir(){
-  localStorage.clear();
-  location.href='login.html';
-}
-</script>
+<!-- 🔑 SOLO SCRIPTS NECESARIOS -->
+<script src="clinica.js"></script>
 <script src="guard.js"></script>
-<script>XMLDocument
+<script>
   protegerPagina('clinica');
 </script>
 
