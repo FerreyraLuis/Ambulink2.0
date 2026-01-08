@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -26,6 +28,22 @@ const supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
+
+/* ===============================
+   EXPRESS: __dirname para import
+=============================== */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/* ===============================
+   SERVIR ARCHIVOS ESTÁTICOS
+=============================== */
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ruta raíz: manda login.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/login.html'));
+});
 
 /* ===============================
    PARAMÉDICOS
@@ -279,7 +297,6 @@ app.get('/historial/signos/:id', async (req, res) => {
       .order('fecha', { ascending: false });
 
     res.json(data || []);
-
   } catch (err) {
     console.error(err);
     res.status(500).json([]);
