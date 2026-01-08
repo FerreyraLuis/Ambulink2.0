@@ -324,6 +324,33 @@ app.get('/signos/ultimo/:id', async (req, res) => {
 });
 
 /* =====================================================
+   🚑 ESTADO AMBULANCIAS (CLÍNICA) – NUEVA RUTA
+===================================================== */
+app.get('/clinica/ambulancias', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('salida')
+      .select('id_salida, en_camino')
+      .order('fecha', { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+
+    // simulamos ambulancia 1
+    const resultado = [{
+      id_ambulancia: 1,
+      en_camino: data.length ? data[0].en_camino : false
+    }];
+
+    res.json(resultado);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json([]);
+  }
+});
+
+/* =====================================================
    📡 ESP32 – DATOS
 ===================================================== */
 app.post('/esp32/datos', async (req, res) => {
