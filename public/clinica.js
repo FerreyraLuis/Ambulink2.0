@@ -1,19 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 🔴 Si no hay paciente activo, iniciar vacío
-  if (!localStorage.getItem('paciente_activo')) {
-    resetAmbulancia1();
-  }
-
   cargarClinica();
 
-  // 🔁 refresco automático cada 2s
+  // 🔁 refresco cada 2 segundos
   setInterval(() => {
-    cargarClinica();
     // 🔴 reset instantáneo si se presionó Nuevo Paciente
     if(localStorage.getItem('clinica_reset')){
       resetAmbulancia1();
       localStorage.removeItem('clinica_reset');
     }
+    cargarClinica();
   }, 2000);
 });
 
@@ -25,24 +20,12 @@ async function cargarClinica() {
     const data = await res.json();
 
     if (!data || !data.length) {
-      // Si no hay paciente activo, mantener todo vacío
-      if(!localStorage.getItem('paciente_activo')){
-        resetAmbulancia1();
-        return;
-      }
+      // 🔴 No hay datos en base, mostrar vacío
+      resetAmbulancia1();
+      return;
     }
 
     const amb = data[0];
-
-    // 🔁 Solo actualizar si hay paciente activo
-    const pacienteActivo = JSON.parse(localStorage.getItem('paciente_activo') || 'null');
-    if(!pacienteActivo) return;
-
-    const nuevoPacienteId = amb.paciente?.carnet || null;
-    if (nuevoPacienteId !== pacienteActualId) {
-      resetAmbulancia1();
-      pacienteActualId = nuevoPacienteId;
-    }
 
     // ===============================
     // ESTADO AMBULANCIA
@@ -60,7 +43,16 @@ async function cargarClinica() {
     // DATOS PACIENTE
     // ===============================
     const p = amb.paciente;
-    if (!p) return;
+    if (!p) {
+      resetAmbulancia1();
+      return;
+    }
+
+    // 🔴 Solo actualizar si hay paciente activo en base
+    const nuevoPacienteId = p.carnet;
+    if(nuevoPacienteId !== pacienteActualId){
+      pacienteActualId = nuevoPacienteId;
+    }
 
     p_nombre.innerText = p.nombre ?? '---';
     p_edad.innerText = p.edad ? `${p.edad} años` : '---';

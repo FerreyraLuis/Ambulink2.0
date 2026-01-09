@@ -84,30 +84,29 @@ function irMonitoreo(){
 }
 
 function logout(){
-  // 🔴 limpiar todo al salir
   localStorage.removeItem('salida_activa');
   localStorage.removeItem('paciente_activo');
   localStorage.removeItem('ubicacion_activa');
   localStorage.removeItem('ambulancia1_color');
+  localStorage.setItem('clinica_reset', Date.now());
   location.href='index.html';
 }
 
-// 🔴 NUEVO PACIENTE
 async function nuevoPaciente(){
-  // Limpiar formulario de ambulancia
+  // Limpiar formulario
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
   toggleEnCamino(false);
 
-  // Borrar paciente activo localStorage
+  // Borrar paciente activo
   localStorage.removeItem('salida_activa');
   localStorage.removeItem('paciente_activo');
   localStorage.removeItem('ubicacion_activa');
 
-  // Avisar a la clínica para reset visual
-  localStorage.setItem('clinica_reset', Date.now()); // esto dispara reset en clinica.js
+  // Avisar a clínica
+  localStorage.setItem('clinica_reset', Date.now());
 
   alert('✅ Nuevo paciente activado. Clínica restablecida.');
 }
