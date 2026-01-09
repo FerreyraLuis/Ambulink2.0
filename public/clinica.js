@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => {
     cargarClinica();
   }, 5000);
+
+  // ESCUCHAR RESET EXPLÍCITO
+  escucharReset();
 });
 
-/* =====================================================
-   🚑 CLÍNICA – ACTUALIZACIÓN AUTOMÁTICA Y RESET
-===================================================== */
 let pacienteActualId = null;
 
 async function cargarClinica() {
@@ -84,9 +84,9 @@ async function cargarClinica() {
   }
 }
 
-/* ===============================
-   RESET VISUAL
-=============================== */
+// ===============================
+// RESET VISUAL
+// ===============================
 function resetAmbulancia1() {
   p_nombre.innerText = '---';
   p_edad.innerText = '---';
@@ -111,9 +111,27 @@ function resetAmbulancia1() {
   tag.classList.add('red');
 }
 
-/* ===============================
-   SALIR
-=============================== */
+// ===============================
+// ESCUCHAR RESET EXPLÍCITO
+// ===============================
+async function escucharReset(){
+  try{
+    setInterval(async ()=>{
+      const res = await fetch('https://ambulink.doc-ia.cloud/clinica/reset/check');
+      const r = await res.json();
+      if(r.reset){
+        resetAmbulancia1();
+        pacienteActualId = null;
+      }
+    },2000);
+  }catch(e){
+    console.error('❌ Error al escuchar reset:', e);
+  }
+}
+
+// ===============================
+// SALIR
+// ===============================
 function salir() {
   localStorage.clear();
   location.href = 'login.html';

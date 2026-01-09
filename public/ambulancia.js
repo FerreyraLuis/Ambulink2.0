@@ -88,33 +88,32 @@ function logout(){
   location.href='index.html';
 }
 
+// ==========================
+// NUEVO PACIENTE – RESET TOTAL
+// ==========================
 async function nuevoPaciente(){
   const salidaId = localStorage.getItem('salida_activa');
-  if(!salidaId){
-    alert('⚠️ No hay paciente activo para resetear');
-    return;
-  }
+
+  // Borra el paciente aunque no haya salida activa
+  localStorage.removeItem('salida_activa');
+  localStorage.removeItem('paciente_activo');
+  localStorage.removeItem('ubicacion_activa');
+
+  // Limpiar formulario
+  ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  toggleEnCamino(false);
 
   try{
+    // Notificar a la clínica que se resetea
     await fetch('https://ambulink.doc-ia.cloud/clinica/reset', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ id_salida: salidaId })
+      body: JSON.stringify({ reset:true })
     });
-
-    localStorage.removeItem('salida_activa');
-    localStorage.removeItem('paciente_activo');
-    localStorage.removeItem('ubicacion_activa');
-
     alert('✅ Nuevo paciente activado. Clínica restablecida.');
-
-    // Limpiar formulario
-    ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.value = '';
-    });
-    toggleEnCamino(false);
-
   }catch(e){
     console.error(e);
     alert('❌ Error al resetear la clínica');
