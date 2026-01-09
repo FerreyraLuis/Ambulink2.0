@@ -1,9 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // 🔴 Si no hay paciente activo, iniciar vacío
+  if (!localStorage.getItem('paciente_activo')) {
+    resetAmbulancia1();
+  }
+
   cargarClinica();
 
-  // 🔁 refresco automático cada 2 segundos (para instantáneo)
+  // 🔁 refresco automático cada 2s
   setInterval(() => {
     cargarClinica();
+    // 🔴 reset instantáneo si se presionó Nuevo Paciente
+    if(localStorage.getItem('clinica_reset')){
+      resetAmbulancia1();
+      localStorage.removeItem('clinica_reset');
+    }
   }, 2000);
 });
 
@@ -15,13 +25,19 @@ async function cargarClinica() {
     const data = await res.json();
 
     if (!data || !data.length) {
-      resetAmbulancia1();
-      return;
+      // Si no hay paciente activo, mantener todo vacío
+      if(!localStorage.getItem('paciente_activo')){
+        resetAmbulancia1();
+        return;
+      }
     }
 
-    const amb = data[0]; // tomar la primera ambulancia
+    const amb = data[0];
 
-    // 🔁 Si cambió el paciente, reset visual
+    // 🔁 Solo actualizar si hay paciente activo
+    const pacienteActivo = JSON.parse(localStorage.getItem('paciente_activo') || 'null');
+    if(!pacienteActivo) return;
+
     const nuevoPacienteId = amb.paciente?.carnet || null;
     if (nuevoPacienteId !== pacienteActualId) {
       resetAmbulancia1();
@@ -54,25 +70,17 @@ async function cargarClinica() {
     p_ubicacion.innerText = amb.ubicacion ?? '---';
     p_diag.innerText = p.diagnostico ?? '---';
 
-    // ===============================
-    // SIGNOS MANUALES
-    // ===============================
+    // SIGNOS
     pd.innerText = p.presion_diastolica ?? '--';
     ps.innerText = p.presion_sistolica ?? '--';
     fr.innerText = p.frecuencia_respiratoria ?? '--';
 
-    // ===============================
-    // SIGNOS AUTOMÁTICOS (ESP32)
-    // ===============================
     const s = amb.signos || {};
     const spans = document.querySelectorAll('.signos-grid .signo span');
     if(spans[3]) spans[3].innerText = s.spo2 ?? '--';
     if(spans[4]) spans[4].innerText = s.temperatura ?? '--';
     if(spans[5]) spans[5].innerText = s.frecuencia_cardiaca ?? '--';
 
-    // ===============================
-    // GLASGOW + HEMORRAGIA
-    // ===============================
     glasgowBadge.innerText = 'GLASGOW ' + (amb.glasgow ?? '--');
     hemorragiaBadge.className = 'badge ' + (amb.hemorragia ? 'green' : 'red');
 
@@ -109,5 +117,6 @@ function resetAmbulancia1() {
 // 🔴 SALIR
 function salir() {
   localStorage.clear();
+  resetAmbulancia1();
   location.href = 'login.html';
 }

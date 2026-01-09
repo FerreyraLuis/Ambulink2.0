@@ -71,7 +71,6 @@ async function guardar(){
     localStorage.setItem('paciente_activo', JSON.stringify(payload.paciente));
     localStorage.setItem('ubicacion_activa', payload.ubicacion);
     alert('✅ Paciente registrado correctamente');
-    // ir directo a monitoreo
     window.location.href = 'monitoreo.html';
   }else alert('❌ Error al guardar');
 }
@@ -85,11 +84,15 @@ function irMonitoreo(){
 }
 
 function logout(){
-  localStorage.clear();
+  // 🔴 limpiar todo al salir
+  localStorage.removeItem('salida_activa');
+  localStorage.removeItem('paciente_activo');
+  localStorage.removeItem('ubicacion_activa');
+  localStorage.removeItem('ambulancia1_color');
   location.href='index.html';
 }
 
-// 🔴 NUEVO PACIENTE – ahora limpia y avisa a la clínica automáticamente
+// 🔴 NUEVO PACIENTE
 async function nuevoPaciente(){
   // Limpiar formulario de ambulancia
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id=>{
@@ -104,16 +107,7 @@ async function nuevoPaciente(){
   localStorage.removeItem('ubicacion_activa');
 
   // Avisar a la clínica para reset visual
-  try {
-    // fetch opcional, si tu backend tiene endpoint reset, de lo contrario solo reset visual
-    await fetch('https://ambulink.doc-ia.cloud/clinica/reset', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ id_salida:null }) // null para reset
-    }).catch(()=>{}); // ignorar si no existe
-  } catch(e){
-    console.error(e);
-  }
+  localStorage.setItem('clinica_reset', Date.now()); // esto dispara reset en clinica.js
 
   alert('✅ Nuevo paciente activado. Clínica restablecida.');
 }
