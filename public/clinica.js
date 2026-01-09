@@ -1,17 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
+  pacienteActualId = null; // empezar sin paciente
   cargarClinica();
 
-  // 🔁 refresco cada 2 segundos
+  // 🔁 refresco en tiempo real cada 5 segundos
   setInterval(() => {
-    // 🔴 reset instantáneo si se presionó Nuevo Paciente
-    if(localStorage.getItem('clinica_reset')){
-      resetAmbulancia1();
-      localStorage.removeItem('clinica_reset');
-    }
     cargarClinica();
-  }, 2000);
+  }, 5000);
 });
 
+// 🔴 Escuchar cambios en localStorage para reset instantáneo
+window.addEventListener('storage', (e) => {
+  if(e.key === 'clinica_reset'){
+    resetAmbulancia1();
+    pacienteActualId = null; // Reinicia el paciente activo
+  }
+});
+
+/* =====================================================
+   🚑 CLÍNICA – ACTUALIZACIÓN AUTOMÁTICA Y RESET
+===================================================== */
 let pacienteActualId = null;
 
 async function cargarClinica() {
@@ -20,12 +27,18 @@ async function cargarClinica() {
     const data = await res.json();
 
     if (!data || !data.length) {
-      // 🔴 No hay datos en base, mostrar vacío
       resetAmbulancia1();
       return;
     }
 
-    const amb = data[0];
+    const amb = data[0]; // ambulancia más reciente
+
+    // ✅ Si el paciente cambió, resetear
+    const nuevoPacienteId = amb.paciente?.carnet || null;
+    if (nuevoPacienteId !== pacienteActualId) {
+      resetAmbulancia1();
+      pacienteActualId = nuevoPacienteId;
+    }
 
     // ===============================
     // ESTADO AMBULANCIA
@@ -43,16 +56,7 @@ async function cargarClinica() {
     // DATOS PACIENTE
     // ===============================
     const p = amb.paciente;
-    if (!p) {
-      resetAmbulancia1();
-      return;
-    }
-
-    // 🔴 Solo actualizar si hay paciente activo en base
-    const nuevoPacienteId = p.carnet;
-    if(nuevoPacienteId !== pacienteActualId){
-      pacienteActualId = nuevoPacienteId;
-    }
+    if (!p) return;
 
     p_nombre.innerText = p.nombre ?? '---';
     p_edad.innerText = p.edad ? `${p.edad} años` : '---';
@@ -62,17 +66,25 @@ async function cargarClinica() {
     p_ubicacion.innerText = amb.ubicacion ?? '---';
     p_diag.innerText = p.diagnostico ?? '---';
 
-    // SIGNOS
+    // ===============================
+    // SIGNOS MANUALES
+    // ===============================
     pd.innerText = p.presion_diastolica ?? '--';
     ps.innerText = p.presion_sistolica ?? '--';
     fr.innerText = p.frecuencia_respiratoria ?? '--';
 
+    // ===============================
+    // SIGNOS AUTOMÁTICOS (ESP32)
+    // ===============================
     const s = amb.signos || {};
     const spans = document.querySelectorAll('.signos-grid .signo span');
     if(spans[3]) spans[3].innerText = s.spo2 ?? '--';
     if(spans[4]) spans[4].innerText = s.temperatura ?? '--';
     if(spans[5]) spans[5].innerText = s.frecuencia_cardiaca ?? '--';
 
+    // ===============================
+    // GLASGOW + HEMORRAGIA
+    // ===============================
     glasgowBadge.innerText = 'GLASGOW ' + (amb.glasgow ?? '--');
     hemorragiaBadge.className = 'badge ' + (amb.hemorragia ? 'green' : 'red');
 
@@ -81,7 +93,9 @@ async function cargarClinica() {
   }
 }
 
-// 🔴 RESET VISUAL
+/* ===============================
+   RESET VISUAL
+=============================== */
 function resetAmbulancia1() {
   p_nombre.innerText = '---';
   p_edad.innerText = '---';
@@ -106,9 +120,12 @@ function resetAmbulancia1() {
   tag.classList.add('red');
 }
 
-// 🔴 SALIR
+/* ===============================
+   SALIR
+=============================== */
 function salir() {
   localStorage.clear();
+  pacienteActualId = null;
   resetAmbulancia1();
   location.href = 'login.html';
 }
