@@ -1,13 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   cargarClinica();
 
-  // 🔁 refresco en tiempo real cada 5 segundos
+  // 🔁 refresco automático cada 2 segundos (para instantáneo)
   setInterval(() => {
     cargarClinica();
-  }, 5000);
-
-  // ESCUCHAR RESET EXPLÍCITO
-  escucharReset();
+  }, 2000);
 });
 
 let pacienteActualId = null;
@@ -22,9 +19,9 @@ async function cargarClinica() {
       return;
     }
 
-    const amb = data[0]; // ambulancia más reciente
+    const amb = data[0]; // tomar la primera ambulancia
 
-    // ✅ Si el paciente cambió, resetear
+    // 🔁 Si cambió el paciente, reset visual
     const nuevoPacienteId = amb.paciente?.carnet || null;
     if (nuevoPacienteId !== pacienteActualId) {
       resetAmbulancia1();
@@ -84,9 +81,7 @@ async function cargarClinica() {
   }
 }
 
-// ===============================
-// RESET VISUAL
-// ===============================
+// 🔴 RESET VISUAL
 function resetAmbulancia1() {
   p_nombre.innerText = '---';
   p_edad.innerText = '---';
@@ -111,27 +106,7 @@ function resetAmbulancia1() {
   tag.classList.add('red');
 }
 
-// ===============================
-// ESCUCHAR RESET EXPLÍCITO
-// ===============================
-async function escucharReset(){
-  try{
-    setInterval(async ()=>{
-      const res = await fetch('https://ambulink.doc-ia.cloud/clinica/reset/check');
-      const r = await res.json();
-      if(r.reset){
-        resetAmbulancia1();
-        pacienteActualId = null;
-      }
-    },2000);
-  }catch(e){
-    console.error('❌ Error al escuchar reset:', e);
-  }
-}
-
-// ===============================
-// SALIR
-// ===============================
+// 🔴 SALIR
 function salir() {
   localStorage.clear();
   location.href = 'login.html';

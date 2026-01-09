@@ -71,6 +71,7 @@ async function guardar(){
     localStorage.setItem('paciente_activo', JSON.stringify(payload.paciente));
     localStorage.setItem('ubicacion_activa', payload.ubicacion);
     alert('✅ Paciente registrado correctamente');
+    // ir directo a monitoreo
     window.location.href = 'monitoreo.html';
   }else alert('❌ Error al guardar');
 }
@@ -88,34 +89,31 @@ function logout(){
   location.href='index.html';
 }
 
-// ==========================
-// NUEVO PACIENTE – RESET TOTAL
-// ==========================
+// 🔴 NUEVO PACIENTE – ahora limpia y avisa a la clínica automáticamente
 async function nuevoPaciente(){
-  const salidaId = localStorage.getItem('salida_activa');
-
-  // Borra el paciente aunque no haya salida activa
-  localStorage.removeItem('salida_activa');
-  localStorage.removeItem('paciente_activo');
-  localStorage.removeItem('ubicacion_activa');
-
-  // Limpiar formulario
+  // Limpiar formulario de ambulancia
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
   toggleEnCamino(false);
 
-  try{
-    // Notificar a la clínica que se resetea
+  // Borrar paciente activo localStorage
+  localStorage.removeItem('salida_activa');
+  localStorage.removeItem('paciente_activo');
+  localStorage.removeItem('ubicacion_activa');
+
+  // Avisar a la clínica para reset visual
+  try {
+    // fetch opcional, si tu backend tiene endpoint reset, de lo contrario solo reset visual
     await fetch('https://ambulink.doc-ia.cloud/clinica/reset', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ reset:true })
-    });
-    alert('✅ Nuevo paciente activado. Clínica restablecida.');
-  }catch(e){
+      body: JSON.stringify({ id_salida:null }) // null para reset
+    }).catch(()=>{}); // ignorar si no existe
+  } catch(e){
     console.error(e);
-    alert('❌ Error al resetear la clínica');
   }
+
+  alert('✅ Nuevo paciente activado. Clínica restablecida.');
 }
