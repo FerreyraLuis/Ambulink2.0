@@ -1,47 +1,55 @@
 /* =====================================================
-   🚑 CLÍNICA – INTELIGENTE
+   🚑 CLÍNICA – INICIO
 ===================================================== */
-let pacienteActualId = null;
-let autoUpdate = true;
-let intervaloCarga = null;
-
 document.addEventListener('DOMContentLoaded', () => {
-  resetAmbulancia1();      // Limpieza inicial
-  cargarClinica();         // Carga inicial de datos
-  iniciarAutoUpdate();     // Auto-update cada 5s
+  pacienteActualId = null; // empezar sin paciente
+
+  // 🔴 RESET INICIAL: siempre que entres a ambulancia.html el dashboard aparece vacío
+  resetAmbulancia1();
+
+  cargarClinica();
+
+  // 🔁 refresco en tiempo real cada 5 segundos
+  setInterval(() => {
+    cargarClinica();
+  }, 5000);
+});
+
+// 🔴 Escuchar cambios en localStorage para reset instantáneo
+window.addEventListener('storage', (e) => {
+  if (e.key === 'clinica_reset') {
+    resetAmbulancia1();
+    pacienteActualId = null; // Reinicia el paciente activo
+  }
 });
 
 /* =====================================================
-   🔴 AUTO UPDATE INTELIGENTE
+   🚑 CLÍNICA – ACTUALIZACIÓN AUTOMÁTICA Y RESET
 ===================================================== */
-function iniciarAutoUpdate() {
-  intervaloCarga = setInterval(() => {
-    cargarClinica();
-  }, 5000);
-}
+let pacienteActualId = null;
 
-/* =====================================================
-   🚑 CARGAR CLÍNICA – AMBULANCIAS + PACIENTES + SIGNOS
-===================================================== */
 async function cargarClinica() {
   try {
     const res = await fetch('https://ambulink.doc-ia.cloud/clinica/ambulancias');
     const data = await res.json();
-    if (!data || !data.length) return;
 
-    const amb = data[0];
-    const nuevoPacienteId = amb.paciente?.carnet || null;
-
-    // 🔹 Detecta paciente nuevo
-    if (nuevoPacienteId && nuevoPacienteId !== pacienteActualId) {
-      pacienteActualId = nuevoPacienteId;
-      autoUpdate = true; // Reactiva auto-update si llega un paciente
+    if (!data || !data.length) {
+      resetAmbulancia1();
+      return;
     }
 
-    // 🔹 Si no hay paciente o autoUpdate está desactivado, no mostrar datos
-    if (!nuevoPacienteId || !autoUpdate) return;
+    const amb = data[0]; // ambulancia más reciente
 
-    // ========================= ESTADO AMBULANCIA =========================
+    // ✅ Si el paciente cambió, resetear
+    const nuevoPacienteId = amb.paciente?.carnet || null;
+    if (nuevoPacienteId !== pacienteActualId) {
+      resetAmbulancia1();
+      pacienteActualId = nuevoPacienteId;
+    }
+
+    /* ===============================
+       ESTADO AMBULANCIA
+    =============================== */
     const tag = document.getElementById('ambulancia1Tag');
     if (amb.en_camino) {
       tag.classList.remove('red');
@@ -51,65 +59,73 @@ async function cargarClinica() {
       tag.classList.add('red');
     }
 
-    // ========================= DATOS PACIENTE =========================
-    const p = amb.paciente || {};
-    document.getElementById('p_nombre').innerText = p.nombre ?? '---';
-    document.getElementById('p_edad').innerText = p.edad ? `${p.edad} años` : '---';
-    document.getElementById('p_sexo').innerText = p.sexo ?? '---';
-    document.getElementById('p_sangre').innerText = p.tipo_sangre ?? '---';
-    document.getElementById('p_traslado').innerText = p.tipo_traslado ?? '---';
-    document.getElementById('p_ubicacion').innerText = amb.ubicacion ?? '---';
-    document.getElementById('p_diag').innerText = p.diagnostico ?? '---';
+    /* ===============================
+       DATOS PACIENTE
+    =============================== */
+    const p = amb.paciente;
+    if (!p) return;
 
-    // ========================= SIGNOS MANUALES =========================
-    document.getElementById('pd').innerText = p.presion_diastolica ?? '--';
-    document.getElementById('ps').innerText = p.presion_sistolica ?? '--';
-    document.getElementById('fr').innerText = p.frecuencia_respiratoria ?? '--';
+    p_nombre.innerText = p.nombre ?? '---';
+    p_edad.innerText = p.edad ? `${p.edad} años` : '---';
+    p_sexo.innerText = p.sexo ?? '---';
+    p_sangre.innerText = p.tipo_sangre ?? '---';
+    p_traslado.innerText = p.tipo_traslado ?? '---';
+    p_ubicacion.innerText = amb.ubicacion ?? '---';
+    p_diag.innerText = p.diagnostico ?? '---';
 
-    // ========================= SIGNOS AUTOMÁTICOS (ESP32) =========================
+    /* ===============================
+       SIGNOS MANUALES
+    =============================== */
+    pd.innerText = p.presion_diastolica ?? '--';
+    ps.innerText = p.presion_sistolica ?? '--';
+    fr.innerText = p.frecuencia_respiratoria ?? '--';
+
+    /* ===============================
+       SIGNOS AUTOMÁTICOS (ESP32)
+    =============================== */
     const s = amb.signos || {};
-    document.getElementById('c_spo2').innerText = s.spo2 ?? '--';
-    document.getElementById('c_temp').innerText = s.temperatura ?? '--';
-    document.getElementById('c_fc').innerText = s.frecuencia_cardiaca ?? '--';
+    const spans = document.querySelectorAll('.signos-grid .signo span');
 
-    // ========================= GLASGOW + HEMORRAGIA =========================
-    document.getElementById('glasgowBadge').innerText = 'GLASGOW ' + (amb.glasgow ?? '--');
-    document.getElementById('hemorragiaBadge').className = 'badge ' + (amb.hemorragia ? 'green' : 'red');
+    if (spans[3]) spans[3].innerText = s.spo2 ?? '--';
+    if (spans[4]) spans[4].innerText = s.temperatura ?? '--';
+    if (spans[5]) spans[5].innerText = s.frecuencia_cardiaca ?? '--';
+
+    /* ===============================
+       GLASGOW + HEMORRAGIA
+    =============================== */
+    glasgowBadge.innerText = 'GLASGOW ' + (amb.glasgow ?? '--');
+    hemorragiaBadge.className = 'badge ' + (amb.hemorragia ? 'green' : 'red');
 
   } catch (err) {
-    console.error('❌ Error cargando clínica:', err);
+    console.error('❌ Error clínica:', err);
   }
 }
 
 /* =====================================================
-   🔴 RESET VISUAL AMBULANCIA – LIMPIO
+   🔴 RESET VISUAL AMBULANCIA
 ===================================================== */
 function resetAmbulancia1() {
-  ['p_nombre','p_edad','p_sexo','p_sangre','p_traslado','p_ubicacion','p_diag'].forEach(id => {
-    document.getElementById(id).innerText = '---';
-  });
+  p_nombre.innerText = '---';
+  p_edad.innerText = '---';
+  p_sexo.innerText = '---';
+  p_sangre.innerText = '---';
+  p_traslado.innerText = '---';
+  p_ubicacion.innerText = '---';
+  p_diag.innerText = '---';
 
-  ['pd','ps','fr','c_spo2','c_temp','c_fc'].forEach(id => {
-    document.getElementById(id).innerText = '--';
-  });
+  pd.innerText = '--';
+  ps.innerText = '--';
+  fr.innerText = '--';
 
-  document.getElementById('glasgowBadge').innerText = 'GLASGOW --';
-  document.getElementById('hemorragiaBadge').className = 'badge red';
+  const spans = document.querySelectorAll('.signos-grid .signo span');
+  spans.forEach(s => s.innerText = '--');
+
+  glasgowBadge.innerText = 'GLASGOW --';
+  hemorragiaBadge.className = 'badge red';
 
   const tag = document.getElementById('ambulancia1Tag');
   tag.classList.remove('green');
   tag.classList.add('red');
-
-  pacienteActualId = null; // Limpieza total del paciente
-  autoUpdate = false;      // Bloquea recarga hasta que llegue un paciente
-}
-
-/* =====================================================
-   🔴 NUEVO PACIENTE – FULL INTELIGENTE
-===================================================== */
-function nuevoPaciente() {
-  resetAmbulancia1();
-  alert('✅ Nuevo paciente activado. La clínica está limpia y lista.');
 }
 
 /* =====================================================
@@ -117,6 +133,7 @@ function nuevoPaciente() {
 ===================================================== */
 function salir() {
   localStorage.clear();
+  pacienteActualId = null;
   resetAmbulancia1();
   location.href = 'login.html';
 }
