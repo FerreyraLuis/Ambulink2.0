@@ -151,3 +151,29 @@ async function nuevoPaciente() {
 
   alert('✅ Nuevo paciente activado. Clínica restablecida.');
 }
+
+/* =========================
+   LIMPIAR CLÍNICA AL ENTRAR
+========================= */
+document.addEventListener('DOMContentLoaded', () => {
+  limpiarClinica();   // ✅ Todos los campos vacíos
+  cargarParamedicos(); // cargar lista de paramédicos como siempre
+});
+
+function limpiarClinica() {
+  [
+    'nombre',
+    'carnet',
+    'edad',
+    'sexo',
+    'tipo_sangre',
+    'tipo_traslado',
+    'diagnostico',
+    'ubicacion',
+    'chofer',
+    'paramedico'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
