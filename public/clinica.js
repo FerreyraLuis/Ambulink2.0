@@ -137,3 +137,17 @@ function salir() {
   resetAmbulancia1();
   location.href = 'login.html';
 }
+
+/* =====================================================
+   🔵 FINALIZAR MONITOREO
+===================================================== */
+function finalizarMonitoreo() {
+  // 🔴 Limpiar paciente y signos
+  resetAmbulancia1();
+
+  // 🔁 Reiniciar paciente activo
+  pacienteActualId = null;
+
+  // 🔔 Opcional: notificar al usuario
+  alert('✅ Monitoreo finalizado. Dashboard reiniciado.');
+}
