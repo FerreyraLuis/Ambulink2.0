@@ -3,6 +3,10 @@
 ===================================================== */
 document.addEventListener('DOMContentLoaded', () => {
   pacienteActualId = null; // empezar sin paciente
+
+  // 🔴 RESET INICIAL: siempre que entres a ambulancia.html el dashboard aparece vacío
+  resetAmbulancia1();
+
   cargarClinica();
 
   // 🔁 refresco en tiempo real cada 5 segundos
