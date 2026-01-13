@@ -21,6 +21,8 @@ function toggleEnCamino(valor){
   estadoAmbulancia.innerText = enCamino ? 'EN CAMINO' : 'DETENIDA';
   estadoAmbulancia.style.background = enCamino ? '#1bb14c' : '#e10600';
   btnEnCamino.className = enCamino ? 'btn-green' : 'btn-stop';
+
+  // Avisar a clínica del cambio
   localStorage.setItem('ambulancia1_color', enCamino ? 'green' : 'red');
 }
 
@@ -70,7 +72,8 @@ async function guardar(){
     localStorage.setItem('salida_activa', r.id_salida);
     localStorage.setItem('paciente_activo', JSON.stringify(payload.paciente));
     localStorage.setItem('ubicacion_activa', payload.ubicacion);
-    alert('✅ Paciente registrado correctamente');
+    // Avisar a clínica que hay paciente nuevo
+    localStorage.setItem('clinica_update', Date.now());
     window.location.href = 'monitoreo.html';
   } else alert('❌ Error al guardar');
 }
@@ -92,7 +95,6 @@ function logout(){
 async function nuevoPaciente(){
   const idSalida = localStorage.getItem('salida_activa');
 
-  // 1️⃣ Desactivar monitoreo en backend si hay salida activa
   if(idSalida){
     await fetch('https://ambulink.doc-ia.cloud/salida/monitoreo',{
       method:'PUT',
@@ -101,20 +103,19 @@ async function nuevoPaciente(){
     });
   }
 
-  // 2️⃣ Limpiar formulario
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
   toggleEnCamino(false);
 
-  // 3️⃣ Limpiar localStorage
   localStorage.removeItem('salida_activa');
   localStorage.removeItem('paciente_activo');
   localStorage.removeItem('ubicacion_activa');
 
-  // 4️⃣ Avisar a clínica (monitoreo.html) que se reinició
+  // Avisar a clínica que se reinició
   localStorage.setItem('clinica_reset', Date.now());
 
-  alert('✅ Nuevo paciente activado. Clínica restablecida.');
+  // Redirigir directo
+  window.location.href = 'ambulancia.html';
 }
