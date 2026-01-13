@@ -1,60 +1,133 @@
+/* =====================================================
+   🚑 CLÍNICA – ACTUALIZACIÓN AUTOMÁTICA Y RESET
+===================================================== */
+
+let pacienteActualId = null;
+
 document.addEventListener('DOMContentLoaded', () => {
-  const p_nombre = document.getElementById('p_nombre');
-  const p_edad = document.getElementById('p_edad');
-  const p_sexo = document.getElementById('p_sexo');
-  const p_sangre = document.getElementById('p_sangre');
-  const p_traslado = document.getElementById('p_traslado');
-  const p_ubicacion = document.getElementById('p_ubicacion');
-  const p_diag = document.getElementById('p_diag');
+  pacienteActualId = null; // empezar sin paciente
+  cargarClinica();
 
-  const hemorragiaBadge = document.getElementById('hemorragiaBadge');
-  const glasgowBadge = document.getElementById('glasgowBadge');
-  const ambulancia1Tag = document.getElementById('ambulancia1Tag');
-
-  // Limpiar pantalla
-  function limpiarPaciente(){
-    [p_nombre,p_edad,p_sexo,p_sangre,p_traslado,p_ubicacion,p_diag].forEach(el=>{
-      if(el) el.innerText = el.id === 'p_edad' ? '--' : '---';
-    });
-    hemorragiaBadge.style.display = 'none';
-    glasgowBadge.innerText = 'GLASGOW --';
-    ambulancia1Tag.className = 'ambulancia-tag red';
-  }
-
-  // Cargar paciente activo
-  function cargarPaciente(){
-    const paciente = JSON.parse(localStorage.getItem('paciente_activo')) || {};
-    p_nombre.innerText = paciente.nombre ?? '---';
-    p_edad.innerText = paciente.edad ? paciente.edad+' años' : '--';
-    p_sexo.innerText = paciente.sexo ?? '---';
-    p_sangre.innerText = paciente.tipo_sangre ?? '---';
-    p_traslado.innerText = paciente.tipo_traslado ?? '---';
-    p_ubicacion.innerText = paciente.ubicacion ?? '---';
-    p_diag.innerText = paciente.diagnostico ?? '---';
-
-    hemorragiaBadge.style.display = paciente.hemorragia ? 'block' : 'none';
-    glasgowBadge.innerText = paciente.glasgow ? `GLASGOW ${paciente.glasgow}` : 'GLASGOW --';
-
-    // Color En Camino
-    const color = localStorage.getItem('ambulancia1_color') === 'green' ? 'green' : 'red';
-    ambulancia1Tag.className = 'ambulancia-tag ' + (color==='green'?'green':'red');
-  }
-
-  // Detectar cambios desde ambulancia
-  window.addEventListener('storage', (e)=>{
-    if(e.key === 'clinica_reset') limpiarPaciente();
-    if(e.key === 'clinica_update') cargarPaciente();
-    if(e.key === 'ambulancia1_color'){
-      const color = e.newValue === 'green' ? 'green' : 'red';
-      ambulancia1Tag.className = 'ambulancia-tag ' + (color==='green'?'green':'red');
-    }
-  });
-
-  // Cargar al inicio
-  cargarPaciente();
-
-  // Botón salir
-  window.salir = function(){
-    window.location.href='index.html';
-  };
+  // 🔁 refresco en tiempo real cada 5 segundos
+  setInterval(() => {
+    cargarClinica();
+  }, 5000);
 });
+
+// 🔴 Escuchar cambios en localStorage para reset instantáneo
+window.addEventListener('storage', (e) => {
+  if (e.key === 'clinica_reset') {
+    resetAmbulancia1();
+    pacienteActualId = null; // Reinicia el paciente activo
+  }
+});
+
+async function cargarClinica() {
+  try {
+    const res = await fetch('https://ambulink.doc-ia.cloud/clinica/ambulancias');
+    const data = await res.json();
+
+    if (!data || !data.length) {
+      resetAmbulancia1();
+      return;
+    }
+
+    const amb = data[0]; // ambulancia más reciente
+
+    // ✅ Si el paciente cambió, resetear
+    const nuevoPacienteId = amb.paciente?.carnet || null;
+    if (nuevoPacienteId !== pacienteActualId) {
+      resetAmbulancia1();
+      pacienteActualId = nuevoPacienteId;
+    }
+
+    /* ===============================
+       ESTADO AMBULANCIA
+    =============================== */
+    const tag = document.getElementById('ambulancia1Tag');
+    if (amb.en_camino) {
+      tag.classList.remove('red');
+      tag.classList.add('green');
+    } else {
+      tag.classList.remove('green');
+      tag.classList.add('red');
+    }
+
+    /* ===============================
+       DATOS PACIENTE
+    =============================== */
+    const p = amb.paciente;
+    if (!p) return;
+
+    p_nombre.innerText     = p.nombre ?? '---';
+    p_edad.innerText       = p.edad ? `${p.edad} años` : '---';
+    p_sexo.innerText       = p.sexo ?? '---';
+    p_sangre.innerText     = p.tipo_sangre ?? '---';
+    p_traslado.innerText   = p.tipo_traslado ?? '---';
+    p_ubicacion.innerText  = amb.ubicacion ?? '---';
+    p_diag.innerText       = p.diagnostico ?? '---';
+
+    /* ===============================
+       SIGNOS MANUALES
+    =============================== */
+    pd.innerText = p.presion_diastolica ?? '--';
+    ps.innerText = p.presion_sistolica ?? '--';
+    fr.innerText = p.frecuencia_respiratoria ?? '--';
+
+    /* ===============================
+       SIGNOS AUTOMÁTICOS (ESP32)
+    =============================== */
+    const s = amb.signos || {};
+    const spans = document.querySelectorAll('.signos-grid .signo span');
+
+    if (spans[3]) spans[3].innerText = s.spo2 ?? '--';
+    if (spans[4]) spans[4].innerText = s.temperatura ?? '--';
+    if (spans[5]) spans[5].innerText = s.frecuencia_cardiaca ?? '--';
+
+    /* ===============================
+       GLASGOW + HEMORRAGIA
+    =============================== */
+    glasgowBadge.innerText = 'GLASGOW ' + (amb.glasgow ?? '--');
+    hemorragiaBadge.className = 'badge ' + (amb.hemorragia ? 'green' : 'red');
+
+  } catch (err) {
+    console.error('❌ Error clínica:', err);
+  }
+}
+
+/* ===============================
+   RESET VISUAL
+=============================== */
+function resetAmbulancia1() {
+  p_nombre.innerText = '---';
+  p_edad.innerText = '---';
+  p_sexo.innerText = '---';
+  p_sangre.innerText = '---';
+  p_traslado.innerText = '---';
+  p_ubicacion.innerText = '---';
+  p_diag.innerText = '---';
+
+  pd.innerText = '--';
+  ps.innerText = '--';
+  fr.innerText = '--';
+
+  const spans = document.querySelectorAll('.signos-grid .signo span');
+  spans.forEach(s => s.innerText = '--');
+
+  glasgowBadge.innerText = 'GLASGOW --';
+  hemorragiaBadge.className = 'badge red';
+
+  const tag = document.getElementById('ambulancia1Tag');
+  tag.classList.remove('green');
+  tag.classList.add('red');
+}
+
+/* ===============================
+   SALIR
+=============================== */
+function salir() {
+  localStorage.clear();
+  pacienteActualId = null;
+  resetAmbulancia1();
+  location.href = 'login.html';
+}
