@@ -93,13 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     });
 
-    // 🔹 Preparar contenido del PDF con estilo full profesional
+    // 🔹 Preparar contenido del PDF con estilo profesional
     pdfContainer.innerHTML = `
       <div style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
         <div style="background:white;width:800px;margin:0 auto;padding:40px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
           
           <!-- HEADER -->
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #2e7d32;padding-bottom:10px;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2e7d32;padding-bottom:10px;margin-bottom:20px;">
             <h1 style="color:#2e7d32;font-size:28px;font-weight:bold;margin:0;">AMBULINK</h1>
             <div style="text-align:right;font-size:14px;">
               <div><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</div>
