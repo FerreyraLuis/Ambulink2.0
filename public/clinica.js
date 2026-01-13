@@ -1,10 +1,14 @@
 /* =====================================================
    🚑 CLÍNICA – INICIO
 ===================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-  pacienteActualId = null; // empezar sin paciente
+let pacienteActualId = null;      // paciente activo
+let monitoreoFinalizado = false;  // controlar si finalizó monitoreo
 
-  // 🔴 RESET INICIAL: siempre que entres a ambulancia.html el dashboard aparece vacío
+document.addEventListener('DOMContentLoaded', () => {
+  pacienteActualId = null;       // empezar sin paciente
+  monitoreoFinalizado = false;   // monitoreo activo
+
+  // 🔴 RESET INICIAL: dashboard vacío
   resetAmbulancia1();
 
   cargarClinica();
@@ -19,15 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('storage', (e) => {
   if (e.key === 'clinica_reset') {
     resetAmbulancia1();
-    pacienteActualId = null; // Reinicia el paciente activo
+    pacienteActualId = null;       // reinicia paciente activo
+    monitoreoFinalizado = false;   // monitoreo activo de nuevo
   }
 });
 
 /* =====================================================
    🚑 CLÍNICA – ACTUALIZACIÓN AUTOMÁTICA Y RESET
 ===================================================== */
-let pacienteActualId = null;
-
 async function cargarClinica() {
   try {
     const res = await fetch('https://ambulink.doc-ia.cloud/clinica/ambulancias');
@@ -39,6 +42,9 @@ async function cargarClinica() {
     }
 
     const amb = data[0]; // ambulancia más reciente
+
+    // ⚠️ Si el monitoreo está finalizado, no actualizamos paciente
+    if (monitoreoFinalizado) return;
 
     // ✅ Si el paciente cambió, resetear
     const nuevoPacienteId = amb.paciente?.carnet || null;
@@ -129,25 +135,22 @@ function resetAmbulancia1() {
 }
 
 /* =====================================================
+   🔴 FINALIZAR MONITOREO
+===================================================== */
+function finalizarMonitoreo() {
+  resetAmbulancia1();
+  pacienteActualId = null;
+  monitoreoFinalizado = true;  // 🔒 Bloquea actualización automática
+  alert('✅ Monitoreo finalizado. Dashboard reiniciado.');
+}
+
+/* =====================================================
    🔴 SALIR
 ===================================================== */
 function salir() {
   localStorage.clear();
   pacienteActualId = null;
+  monitoreoFinalizado = false;
   resetAmbulancia1();
   location.href = 'login.html';
-}
-
-/* =====================================================
-   🔵 FINALIZAR MONITOREO
-===================================================== */
-function finalizarMonitoreo() {
-  // 🔴 Limpiar paciente y signos
-  resetAmbulancia1();
-
-  // 🔁 Reiniciar paciente activo
-  pacienteActualId = null;
-
-  // 🔔 Opcional: notificar al usuario
-  alert('✅ Monitoreo finalizado. Dashboard reiniciado.');
 }
