@@ -19,13 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
 
-  // 🔹 Contenedor invisible exclusivo para PDF
+  // 🔹 Contenedor invisible para PDF
   let pdfContainer = document.getElementById('pdfDownload');
   if (!pdfContainer) {
     pdfContainer = document.createElement('div');
     pdfContainer.id = 'pdfDownload';
     pdfContainer.style.position = 'absolute';
-    pdfContainer.style.left = '-9999px'; // fuera de pantalla
+    pdfContainer.style.left = '0';
+    pdfContainer.style.top = '0';
+    pdfContainer.style.opacity = '0';
+    pdfContainer.style.pointerEvents = 'none';
     document.body.appendChild(pdfContainer);
   }
 
@@ -97,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     });
 
-    // 🔹 Generar contenido full profesional para PDF en contenedor invisible
+    // 🔹 Contenido profesional para PDF
     pdfContainer.innerHTML = `
       <div style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
         <div style="background:white;width:800px;margin:0 auto;padding:40px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
@@ -160,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// 🔹 Descargar PDF desde contenedor invisible
 function descargarPDF(){
   html2pdf().set({
     margin:0.5,
