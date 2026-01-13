@@ -3,17 +3,16 @@
 ===================================================== */
 let pacienteActualId = null;      // paciente activo
 let monitoreoFinalizado = false;  // controlar si finalizó monitoreo
+let ultimoDato = null;             // fecha/hora último dato recibido
 
 document.addEventListener('DOMContentLoaded', () => {
-  pacienteActualId = null;       // empezar sin paciente
-  monitoreoFinalizado = false;   // monitoreo activo
+  pacienteActualId = null;
+  monitoreoFinalizado = false;
+  ultimoDato = null;
 
-  // 🔴 RESET INICIAL: dashboard vacío
   resetAmbulancia1();
-
   cargarClinica();
 
-  // 🔁 refresco en tiempo real cada 5 segundos
   setInterval(() => {
     cargarClinica();
   }, 5000);
@@ -23,8 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('storage', (e) => {
   if (e.key === 'clinica_reset') {
     resetAmbulancia1();
-    pacienteActualId = null;       // reinicia paciente activo
-    monitoreoFinalizado = false;   // monitoreo activo de nuevo
+    pacienteActualId = null;
+    monitoreoFinalizado = false;
+    ultimoDato = null;
   }
 });
 
@@ -41,10 +41,15 @@ async function cargarClinica() {
       return;
     }
 
-    const amb = data[0]; // ambulancia más reciente
+    const amb = data[0];
 
-    // ⚠️ Si el monitoreo está finalizado, no actualizamos paciente
+    // ⚠️ No actualizar paciente si monitoreo finalizado
     if (monitoreoFinalizado) return;
+
+    // ✅ Actualizar último dato recibido
+    if (amb.paciente) {
+      ultimoDato = new Date(); // marca hora actual
+    }
 
     // ✅ Si el paciente cambió, resetear
     const nuevoPacienteId = amb.paciente?.carnet || null;
@@ -138,10 +143,18 @@ function resetAmbulancia1() {
    🔴 FINALIZAR MONITOREO
 ===================================================== */
 function finalizarMonitoreo() {
-  resetAmbulancia1();
-  pacienteActualId = null;
-  monitoreoFinalizado = true;  // 🔒 Bloquea actualización automática
-  alert('✅ Monitoreo finalizado. Dashboard reiniciado.');
+  const ahora = new Date();
+
+  // ⚠️ Revisar si han pasado 5 minutos desde el último dato
+  if (!ultimoDato || (ahora - ultimoDato) >= 5 * 60 * 1000) {
+    resetAmbulancia1();
+    pacienteActualId = null;
+    monitoreoFinalizado = true;
+    alert('✅ Monitoreo finalizado. Dashboard reiniciado.');
+  } else {
+    const minutosRestantes = Math.ceil((5 * 60 * 1000 - (ahora - ultimoDato)) / 60000);
+    alert(`⏳ No puedes finalizar monitoreo todavía.\nFaltan aprox ${minutosRestantes} minuto(s) de datos recientes.`);
+  }
 }
 
 /* =====================================================
@@ -151,6 +164,7 @@ function salir() {
   localStorage.clear();
   pacienteActualId = null;
   monitoreoFinalizado = false;
+  ultimoDato = null;
   resetAmbulancia1();
   location.href = 'login.html';
 }
