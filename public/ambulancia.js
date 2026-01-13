@@ -72,7 +72,7 @@ async function guardar(){
     localStorage.setItem('ubicacion_activa', payload.ubicacion);
     alert('✅ Paciente registrado correctamente');
     window.location.href = 'monitoreo.html';
-  }else alert('❌ Error al guardar');
+  } else alert('❌ Error al guardar');
 }
 
 function irMonitoreo(){
@@ -88,21 +88,32 @@ function logout(){
   location.href='index.html';
 }
 
-// 🔴 NUEVO PACIENTE – RESET AUTOMÁTICO
+// 🔴 NUEVO PACIENTE – RESET COMPLETO
 async function nuevoPaciente(){
-  // Limpiar formulario
+  const idSalida = localStorage.getItem('salida_activa');
+
+  // 1️⃣ Desactivar monitoreo en backend si hay salida activa
+  if(idSalida){
+    await fetch('https://ambulink.doc-ia.cloud/salida/monitoreo',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ id_salida: idSalida, monitoreo_activo: false })
+    });
+  }
+
+  // 2️⃣ Limpiar formulario
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
   toggleEnCamino(false);
 
-  // Borrar paciente activo
+  // 3️⃣ Limpiar localStorage
   localStorage.removeItem('salida_activa');
   localStorage.removeItem('paciente_activo');
   localStorage.removeItem('ubicacion_activa');
 
-  // Avisar a clínica usando evento storage
+  // 4️⃣ Avisar a clínica (monitoreo.html) que se reinició
   localStorage.setItem('clinica_reset', Date.now());
 
   alert('✅ Nuevo paciente activado. Clínica restablecida.');
