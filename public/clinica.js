@@ -13,9 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 🔴 Escuchar cambios en localStorage para reset instantáneo
 window.addEventListener('storage', (e) => {
+  // Reset manual desde cualquier lugar
   if (e.key === 'clinica_reset') {
     resetAmbulancia1();
     pacienteActualId = null; // Reinicia el paciente activo
+  }
+  // 🔹 Reset desde Monitoreo al crear NUEVO PACIENTE
+  if (e.key === 'reset_clinica_ambulancia1') {
+    resetAmbulancia1();
+    pacienteActualId = null; // Reinicia paciente activo
+    localStorage.removeItem('reset_clinica_ambulancia1'); // Limpiar para que no se repita
   }
 });
 

@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } catch (e) {
         console.error('Error tiempo real:', e);
       }
-    }, 5001); // ⏱️ cada 5 segundos
+    }, 5001);
 
   } catch (err) {
     console.error(err);
@@ -186,7 +186,9 @@ async function guardarGlasgow() {
 
 /* ========================= NUEVO PACIENTE ========================= */
 function nuevoPaciente() {
+  // 🔹 Avisar al dashboard de la clínica que haga reset
   localStorage.setItem('reset_clinica_ambulancia1', 'true');
+
   localStorage.setItem('ambulancia1_color', 'red');
   localStorage.removeItem('salida_activa');
   window.location.href = 'ambulancia.html';
