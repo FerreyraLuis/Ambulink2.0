@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-
   const idSalida = localStorage.getItem('salida_activa');
-
   if (!idSalida) {
     alert('⚠️ No hay paciente activo.');
     window.location.href = 'ambulancia.html';
@@ -34,7 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   pintarMonitoreo();
 
-  /* ========================= CARGA DATOS ========================= */
   try {
     const res = await fetch(`https://ambulink.doc-ia.cloud/salidas/${idSalida}`);
     const data = await res.json();
@@ -52,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     pac_ubicacion.innerText = data.ubicacion || '--';
     pac_diagnostico.innerText = p.diagnostico || '--';
 
-    /* ========================= SIGNOS (INICIAL) ========================= */
+    /* ========================= SIGNOS (ESTADO INICIAL) ========================= */
     v_pd.innerText = p.presion_diastolica ?? '--';
     v_ps.innerText = p.presion_sistolica ?? '--';
     v_fr.innerText = p.frecuencia_respiratoria ?? '--';
@@ -63,13 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const chofer = pars.find(x => x.rol_en_la_salida === 'chofer');
     const param = pars.find(x => x.rol_en_la_salida === 'paramedico');
 
-    par1.innerText = chofer
-      ? `🚑 ${chofer.paramedicos.nombre} ${chofer.paramedicos.apellido}`
-      : '🚑 ---';
-
-    par2.innerText = param
-      ? `🚑 ${param.paramedicos.nombre} ${param.paramedicos.apellido}`
-      : '🚑 ---';
+    par1.innerText = chofer ? `🚑 ${chofer.paramedicos.nombre} ${chofer.paramedicos.apellido}` : '🚑 ---';
+    par2.innerText = param ? `🚑 ${param.paramedicos.nombre} ${param.paramedicos.apellido}` : '🚑 ---';
 
     /* ========================= HEMORRAGIA ========================= */
     let estadoHemorragia = p.hemorragia === true;
@@ -87,10 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await fetch('https://ambulink.doc-ia.cloud/paciente/hemorragia', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_salida: idSalida,
-          hemorragia: estadoHemorragia
-        })
+        body: JSON.stringify({ id_salida: idSalida, hemorragia: estadoHemorragia })
       });
     };
 
@@ -107,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await actualizarMonitoreo(false);
     };
 
-    /* ========================= TIEMPO REAL (ESP32) ========================= */
+    /* ========================= TIEMPO REAL (SOLO SI MONITOREO ACTIVO) ========================= */
     setInterval(async () => {
       if (!monitoreoActivo) return;
 
@@ -116,25 +105,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const s = await r.json();
         if (!s) return;
 
+        // Signos automáticos ESP32
         if (s.spo2 !== undefined) {
-          document.querySelector('.signo:nth-child(4) .valor').innerHTML =
-            `${s.spo2}<span class="unidad">%</span>`;
-        }
-
-        if (s.temperatura !== undefined) {
-          document.querySelector('.signo:nth-child(5) .valor').innerHTML =
-            `${s.temperatura}<span class="unidad">°C</span>`;
+          document.querySelector('.signo:nth-child(4) .valor').innerHTML = `${s.spo2}<span class="unidad">%</span>`;
         }
 
         if (s.frecuencia_cardiaca !== undefined) {
-          document.querySelector('.signo:nth-child(6) .valor').innerHTML =
-            `${s.frecuencia_cardiaca}<span class="unidad">lat/min</span>`;
+          document.querySelector('.signo:nth-child(6) .valor').innerHTML = `${s.frecuencia_cardiaca}<span class="unidad">lat/min</span>`;
+        }
+
+        if (s.temperatura !== undefined) {
+          document.querySelector('.signo:nth-child(5) .valor').innerHTML = `${s.temperatura}<span class="unidad">°C</span>`;
         }
 
       } catch (e) {
         console.error('Error tiempo real:', e);
       }
-    }, 5000);
+    }, 5001); // ⏱️ cada 5 segundos
 
   } catch (err) {
     console.error(err);
@@ -145,21 +132,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 /* ========================= MONITOREO ACTIVO (BACKEND) ========================= */
 async function actualizarMonitoreo(valor) {
   const idSalida = localStorage.getItem('salida_activa');
-
   await fetch('https://ambulink.doc-ia.cloud/salida/monitoreo', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id_salida: idSalida,
-      monitoreo_activo: valor
-    })
+    body: JSON.stringify({ id_salida: idSalida, monitoreo_activo: valor })
   });
 }
 
 /* ========================= GUARDAR SIGNOS MANUALES ========================= */
 async function guardarSignos() {
   const idSalida = localStorage.getItem('salida_activa');
-
   const pd = in_pd.value;
   const ps = in_ps.value;
   const fr = in_fr.value;
@@ -167,12 +149,7 @@ async function guardarSignos() {
   await fetch('https://ambulink.doc-ia.cloud/paciente/signos', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id_salida: idSalida,
-      presion_diastolica: pd,
-      presion_sistolica: ps,
-      frecuencia_respiratoria: fr
-    })
+    body: JSON.stringify({ id_salida: idSalida, presion_diastolica: pd, presion_sistolica: ps, frecuencia_respiratoria: fr })
   });
 
   v_pd.innerText = pd || '--';
@@ -198,10 +175,7 @@ async function guardarGlasgow() {
   await fetch('https://ambulink.doc-ia.cloud/paciente/glasgow', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id_salida: idSalida,
-      escala_glasgow: total
-    })
+    body: JSON.stringify({ id_salida: idSalida, escala_glasgow: total })
   });
 
   glasgow_total.innerText = total;

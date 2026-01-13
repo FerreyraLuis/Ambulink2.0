@@ -1,216 +1,275 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>AMBULINK | Clínica</title>
+  <meta charset="UTF-8">
+  <title>AMBULINK | Clínica</title>
 
-<style>
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;background:#009fe3}
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-.app{
-  width:96%;
-  height:96vh;
-  margin:12px auto;
-  background:#009fe3;
-  border-radius:20px;
-  padding:18px;
-}
-.content{
-  width:100%;
-  height:100%;
-  background:#fff;
-  border-radius:20px;
-  padding:22px;
-  display:flex;
-  gap:20px;
-}
+    body {
+      margin: 0;
+      background: #009fe3;
+    }
 
-.sidebar{
-  width:160px;
-  background:#009fe3;
-  border-radius:18px;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:20px;
-}
-.sidebar button{
-  background:white;
-  color:#e10600;
-  border:none;
-  border-radius:20px;
-  padding:12px;
-  font-weight:bold;
-}
+    .app {
+      width: 96%;
+      height: 96vh;
+      margin: 12px auto;
+      background: #009fe3;
+      border-radius: 20px;
+      padding: 18px;
+    }
 
-.main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:20px;
-}
+    .content {
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      border-radius: 20px;
+      padding: 22px;
+      display: flex;
+      gap: 20px;
+    }
 
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.brand{
-  color:#e10600;
-  font-size:32px;
-  font-weight:900;
-}
-.user{
-  background:#009fe3;
-  color:white;
-  padding:10px 18px;
-  border-radius:18px;
-  font-weight:bold;
-}
+    .sidebar {
+      width: 160px;
+      background: #009fe3;
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+    }
 
-.ambulancia-tag{
-  padding:10px 20px;
-  border-radius:14px;
-  color:white;
-  font-weight:900;
-  width:fit-content;
-}
-.green{background:#14b866}
-.red{background:#e10600}
+    .sidebar button {
+      background: white;
+      color: #e10600;
+      border: none;
+      border-radius: 20px;
+      padding: 12px;
+      font-weight: bold;
+    }
 
-.grid{
-  display:grid;
-  grid-template-columns:260px 1fr;
-  gap:20px;
-}
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-.paciente{
-  background:#009fe3;
-  border-radius:18px;
-  padding:18px;
-  color:white;
-  font-size:14px;
-}
-.paciente h3{
-  margin:0 0 8px;
-  font-size:16px;
-}
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-.signos{
-  border:3px solid #009fe3;
-  border-radius:20px;
-  padding:14px;
-}
-.signos-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.signos-title{
-  color:#e10600;
-  font-weight:900;
-}
-.badges{
-  display:flex;
-  gap:10px;
-}
-.badge{
-  padding:6px 14px;
-  border-radius:14px;
-  font-size:12px;
-  font-weight:bold;
-  color:white;
-}
+    .brand {
+      color: #e10600;
+      font-size: 32px;
+      font-weight: 900;
+    }
 
-.signos-grid{
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:14px;
-  margin-top:12px;
-}
-.signo{
-  background:#004aad;
-  border-radius:16px;
-  padding:14px;
-  color:white;
-  text-align:center;
-}
-.signo span{
-  display:block;
-  font-size:24px;
-  font-weight:900;
-}
-</style>
+    .user {
+      background: #009fe3;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 18px;
+      font-weight: bold;
+    }
+
+    .ambulancia-tag {
+      padding: 10px 20px;
+      border-radius: 14px;
+      color: white;
+      font-weight: 900;
+      width: fit-content;
+    }
+
+    .green { background: #14b866; }
+    .red { background: #e10600; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 20px;
+    }
+
+    .paciente {
+      background: #009fe3;
+      border-radius: 18px;
+      padding: 18px;
+      color: white;
+      font-size: 14px;
+    }
+
+    .paciente h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .signos {
+      border: 3px solid #009fe3;
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .signos-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .signos-title {
+      color: #e10600;
+      font-weight: 900;
+    }
+
+    .badges {
+      display: flex;
+      gap: 10px;
+    }
+
+    .badge {
+      padding: 6px 14px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .signos-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .signo {
+      background: #004aad;
+      border-radius: 16px;
+      padding: 14px;
+      color: white;
+      text-align: center;
+    }
+
+    .signo span {
+      display: block;
+      font-size: 24px;
+      font-weight: 900;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="app">
-<div class="content">
+  <div class="app">
+    <div class="content">
 
-<div class="sidebar">
-  <button onclick="location.href='histocli.html'">Historial</button>
-  <button onclick="salir()">Salir</button>
-</div>
-
-<div class="main">
-
-<div class="header">
-  <div class="brand">AMBULINK</div>
-  <div class="user">Conectado: clinica@gmail.com</div>
-</div>
-
-<div>
-  <div id="ambulancia1Tag" class="ambulancia-tag red">AMBULANCIA 1</div>
-
-  <div class="grid">
-
-    <div class="paciente">
-      <h3>PACIENTE</h3>
-      <p><b>Nombre:</b> <span id="p_nombre">---</span></p>
-      <p><b>Edad:</b> <span id="p_edad">---</span></p>
-      <p><b>Sexo:</b> <span id="p_sexo">---</span></p>
-      <p><b>Grupo sanguíneo:</b> <span id="p_sangre">---</span></p>
-      <p><b>Tipo de traslado:</b> <span id="p_traslado">---</span></p>
-      <p><b>Ubicación:</b> <span id="p_ubicacion">---</span></p>
-      <p><b>Diagnóstico:</b> <span id="p_diag">---</span></p>
-    </div>
-
-    <div class="signos">
-      <div class="signos-header">
-        <div class="signos-title">
-          SIGNOS VITALES · <span id="fechaHoy"></span>
-        </div>
-        <div class="badges">
-          <div id="hemorragiaBadge" class="badge red">HEMORRAGIA</div>
-          <div id="glasgowBadge" class="badge red">GLASGOW --</div>
-        </div>
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <button onclick="location.href='histocli.html'">Historial</button>
+        <button onclick="salir()">Salir</button>
       </div>
 
-      <div class="signos-grid">
-        <div class="signo">PRESIÓN DIASTÓLICA<span id="pd">--</span>mmHg</div>
-        <div class="signo">PRESIÓN SISTÓLICA<span id="ps">--</span>mmHg</div>
-        <div class="signo">FREC. RESP.<span id="fr">--</span>rpm</div>
-        <div class="signo">SpO₂<span id="c_spo2">--</span>%</div>
-        <div class="signo">TEMPERATURA<span id="c_temp">--</span>°C</div>
-        <div class="signo">FREC. CARDIACA<span id="c_fc">--</span>lat/min</div>
+      <!-- MAIN -->
+      <div class="main">
+
+        <!-- HEADER -->
+        <div class="header">
+          <div class="brand">AMBULINK</div>
+          <div class="user">Conectado: clinica@gmail.com</div>
+        </div>
+
+        <!-- CONTENIDO -->
+        <div>
+
+          <div id="ambulancia1Tag" class="ambulancia-tag red">
+            AMBULANCIA 1
+          </div>
+
+          <div class="grid">
+
+            <!-- PACIENTE -->
+            <div class="paciente">
+              <h3>PACIENTE</h3>
+              <p><b>Nombre:</b> <span id="p_nombre">---</span></p>
+              <p><b>Edad:</b> <span id="p_edad">---</span></p>
+              <p><b>Sexo:</b> <span id="p_sexo">---</span></p>
+              <p><b>Grupo sanguíneo:</b> <span id="p_sangre">---</span></p>
+              <p><b>Tipo de traslado:</b> <span id="p_traslado">---</span></p>
+              <p><b>Ubicación:</b> <span id="p_ubicacion">---</span></p>
+              <p><b>Diagnóstico:</b> <span id="p_diag">---</span></p>
+            </div>
+
+            <!-- SIGNOS VITALES -->
+            <div class="signos">
+
+              <div class="signos-header">
+                <div class="signos-title">
+                  SIGNOS VITALES · <span id="fechaHoy"></span>
+                </div>
+
+                <div class="badges">
+                  <div id="hemorragiaBadge" class="badge red">
+                    HEMORRAGIA
+                  </div>
+                  <div id="glasgowBadge" class="badge red">
+                    GLASGOW --
+                  </div>
+                </div>
+              </div>
+
+              <div class="signos-grid">
+                <div class="signo">
+                  PRESIÓN DIASTÓLICA
+                  <span id="pd">--</span>mmHg
+                </div>
+
+                <div class="signo">
+                  PRESIÓN SISTÓLICA
+                  <span id="ps">--</span>mmHg
+                </div>
+
+                <div class="signo">
+                  FREC. RESP.
+                  <span id="fr">--</span>rpm
+                </div>
+
+                <div class="signo">
+                  SpO₂
+                  <span id="c_spo2">--</span>%
+                </div>
+
+                <div class="signo">
+                  TEMPERATURA
+                  <span id="c_temp">--</span>°C
+                </div>
+
+                <div class="signo">
+                  FREC. CARDIACA
+                  <span id="c_fc">--</span>lat/min
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
-
   </div>
-</div>
 
-</div>
-</div>
-</div>
-
-<script src="clinica.js"></script>
-<script src="guard.js"></script>
-<script>
-  protegerPagina('clinica');
-</script>
+  <!-- SCRIPTS -->
+  <script src="clinica.js"></script>
+  <script src="guard.js"></script>
+  <script>
+    protegerPagina('clinica');
+  </script>
 
 </body>
 </html>

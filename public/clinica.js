@@ -1,9 +1,6 @@
 /* =====================================================
-   🚑 CLÍNICA – ACTUALIZACIÓN AUTOMÁTICA Y RESET
+   🚑 CLÍNICA – INICIO
 ===================================================== */
-
-let pacienteActualId = null;
-
 document.addEventListener('DOMContentLoaded', () => {
   pacienteActualId = null; // empezar sin paciente
   cargarClinica();
@@ -21,6 +18,11 @@ window.addEventListener('storage', (e) => {
     pacienteActualId = null; // Reinicia el paciente activo
   }
 });
+
+/* =====================================================
+   🚑 CLÍNICA – ACTUALIZACIÓN AUTOMÁTICA Y RESET
+===================================================== */
+let pacienteActualId = null;
 
 async function cargarClinica() {
   try {
@@ -59,13 +61,13 @@ async function cargarClinica() {
     const p = amb.paciente;
     if (!p) return;
 
-    p_nombre.innerText     = p.nombre ?? '---';
-    p_edad.innerText       = p.edad ? `${p.edad} años` : '---';
-    p_sexo.innerText       = p.sexo ?? '---';
-    p_sangre.innerText     = p.tipo_sangre ?? '---';
-    p_traslado.innerText   = p.tipo_traslado ?? '---';
-    p_ubicacion.innerText  = amb.ubicacion ?? '---';
-    p_diag.innerText       = p.diagnostico ?? '---';
+    p_nombre.innerText = p.nombre ?? '---';
+    p_edad.innerText = p.edad ? `${p.edad} años` : '---';
+    p_sexo.innerText = p.sexo ?? '---';
+    p_sangre.innerText = p.tipo_sangre ?? '---';
+    p_traslado.innerText = p.tipo_traslado ?? '---';
+    p_ubicacion.innerText = amb.ubicacion ?? '---';
+    p_diag.innerText = p.diagnostico ?? '---';
 
     /* ===============================
        SIGNOS MANUALES
@@ -95,9 +97,9 @@ async function cargarClinica() {
   }
 }
 
-/* ===============================
-   RESET VISUAL
-=============================== */
+/* =====================================================
+   🔴 RESET VISUAL AMBULANCIA
+===================================================== */
 function resetAmbulancia1() {
   p_nombre.innerText = '---';
   p_edad.innerText = '---';
@@ -122,9 +124,9 @@ function resetAmbulancia1() {
   tag.classList.add('red');
 }
 
-/* ===============================
-   SALIR
-=============================== */
+/* =====================================================
+   🔴 SALIR
+===================================================== */
 function salir() {
   localStorage.clear();
   pacienteActualId = null;
