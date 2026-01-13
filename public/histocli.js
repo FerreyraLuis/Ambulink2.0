@@ -19,6 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
 
+  // 🔹 Contenedor invisible para PDF
+  const pdfContainer = document.createElement('div');
+  pdfContainer.id = 'pdfHistorial';
+  pdfContainer.style.display = 'none';
+  document.body.appendChild(pdfContainer);
+
   fechaActual.innerText = new Date().toLocaleDateString('es-ES',{
     day:'numeric',month:'long',year:'numeric'
   });
@@ -59,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     pac_traslado.innerText = p.tipo_traslado;
     pac_ubicacion.innerText = data.ubicacion;
 
-    // 🔴 HEMORRAGIA (EVENTO CLÍNICO)
     if (p.hemorragia === true) {
       bloqueHemorragia.style.display = 'block';
     }
@@ -87,73 +92,73 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     });
 
-    btnPDF.style.display = 'block';
-
-    // ==============================
-    // 🔹 LLENAR EL PDF ESTILO PROFESIONAL
-    // ==============================
-    const pdfContainer = document.getElementById('pdfHistorial');
+    // 🔹 Preparar PDF con estilo profesional
     pdfContainer.innerHTML = `
-      <div style="font-family: Arial, sans-serif; width: 800px; padding: 40px; background: white;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #2e7d32;padding-bottom:10px;margin-bottom:20px;">
-          <h1 style="color:#2e7d32;font-size:28px;font-weight:bold;margin:0;">AMBULINK</h1>
-          <div style="text-align:right;font-size:14px;">
-            <div><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</div>
-            <div><strong>CASO:</strong> ${id}</div>
+      <div style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
+        <div style="background:white;padding:40px;width:800px;margin:0 auto;box-shadow:0 0 10px rgba(0,0,0,0.1);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #2e7d32;padding-bottom:10px;margin-bottom:20px;">
+            <h1 style="color:#2e7d32;font-size:28px;font-weight:bold;margin:0;">AMBULINK</h1>
+            <div style="text-align:right;font-size:14px;">
+              <div><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</div>
+              <div><strong>CASO:</strong> ${id}</div>
+            </div>
           </div>
-        </div>
-
-        <div style="background-color:#2e7d32;color:white;padding:5px 10px;font-size:16px;font-weight:bold;margin-top:20px;margin-bottom:15px;text-transform:uppercase;">Información del Paciente</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
-          <div><strong>NOMBRE:</strong> ${p.nombre}</div>
-          <div><strong>EDAD:</strong> ${p.edad}</div>
-          <div><strong>SEXO:</strong> ${p.sexo}</div>
-          <div><strong>TIPO DE SANGRE:</strong> ${p.tipo_sangre}</div>
-          <div><strong>TIPO DE TRASLADO:</strong> ${p.tipo_traslado}</div>
-          <div><strong>UBICACIÓN INICIAL:</strong> ${data.ubicacion}</div>
-          <div><strong>DIAGNÓSTICO:</strong> ${p.diagnostico}</div>
-          <div><strong>HEMORRAGIA EXSANGUINEA:</strong> ${p.hemorragia ? 'SI' : 'NO'}</div>
-        </div>
-
-        <div style="background-color:#2e7d32;color:white;padding:5px 10px;font-size:16px;font-weight:bold;margin-top:20px;margin-bottom:15px;text-transform:uppercase;">Monitoreo de Signos Vitales</div>
-        <table style="width:100%;border-collapse:collapse;margin-top:10px;">
-          <thead>
-            <tr>
-              <th style="border:1px solid #ccc;padding:5px;">HORA</th>
-              <th style="border:1px solid #ccc;padding:5px;">PRESIÓN DIASTÓLICA</th>
-              <th style="border:1px solid #ccc;padding:5px;">PRESIÓN SISTÓLICA</th>
-              <th style="border:1px solid #ccc;padding:5px;">FREC. RESP.</th>
-              <th style="border:1px solid #ccc;padding:5px;">SpO₂</th>
-              <th style="border:1px solid #ccc;padding:5px;">FREC. CARDIACA</th>
-              <th style="border:1px solid #ccc;padding:5px;">TEMP (°C)</th>
-              <th style="border:1px solid #ccc;padding:5px;">GLASGOW</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${signos.map(s=>`
+          
+          <div style="background-color:#2e7d32;color:white;padding:5px 10px;font-size:16px;font-weight:bold;margin-top:20px;margin-bottom:15px;text-transform:uppercase;">Información del Paciente</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+            <div><strong>NOMBRE:</strong> ${p.nombre}</div>
+            <div><strong>EDAD:</strong> ${p.edad}</div>
+            <div><strong>SEXO:</strong> ${p.sexo}</div>
+            <div><strong>TIPO DE SANGRE:</strong> ${p.tipo_sangre}</div>
+            <div><strong>TIPO DE TRASLADO:</strong> ${p.tipo_traslado}</div>
+            <div><strong>UBICACIÓN INICIAL:</strong> ${data.ubicacion}</div>
+            <div><strong>DIAGNÓSTICO:</strong> ${p.diagnostico}</div>
+            <div><strong>HEMORRAGIA:</strong> ${p.hemorragia ? 'SI' : 'NO'}</div>
+          </div>
+          
+          <div style="background-color:#2e7d32;color:white;padding:5px 10px;font-size:16px;font-weight:bold;margin-top:20px;margin-bottom:15px;text-transform:uppercase;">Monitoreo de Signos Vitales</div>
+          <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+            <thead>
               <tr>
-                <td>${new Date(s.fecha).toLocaleString()}</td>
-                <td>${s.presion_diastolica ?? '--'}</td>
-                <td>${s.presion_sistolica ?? '--'}</td>
-                <td>${s.frecuencia_respiratoria ?? '--'}</td>
-                <td>${s.spo2 ?? '--'}</td>
-                <td>${s.temperatura ?? '--'}</td>
-                <td>${s.frecuencia_cardiaca ?? '--'}</td>
-                <td>${s.escala_glasgow ?? '--'}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
+                <th style="border:1px solid #ccc;padding:5px;">HORA</th>
+                <th style="border:1px solid #ccc;padding:5px;">PRESIÓN DIASTÓLICA</th>
+                <th style="border:1px solid #ccc;padding:5px;">PRESIÓN SISTÓLICA</th>
+                <th style="border:1px solid #ccc;padding:5px;">FREC. RESP.</th>
+                <th style="border:1px solid #ccc;padding:5px;">SpO₂</th>
+                <th style="border:1px solid #ccc;padding:5px;">FREC. CARDIACA</th>
+                <th style="border:1px solid #ccc;padding:5px;">TEMP (°C)</th>
+                <th style="border:1px solid #ccc;padding:5px;">GLASGOW</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${signos.map(s=>`
+                <tr>
+                  <td>${new Date(s.fecha).toLocaleString()}</td>
+                  <td>${s.presion_diastolica ?? '--'}</td>
+                  <td>${s.presion_sistolica ?? '--'}</td>
+                  <td>${s.frecuencia_respiratoria ?? '--'}</td>
+                  <td>${s.spo2 ?? '--'}</td>
+                  <td>${s.temperatura ?? '--'}</td>
+                  <td>${s.frecuencia_cardiaca ?? '--'}</td>
+                  <td>${s.escala_glasgow ?? '--'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
 
-        <div style="margin-top:30px;font-size:14px;">
-          <strong>PARAMÉDICOS:</strong><br>
-          ${pars.map(p=>`• ${p.paramedicos.nombre} ${p.paramedicos.apellido}`).join('<br>')}
+          <div style="margin-top:30px;font-size:14px;">
+            <strong>PARAMÉDICOS:</strong><br>
+            ${pars.map(p=>`• ${p.paramedicos.nombre} ${p.paramedicos.apellido}`).join('<br>')}
+          </div>
         </div>
       </div>
     `;
+
+    btnPDF.style.display = 'block';
   });
 
 });
 
+// 🔹 Descargar PDF con estilo profesional
 function descargarPDF(){
   html2pdf().set({
     margin:1,
