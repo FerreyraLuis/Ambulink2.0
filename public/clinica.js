@@ -3,10 +3,6 @@
 ===================================================== */
 document.addEventListener('DOMContentLoaded', () => {
   pacienteActualId = null; // empezar sin paciente
-
-  // 🔹 reset visual inmediato al entrar
-  resetAmbulancia1();
-
   cargarClinica();
 
   // 🔁 refresco en tiempo real cada 5 segundos
