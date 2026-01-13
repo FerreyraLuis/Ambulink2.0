@@ -1,29 +1,24 @@
 /* =====================================================
-   🚑 CLÍNICA – INICIO
+   🚑 CLÍNICA – INTELIGENTE
 ===================================================== */
 let pacienteActualId = null;
+let autoUpdate = true;
+let intervaloCarga = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 🔴 Reset inicial
-  resetAmbulancia1();
+  resetAmbulancia1();      // Limpieza inicial
+  cargarClinica();         // Carga inicial de datos
+  iniciarAutoUpdate();     // Auto-update cada 5s
+});
 
-  // Carga inicial de datos
-  cargarClinica();
-
-  // 🔁 Actualización automática cada 5 segundos
-  setInterval(() => {
+/* =====================================================
+   🔴 AUTO UPDATE INTELIGENTE
+===================================================== */
+function iniciarAutoUpdate() {
+  intervaloCarga = setInterval(() => {
     cargarClinica();
   }, 5000);
-});
-
-// 🔴 Escuchar cambios de localStorage para reset instantáneo
-window.addEventListener('storage', (e) => {
-  if (e.key === 'reset_clinica_ambulancia1') {
-    resetAmbulancia1();
-    pacienteActualId = null;
-    localStorage.removeItem('reset_clinica_ambulancia1');
-  }
-});
+}
 
 /* =====================================================
    🚑 CARGAR CLÍNICA – AMBULANCIAS + PACIENTES + SIGNOS
@@ -32,20 +27,19 @@ async function cargarClinica() {
   try {
     const res = await fetch('https://ambulink.doc-ia.cloud/clinica/ambulancias');
     const data = await res.json();
+    if (!data || !data.length) return;
 
-    if (!data || !data.length) {
-      resetAmbulancia1();
-      return;
-    }
-
-    const amb = data[0]; // tomamos la ambulancia más reciente
-
-    // ✅ Si el paciente cambió, hacer reset
+    const amb = data[0];
     const nuevoPacienteId = amb.paciente?.carnet || null;
-    if (nuevoPacienteId !== pacienteActualId) {
-      resetAmbulancia1();
+
+    // 🔹 Detecta paciente nuevo
+    if (nuevoPacienteId && nuevoPacienteId !== pacienteActualId) {
       pacienteActualId = nuevoPacienteId;
+      autoUpdate = true; // Reactiva auto-update si llega un paciente
     }
+
+    // 🔹 Si no hay paciente o autoUpdate está desactivado, no mostrar datos
+    if (!nuevoPacienteId || !autoUpdate) return;
 
     // ========================= ESTADO AMBULANCIA =========================
     const tag = document.getElementById('ambulancia1Tag');
@@ -88,7 +82,7 @@ async function cargarClinica() {
 }
 
 /* =====================================================
-   🔴 RESET VISUAL AMBULANCIA
+   🔴 RESET VISUAL AMBULANCIA – LIMPIO
 ===================================================== */
 function resetAmbulancia1() {
   ['p_nombre','p_edad','p_sexo','p_sangre','p_traslado','p_ubicacion','p_diag'].forEach(id => {
@@ -105,19 +99,17 @@ function resetAmbulancia1() {
   const tag = document.getElementById('ambulancia1Tag');
   tag.classList.remove('green');
   tag.classList.add('red');
+
+  pacienteActualId = null; // Limpieza total del paciente
+  autoUpdate = false;      // Bloquea recarga hasta que llegue un paciente
 }
 
 /* =====================================================
-   🔴 NUEVO PACIENTE
+   🔴 NUEVO PACIENTE – FULL INTELIGENTE
 ===================================================== */
 function nuevoPaciente() {
-  // Avisar al dashboard de la clínica que haga reset
-  localStorage.setItem('reset_clinica_ambulancia1', 'true');
-
-  localStorage.setItem('ambulancia1_color', 'red');
-  localStorage.removeItem('salida_activa');
-
-  alert('✅ Nuevo paciente activado. Clínica restablecida.');
+  resetAmbulancia1();
+  alert('✅ Nuevo paciente activado. La clínica está limpia y lista.');
 }
 
 /* =====================================================
@@ -125,7 +117,6 @@ function nuevoPaciente() {
 ===================================================== */
 function salir() {
   localStorage.clear();
-  pacienteActualId = null;
   resetAmbulancia1();
   location.href = 'login.html';
 }
