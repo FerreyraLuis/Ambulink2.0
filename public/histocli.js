@@ -92,10 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     });
 
-    // 🔹 Preparar PDF con estilo profesional
+    // 🔹 Preparar PDF con estilo FULL PROFESIONAL
     pdfContainer.innerHTML = `
       <div style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
-        <div style="background:white;padding:40px;width:800px;margin:0 auto;box-shadow:0 0 10px rgba(0,0,0,0.1);">
+        <div style="background:white;width:800px;margin:0 auto;padding:40px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+          
+          <!-- HEADER -->
           <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #2e7d32;padding-bottom:10px;margin-bottom:20px;">
             <h1 style="color:#2e7d32;font-size:28px;font-weight:bold;margin:0;">AMBULINK</h1>
             <div style="text-align:right;font-size:14px;">
@@ -103,9 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <div><strong>CASO:</strong> ${id}</div>
             </div>
           </div>
-          
-          <div style="background-color:#2e7d32;color:white;padding:5px 10px;font-size:16px;font-weight:bold;margin-top:20px;margin-bottom:15px;text-transform:uppercase;">Información del Paciente</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+
+          <!-- INFO PACIENTE -->
+          <div style="background-color:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">INFORMACIÓN DEL PACIENTE</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
             <div><strong>NOMBRE:</strong> ${p.nombre}</div>
             <div><strong>EDAD:</strong> ${p.edad}</div>
             <div><strong>SEXO:</strong> ${p.sexo}</div>
@@ -113,21 +116,22 @@ document.addEventListener('DOMContentLoaded', () => {
             <div><strong>TIPO DE TRASLADO:</strong> ${p.tipo_traslado}</div>
             <div><strong>UBICACIÓN INICIAL:</strong> ${data.ubicacion}</div>
             <div><strong>DIAGNÓSTICO:</strong> ${p.diagnostico}</div>
-            <div><strong>HEMORRAGIA:</strong> ${p.hemorragia ? 'SI' : 'NO'}</div>
+            <div><strong>HEMORRAGIA:</strong> ${p.hemorragia ? '<span style="color:red;font-weight:bold;">SI</span>' : 'NO'}</div>
           </div>
-          
-          <div style="background-color:#2e7d32;color:white;padding:5px 10px;font-size:16px;font-weight:bold;margin-top:20px;margin-bottom:15px;text-transform:uppercase;">Monitoreo de Signos Vitales</div>
-          <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+
+          <!-- SIGNOS VITALES -->
+          <div style="background-color:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">MONITOREO DE SIGNOS VITALES</div>
+          <table style="width:100%;border-collapse:collapse;">
             <thead>
-              <tr>
-                <th style="border:1px solid #ccc;padding:5px;">HORA</th>
-                <th style="border:1px solid #ccc;padding:5px;">PRESIÓN DIASTÓLICA</th>
-                <th style="border:1px solid #ccc;padding:5px;">PRESIÓN SISTÓLICA</th>
-                <th style="border:1px solid #ccc;padding:5px;">FREC. RESP.</th>
-                <th style="border:1px solid #ccc;padding:5px;">SpO₂</th>
-                <th style="border:1px solid #ccc;padding:5px;">FREC. CARDIACA</th>
-                <th style="border:1px solid #ccc;padding:5px;">TEMP (°C)</th>
-                <th style="border:1px solid #ccc;padding:5px;">GLASGOW</th>
+              <tr style="background:#e8f5e9;color:#2e7d32;">
+                <th style="border:1px solid #ccc;padding:8px;">HORA</th>
+                <th style="border:1px solid #ccc;padding:8px;">PRESIÓN DIASTÓLICA</th>
+                <th style="border:1px solid #ccc;padding:8px;">PRESIÓN SISTÓLICA</th>
+                <th style="border:1px solid #ccc;padding:8px;">FREC. RESP.</th>
+                <th style="border:1px solid #ccc;padding:8px;">SpO₂</th>
+                <th style="border:1px solid #ccc;padding:8px;">FREC. CARDIACA</th>
+                <th style="border:1px solid #ccc;padding:8px;">TEMP (°C)</th>
+                <th style="border:1px solid #ccc;padding:8px;">GLASGOW</th>
               </tr>
             </thead>
             <tbody>
@@ -145,10 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </tbody>
           </table>
 
-          <div style="margin-top:30px;font-size:14px;">
+          <!-- PARAMÉDICOS -->
+          <div style="margin-top:25px;font-size:14px;">
             <strong>PARAMÉDICOS:</strong><br>
             ${pars.map(p=>`• ${p.paramedicos.nombre} ${p.paramedicos.apellido}`).join('<br>')}
           </div>
+
         </div>
       </div>
     `;
@@ -158,12 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// 🔹 Descargar PDF con estilo profesional
+// 🔹 Descargar PDF con estilo FULL PROFESIONAL
 function descargarPDF(){
   html2pdf().set({
-    margin:1,
+    margin:0.5,
     filename:'Historial_Clinico_AMBULINK.pdf',
-    html2canvas:{scale:2},
+    html2canvas:{scale:3,letterRendering:true},
     jsPDF:{unit:'cm',format:'a4',orientation:'portrait'}
   }).from(document.getElementById('pdfHistorial')).save();
 }
