@@ -143,18 +143,11 @@ function resetAmbulancia1() {
    🔴 FINALIZAR MONITOREO
 ===================================================== */
 function finalizarMonitoreo() {
-  const ahora = new Date();
-
-  // ⚠️ Revisar si han pasado 5 minutos desde el último dato
-  if (!ultimoDato || (ahora - ultimoDato) >= 5 * 60 * 1000) {
-    resetAmbulancia1();
-    pacienteActualId = null;
-    monitoreoFinalizado = true;
-    alert('✅ Monitoreo finalizado. Dashboard reiniciado.');
-  } else {
-    const minutosRestantes = Math.ceil((5 * 60 * 1000 - (ahora - ultimoDato)) / 60000);
-    alert(`⏳ No puedes finalizar monitoreo todavía.\nFaltan aprox ${minutosRestantes} minuto(s) de datos recientes.`);
-  }
+  // ⚡ Solo borrar datos al presionar el botón, sin condiciones de tiempo
+  resetAmbulancia1();
+  pacienteActualId = null;
+  monitoreoFinalizado = true;
+  alert('✅ Monitoreo finalizado. Dashboard reiniciado.');
 }
 
 /* =====================================================
