@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
   const fechaActual = document.getElementById('fechaActual');
   const filtroFecha = document.getElementById('filtroFecha');
   const selectCaso = document.getElementById('selectCaso');
@@ -16,17 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const par1 = document.getElementById('par1');
   const par2 = document.getElementById('par2');
-
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
 
-  // 🔹 Contenedor invisible para PDF
-  const pdfContainer = document.createElement('div');
-  pdfContainer.id = 'pdfHistorial';
-  pdfContainer.style.display = 'none';
-  document.body.appendChild(pdfContainer);
-
-  fechaActual.innerText = new Date().toLocaleDateString('es-ES',{
-    day:'numeric',month:'long',year:'numeric'
+  fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
+    day: 'numeric', month: 'long', year: 'numeric'
   });
 
   filtroFecha.addEventListener('change', async () => {
@@ -36,12 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
     selectCaso.innerHTML = '<option>Cargando...</option>';
     tablaHistorial.innerHTML = '';
     btnPDF.style.display = 'none';
+    bloqueHemorragia.style.display = 'none';
 
     const res = await fetch(`https://ambulink.doc-ia.cloud/historial/fecha/${fecha}`);
     const casos = await res.json();
 
     selectCaso.innerHTML = '<option value="">Seleccionar caso</option>';
-    casos.forEach(c=>{
+    casos.forEach(c => {
       selectCaso.innerHTML += `<option value="${c.id_salida}">Caso ${c.id_salida}</option>`;
     });
   });
@@ -65,19 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
     pac_traslado.innerText = p.tipo_traslado;
     pac_ubicacion.innerText = data.ubicacion;
 
-    if (p.hemorragia === true) {
-      bloqueHemorragia.style.display = 'block';
-    }
+    if (p.hemorragia) bloqueHemorragia.style.display = 'block';
 
     const pars = data.salida_paramedicos || [];
-    par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
-    par2.innerText = pars[1] ? `🚑 ${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '🚑 --';
+    par1.innerText = pars[0] ? `${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '';
+    par2.innerText = pars[1] ? `${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '';
 
     const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
     const signos = await resHist.json();
 
     tablaHistorial.innerHTML = '';
-    signos.forEach(s=>{
+    signos.forEach(s => {
       tablaHistorial.innerHTML += `
         <tr>
           <td class="date">${new Date(s.fecha).toLocaleString()}</td>
@@ -88,88 +79,100 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${s.temperatura ?? '--'}</td>
           <td>${s.frecuencia_cardiaca ?? '--'}</td>
           <td>${s.escala_glasgow ?? '--'}</td>
-        </tr>
-      `;
+        </tr>`;
     });
 
-    // 🔹 Preparar PDF con estilo FULL PROFESIONAL
-    pdfContainer.innerHTML = `
-      <div style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
-        <div style="background:white;width:800px;margin:0 auto;padding:40px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
-          
-          <!-- HEADER -->
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #2e7d32;padding-bottom:10px;margin-bottom:20px;">
-            <h1 style="color:#2e7d32;font-size:28px;font-weight:bold;margin:0;">AMBULINK</h1>
-            <div style="text-align:right;font-size:14px;">
-              <div><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</div>
-              <div><strong>CASO:</strong> ${id}</div>
-            </div>
-          </div>
-
-          <!-- INFO PACIENTE -->
-          <div style="background-color:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">INFORMACIÓN DEL PACIENTE</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-            <div><strong>NOMBRE:</strong> ${p.nombre}</div>
-            <div><strong>EDAD:</strong> ${p.edad}</div>
-            <div><strong>SEXO:</strong> ${p.sexo}</div>
-            <div><strong>TIPO DE SANGRE:</strong> ${p.tipo_sangre}</div>
-            <div><strong>TIPO DE TRASLADO:</strong> ${p.tipo_traslado}</div>
-            <div><strong>UBICACIÓN INICIAL:</strong> ${data.ubicacion}</div>
-            <div><strong>DIAGNÓSTICO:</strong> ${p.diagnostico}</div>
-            <div><strong>HEMORRAGIA:</strong> ${p.hemorragia ? '<span style="color:red;font-weight:bold;">SI</span>' : 'NO'}</div>
-          </div>
-
-          <!-- SIGNOS VITALES -->
-          <div style="background-color:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">MONITOREO DE SIGNOS VITALES</div>
-          <table style="width:100%;border-collapse:collapse;">
-            <thead>
-              <tr style="background:#e8f5e9;color:#2e7d32;">
-                <th style="border:1px solid #ccc;padding:8px;">HORA</th>
-                <th style="border:1px solid #ccc;padding:8px;">PRESIÓN DIASTÓLICA</th>
-                <th style="border:1px solid #ccc;padding:8px;">PRESIÓN SISTÓLICA</th>
-                <th style="border:1px solid #ccc;padding:8px;">FREC. RESP.</th>
-                <th style="border:1px solid #ccc;padding:8px;">SpO₂</th>
-                <th style="border:1px solid #ccc;padding:8px;">FREC. CARDIACA</th>
-                <th style="border:1px solid #ccc;padding:8px;">TEMP (°C)</th>
-                <th style="border:1px solid #ccc;padding:8px;">GLASGOW</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${signos.map(s=>`
-                <tr>
-                  <td>${new Date(s.fecha).toLocaleString()}</td>
-                  <td>${s.presion_diastolica ?? '--'}</td>
-                  <td>${s.presion_sistolica ?? '--'}</td>
-                  <td>${s.frecuencia_respiratoria ?? '--'}</td>
-                  <td>${s.spo2 ?? '--'}</td>
-                  <td>${s.temperatura ?? '--'}</td>
-                  <td>${s.frecuencia_cardiaca ?? '--'}</td>
-                  <td>${s.escala_glasgow ?? '--'}</td>
-                </tr>`).join('')}
-            </tbody>
-          </table>
-
-          <!-- PARAMÉDICOS -->
-          <div style="margin-top:25px;font-size:14px;">
-            <strong>PARAMÉDICOS:</strong><br>
-            ${pars.map(p=>`• ${p.paramedicos.nombre} ${p.paramedicos.apellido}`).join('<br>')}
-          </div>
-
-        </div>
-      </div>
-    `;
-
     btnPDF.style.display = 'block';
+    btnPDF.onclick = () => generarPDF(p, signos, pars, id);
   });
-
 });
 
-// 🔹 Descargar PDF con estilo FULL PROFESIONAL
-function descargarPDF(){
-  html2pdf().set({
-    margin:0.5,
-    filename:'Historial_Clinico_AMBULINK.pdf',
-    html2canvas:{scale:3,letterRendering:true},
-    jsPDF:{unit:'cm',format:'a4',orientation:'portrait'}
-  }).from(document.getElementById('pdfHistorial')).save();
+// --- Función para generar PDF ---
+function generarPDF(p, signos, pars, id) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // --- Título ---
+  doc.setFontSize(26);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(200, 0, 0);
+  doc.text("AMBULINK", 15, 20);
+
+  // --- Fecha y caso debajo ---
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(33, 33, 33);
+  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 28);
+  doc.text(`Caso: ${id}`, 15, 36);
+
+  // --- Paramédicos alineados a la derecha con subrayado ---
+  doc.setFont('helvetica', 'bold');
+  doc.text("Paramédicos:", 150, 28, { align: 'right' });
+  doc.setLineWidth(0.5);
+  doc.line(150, 30, 190, 30); // subrayado del título
+  doc.setFont('helvetica', 'normal');
+  pars.forEach((par, i) => {
+    doc.text(`${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
+  });
+
+  // --- Título centrado y subrayado: Información del paciente ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  const infoTitle = "INFORMACIÓN DEL PACIENTE";
+  const infoWidth = doc.getTextWidth(infoTitle);
+  doc.text(infoTitle, 105 - infoWidth / 2, 55);
+  doc.setLineWidth(0.5);
+  doc.line(105 - infoWidth / 2, 57, 105 + infoWidth / 2, 57);
+
+  // Datos del paciente alineados profesionalmente (rectos, tipo columnas)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  const col1X = 16;
+  const col2X = 100;
+  let startY = 63;
+  const lineHeight = 7;
+
+  doc.text(`Nombre: ${p.nombre}`, col1X, startY);
+  doc.text(`Edad: ${p.edad}`, col1X, startY + lineHeight);
+  doc.text(`Sexo: ${p.sexo}`, col1X, startY + lineHeight * 2);
+
+  doc.text(`Tipo de Sangre: ${p.tipo_sangre}`, col2X, startY);
+  doc.text(`Tipo de Traslado: ${p.tipo_traslado}`, col2X, startY + lineHeight);
+  doc.text(`Ubicación: ${p.ubicacion}`, col2X, startY + lineHeight * 2);
+  doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, col2X, startY + lineHeight * 3);
+
+  // --- Título de la tabla centrado y subrayado ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  const tablaTitle = "TABLA DE SIGNOS VITALES";
+  const tablaWidth = doc.getTextWidth(tablaTitle);
+  doc.text(tablaTitle, 105 - tablaWidth / 2, 95);
+  doc.setLineWidth(0.5);
+  doc.line(105 - tablaWidth / 2, 97, 105 + tablaWidth / 2, 97);
+
+  // --- Tabla de signos vitales ---
+  const rows = signos.map(s => [
+    new Date(s.fecha).toLocaleString(),
+    s.presion_diastolica ? `${s.presion_diastolica} mmHg` : '--',
+    s.presion_sistolica ? `${s.presion_sistolica} mmHg` : '--',
+    s.frecuencia_respiratoria ? `${s.frecuencia_respiratoria} rpm` : '--',
+    s.spo2 ? `${s.spo2} %` : '--',
+    s.temperatura ? `${s.temperatura} °C` : '--',
+    s.frecuencia_cardiaca ? `${s.frecuencia_cardiaca} lpm` : '--',
+    s.escala_glasgow ?? '--'
+  ]);
+
+  doc.autoTable({
+    head: [['Hora','Presión Diastólica (mmHg)','Presión Sistólica (mmHg)','Frecuencia Respiratoria (rpm)','Saturación de Oxígeno (%)','Temperatura (°C)','Frecuencia Cardiaca (lpm)','Glasgow']],
+    body: rows,
+    startY: 100,
+    theme: 'striped',
+    headStyles: { fillColor: [200, 0, 0], textColor: 255, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [255, 245, 245] },
+    margin: { left: 15, right: 15 },
+    styles: { fontSize: 10 }
+  });
+
+  // --- Guardar PDF ---
+  doc.save(`Historial_Clinico_AMBULINK_Caso${id}.pdf`);
 }
