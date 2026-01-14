@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (p.hemorragia) bloqueHemorragia.style.display = 'block';
 
     const pars = data.salida_paramedicos || [];
-    par1.innerText = pars[0] ? `${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '--';
-    par2.innerText = pars[1] ? `${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '--';
+    par1.innerText = pars[0] ? `${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '';
+    par2.innerText = pars[1] ? `${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '';
 
     const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
     const signos = await resHist.json();
@@ -82,15 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>`;
     });
 
-    // Mostrar botón PDF
     btnPDF.style.display = 'block';
-
-    // Asignar acción del PDF
     btnPDF.onclick = () => generarPDF(p, signos, pars, id);
   });
 });
 
-// --- Función para generar PDF con estilo profesional ---
+// --- Función para generar PDF ---
 function generarPDF(p, signos, pars, id) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -98,34 +95,39 @@ function generarPDF(p, signos, pars, id) {
   // --- Título ---
   doc.setFontSize(26);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(200, 0, 0); // Rojo
+  doc.setTextColor(200, 0, 0);
   doc.text("AMBULINK", 15, 20);
 
-  // --- Fecha y Caso debajo ---
+  // --- Fecha y caso ---
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(33, 33, 33); // Gris oscuro
+  doc.setTextColor(33, 33, 33);
   doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 28);
   doc.text(`Caso: ${id}`, 15, 36);
 
-  // --- Paramédicos esquina superior derecha (sin emojis) ---
+  // --- Paramédicos alineados a la derecha ---
   doc.setFont('helvetica', 'bold');
-  doc.text(`Paramédicos:`, 150, 28, { align: 'right' });
+  doc.text("Paramédicos:", 150, 28, { align: 'right' });
   doc.setFont('helvetica', 'normal');
   pars.forEach((par, i) => {
-    doc.text(`• ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
+    doc.text(`${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
   });
 
-  // --- Cuadro de datos del paciente ---
-  doc.setDrawColor(200, 0, 0); // Borde rojo
-  doc.setFillColor(255, 255, 255); // Fondo blanco
-  doc.rect(14, 45, 180, 65, 'FD'); // F=fill, D=draw (borde rojo)
+  // --- Cuadro de información del paciente ---
+  doc.setDrawColor(200, 0, 0); // borde rojo
+  doc.setFillColor(255, 255, 255); // fondo blanco
+  doc.rect(14, 45, 180, 65, 'FD');
 
-  doc.setTextColor(33, 33, 33); // Gris oscuro
+  // Título centrado y subrayado
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
-  doc.text("INFORMACIÓN DEL PACIENTE", 16, 55);
+  const infoTitle = "INFORMACIÓN DEL PACIENTE";
+  const infoWidth = doc.getTextWidth(infoTitle);
+  doc.text(infoTitle, 105 - infoWidth / 2, 55);
+  doc.setLineWidth(0.5);
+  doc.line(105 - infoWidth / 2, 57, 105 + infoWidth / 2, 57);
 
+  // Datos del paciente
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(11);
   doc.text(`Nombre: ${p.nombre}`, 16, 63);
@@ -136,12 +138,16 @@ function generarPDF(p, signos, pars, id) {
   doc.text(`Ubicación: ${p.ubicacion}`, 100, 77);
   doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, 100, 84);
 
-  // --- Título de la tabla ---
+  // --- Título de la tabla centrado y subrayado ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
-  doc.text("TABLA DE SIGNOS VITALES", 15, 95);
+  const tablaTitle = "TABLA DE SIGNOS VITALES";
+  const tablaWidth = doc.getTextWidth(tablaTitle);
+  doc.text(tablaTitle, 105 - tablaWidth / 2, 95);
+  doc.setLineWidth(0.5);
+  doc.line(105 - tablaWidth / 2, 97, 105 + tablaWidth / 2, 97);
 
-  // --- Tabla de signos vitales con unidades ---
+  // --- Tabla de signos vitales ---
   const rows = signos.map(s => [
     new Date(s.fecha).toLocaleString(),
     s.presion_diastolica ? `${s.presion_diastolica} mmHg` : '--',
