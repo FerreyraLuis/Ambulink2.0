@@ -17,10 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const par2 = document.getElementById('par2');
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
 
+  // Mostrar la fecha actual
   fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
     day: 'numeric', month: 'long', year: 'numeric'
   });
 
+  // Filtrar por fecha
   filtroFecha.addEventListener('change', async () => {
     const fecha = filtroFecha.value;
     if (!fecha) return;
@@ -30,15 +32,20 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPDF.style.display = 'none';
     bloqueHemorragia.style.display = 'none';
 
-    const res = await fetch(`https://ambulink.doc-ia.cloud/historial/fecha/${fecha}`);
-    const casos = await res.json();
+    try {
+      const res = await fetch(`https://ambulink.doc-ia.cloud/historial/fecha/${fecha}`);
+      const casos = await res.json();
 
-    selectCaso.innerHTML = '<option value="">Seleccionar caso</option>';
-    casos.forEach(c => {
-      selectCaso.innerHTML += `<option value="${c.id_salida}">Caso ${c.id_salida}</option>`;
-    });
+      selectCaso.innerHTML = '<option value="">Seleccionar caso</option>';
+      casos.forEach(c => {
+        selectCaso.innerHTML += `<option value="${c.id_salida}">Caso ${c.id_salida}</option>`;
+      });
+    } catch (error) {
+      console.error("Error al cargar casos:", error);
+    }
   });
 
+  // Seleccionar caso
   selectCaso.addEventListener('change', async () => {
     const id = selectCaso.value;
     if (!id) return;
@@ -47,60 +54,64 @@ document.addEventListener('DOMContentLoaded', () => {
     tablaHistorial.innerHTML = '';
     bloqueHemorragia.style.display = 'none';
 
-    const resCaso = await fetch(`https://ambulink.doc-ia.cloud/salidas/${id}`);
-    const data = await resCaso.json();
-    const p = data.paciente;
+    try {
+      const resCaso = await fetch(`https://ambulink.doc-ia.cloud/salidas/${id}`);
+      const data = await resCaso.json();
+      const p = data.paciente;
 
-    pac_nombre.innerText = p.nombre;
-    pac_edad.innerText = `${p.edad} años`;
-    pac_sexo.innerText = p.sexo;
-    pac_sangre.innerText = p.tipo_sangre;
-    pac_traslado.innerText = p.tipo_traslado;
-    pac_ubicacion.innerText = data.ubicacion;
+      // Datos paciente
+      pac_nombre.innerText = p.nombre;
+      pac_edad.innerText = `${p.edad} años`;
+      pac_sexo.innerText = p.sexo;
+      pac_sangre.innerText = p.tipo_sangre;
+      pac_traslado.innerText = p.tipo_traslado;
+      pac_ubicacion.innerText = data.ubicacion;
 
-    if (p.hemorragia) bloqueHemorragia.style.display = 'block';
+      if (p.hemorragia) bloqueHemorragia.style.display = 'block';
 
-    const pars = data.salida_paramedicos || [];
-    par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
-    par2.innerText = pars[1] ? `🚑 ${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '🚑 --';
+      // Paramédicos
+      const pars = data.salida_paramedicos || [];
+      par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
+      par2.innerText = pars[1] ? `🚑 ${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '🚑 --';
 
-    const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
-    const signos = await resHist.json();
+      // Signos vitales
+      const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
+      const signos = await resHist.json();
 
-    tablaHistorial.innerHTML = '';
-    signos.forEach(s => {
-      tablaHistorial.innerHTML += `
-        <tr>
-          <td class="date">${new Date(s.fecha).toLocaleString()}</td>
-          <td>${s.presion_diastolica ?? '--'}</td>
-          <td>${s.presion_sistolica ?? '--'}</td>
-          <td>${s.frecuencia_respiratoria ?? '--'}</td>
-          <td>${s.spo2 ?? '--'}</td>
-          <td>${s.temperatura ?? '--'}</td>
-          <td>${s.frecuencia_cardiaca ?? '--'}</td>
-          <td>${s.escala_glasgow ?? '--'}</td>
-        </tr>`;
-    });
+      tablaHistorial.innerHTML = '';
+      signos.forEach(s => {
+        tablaHistorial.innerHTML += `
+          <tr>
+            <td class="date">${new Date(s.fecha).toLocaleString()}</td>
+            <td>${s.presion_diastolica ?? '--'}</td>
+            <td>${s.presion_sistolica ?? '--'}</td>
+            <td>${s.frecuencia_respiratoria ?? '--'}</td>
+            <td>${s.spo2 ?? '--'}</td>
+            <td>${s.temperatura ?? '--'}</td>
+            <td>${s.frecuencia_cardiaca ?? '--'}</td>
+            <td>${s.escala_glasgow ?? '--'}</td>
+          </tr>`;
+      });
 
-    // Mostrar botón PDF
-    btnPDF.style.display = 'block';
+      // Mostrar botón PDF
+      btnPDF.style.display = 'block';
+      btnPDF.onclick = () => generarPDF(p, signos, pars, id);
 
-    // Asignar acción del PDF
-    btnPDF.onclick = () => generarPDF(p, signos, pars, id);
+    } catch (error) {
+      console.error("Error al cargar datos del caso:", error);
+    }
   });
 });
 
-// Función para generar PDF con estilo profesional
+// Función para generar PDF profesional
 function generarPDF(p, signos, pars, id) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
+  const doc = new window.jspdf.jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Título principal
   doc.setFont("helvetica", "bold");
   doc.setFontSize(24);
-  doc.setTextColor(227, 6, 19); // color rojo Ambulink
+  doc.setTextColor(227, 6, 19);
   doc.text("AMBULINK", pageWidth / 2, 20, { align: "center" });
 
   // Fecha y caso
@@ -112,28 +123,29 @@ function generarPDF(p, signos, pars, id) {
 
   // Sección Información del Paciente
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(46, 125, 50); // verde título
+  doc.setTextColor(46, 125, 50);
   doc.setFontSize(16);
   doc.text("INFORMACIÓN DEL PACIENTE", 15, 45);
 
   doc.setFontSize(12);
   doc.setTextColor(0,0,0);
-  doc.setFont("helvetica", "bold");
-  doc.text("Nombre:", 15, 55); doc.setFont("helvetica", "normal"); doc.text(p.nombre, 50, 55);
-  doc.setFont("helvetica", "bold");
-  doc.text("Edad:", 15, 62); doc.setFont("helvetica", "normal"); doc.text(`${p.edad} años`, 50, 62);
-  doc.setFont("helvetica", "bold");
-  doc.text("Sexo:", 15, 69); doc.setFont("helvetica", "normal"); doc.text(p.sexo, 50, 69);
-  doc.setFont("helvetica", "bold");
-  doc.text("Tipo de Sangre:", 15, 76); doc.setFont("helvetica", "normal"); doc.text(p.tipo_sangre, 50, 76);
-  doc.setFont("helvetica", "bold");
-  doc.text("Tipo de Traslado:", 15, 83); doc.setFont("helvetica", "normal"); doc.text(p.tipo_traslado, 50, 83);
-  doc.setFont("helvetica", "bold");
-  doc.text("Ubicación:", 15, 90); doc.setFont("helvetica", "normal"); doc.text(p.ubicacion, 50, 90);
-  doc.setFont("helvetica", "bold");
-  doc.text("Hemorragia:", 15, 97); doc.setFont("helvetica", "normal"); doc.text(p.hemorragia ? "SÍ" : "NO", 50, 97);
+  const info = [
+    ["Nombre:", p.nombre],
+    ["Edad:", `${p.edad} años`],
+    ["Sexo:", p.sexo],
+    ["Tipo de Sangre:", p.tipo_sangre],
+    ["Tipo de Traslado:", p.tipo_traslado],
+    ["Ubicación:", p.ubicacion],
+    ["Hemorragia:", p.hemorragia ? "SÍ" : "NO"]
+  ];
+  let yPos = 55;
+  info.forEach(([label, value]) => {
+    doc.setFont("helvetica", "bold"); doc.text(label, 15, yPos);
+    doc.setFont("helvetica", "normal"); doc.text(value, 50, yPos);
+    yPos += 7;
+  });
 
-  // Tabla signos vitales
+  // Tabla de signos vitales
   const rows = signos.map(s => [
     new Date(s.fecha).toLocaleString(),
     s.presion_diastolica ?? '--',
@@ -157,7 +169,7 @@ function generarPDF(p, signos, pars, id) {
       { content: 'Glasgow', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
     ]],
     body: rows,
-    startY: 110,
+    startY: yPos + 3,
     theme: 'grid',
     headStyles: { fillColor: [240,240,240], textColor: [227,6,19], fontStyle: 'bold' },
     styles: { fontSize: 10, cellPadding: 2 },
@@ -176,4 +188,3 @@ function generarPDF(p, signos, pars, id) {
   // Guardar PDF
   doc.save(`Historial_Clinico_AMBULINK_Caso${id}.pdf`);
 }
-  
