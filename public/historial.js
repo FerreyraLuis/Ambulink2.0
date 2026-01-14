@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
   const fechaActual = document.getElementById('fechaActual');
   const filtroFecha = document.getElementById('filtroFecha');
   const selectCaso = document.getElementById('selectCaso');
@@ -16,24 +15,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const par1 = document.getElementById('par1');
   const par2 = document.getElementById('par2');
-
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
 
-  // 🔹 Contenedor invisible para PDF
+  // 🔹 Contenedor invisible para PDF (fuera de pantalla)
   let pdfContainer = document.getElementById('pdfDownload');
   if (!pdfContainer) {
     pdfContainer = document.createElement('div');
     pdfContainer.id = 'pdfDownload';
     pdfContainer.style.position = 'absolute';
-    pdfContainer.style.left = '0';
-    pdfContainer.style.top = '0';
-    pdfContainer.style.opacity = '0';
-    pdfContainer.style.pointerEvents = 'none';
+    pdfContainer.style.left = '-9999px'; // fuera de pantalla
     document.body.appendChild(pdfContainer);
   }
 
-  fechaActual.innerText = new Date().toLocaleDateString('es-ES',{
-    day:'numeric',month:'long',year:'numeric'
+  fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
+    day: 'numeric', month: 'long', year: 'numeric'
   });
 
   filtroFecha.addEventListener('change', async () => {
@@ -49,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const casos = await res.json();
 
     selectCaso.innerHTML = '<option value="">Seleccionar caso</option>';
-    casos.forEach(c=>{
+    casos.forEach(c => {
       selectCaso.innerHTML += `<option value="${c.id_salida}">Caso ${c.id_salida}</option>`;
     });
   });
@@ -85,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const signos = await resHist.json();
 
     tablaHistorial.innerHTML = '';
-    signos.forEach(s=>{
+    signos.forEach(s => {
       tablaHistorial.innerHTML += `
         <tr>
           <td class="date">${new Date(s.fecha).toLocaleString()}</td>
@@ -96,11 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${s.temperatura ?? '--'}</td>
           <td>${s.frecuencia_cardiaca ?? '--'}</td>
           <td>${s.escala_glasgow ?? '--'}</td>
-        </tr>
-      `;
+        </tr>`;
     });
 
-    // 🔹 Contenido profesional para PDF
+    // 🔹 Construir contenido PDF
     pdfContainer.innerHTML = `
       <div style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
         <div style="background:white;width:800px;margin:0 auto;padding:40px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
@@ -111,18 +105,18 @@ document.addEventListener('DOMContentLoaded', () => {
               <div><strong>CASO:</strong> ${id}</div>
             </div>
           </div>
-          <div style="background-color:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">INFORMACIÓN DEL PACIENTE</div>
+          <div style="background:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">INFORMACIÓN DEL PACIENTE</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
             <div><strong>NOMBRE:</strong> ${p.nombre}</div>
             <div><strong>EDAD:</strong> ${p.edad}</div>
             <div><strong>SEXO:</strong> ${p.sexo}</div>
             <div><strong>TIPO DE SANGRE:</strong> ${p.tipo_sangre}</div>
             <div><strong>TIPO DE TRASLADO:</strong> ${p.tipo_traslado}</div>
-            <div><strong>UBICACIÓN INICIAL:</strong> ${data.ubicacion}</div>
+            <div><strong>UBICACIÓN:</strong> ${data.ubicacion}</div>
             <div><strong>DIAGNÓSTICO:</strong> ${p.diagnostico ?? '--'}</div>
-            <div><strong>HEMORRAGIA:</strong> ${p.hemorragia ? '<span style="color:red;font-weight:bold;">SI</span>' : 'NO'}</div>
+            <div><strong>HEMORRAGIA:</strong> ${p.hemorragia ? 'SI' : 'NO'}</div>
           </div>
-          <div style="background-color:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">MONITOREO DE SIGNOS VITALES</div>
+          <div style="background:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">MONITOREO DE SIGNOS VITALES</div>
           <table style="width:100%;border-collapse:collapse;">
             <thead>
               <tr style="background:#e8f5e9;color:#2e7d32;">
@@ -137,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </tr>
             </thead>
             <tbody>
-              ${signos.map(s=>`
+              ${signos.map(s => `
                 <tr>
                   <td>${new Date(s.fecha).toLocaleString()}</td>
                   <td>${s.presion_diastolica ?? '--'}</td>
@@ -152,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </table>
           <div style="margin-top:25px;font-size:14px;">
             <strong>PARAMÉDICOS:</strong><br>
-            ${pars.map(p=>`• ${p.paramedicos.nombre} ${p.paramedicos.apellido}`).join('<br>')}
+            ${pars.map(p => `• ${p.paramedicos.nombre} ${p.paramedicos.apellido}`).join('<br>')}
           </div>
         </div>
       </div>
@@ -160,14 +154,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnPDF.style.display = 'block';
   });
-
 });
 
-function descargarPDF(){
-  html2pdf().set({
-    margin:0.5,
-    filename:'Historial_Clinico_AMBULINK.pdf',
-    html2canvas:{scale:3,letterRendering:true},
-    jsPDF:{unit:'cm',format:'a4',orientation:'portrait'}
-  }).from(document.getElementById('pdfDownload')).save();
+async function descargarPDF() {
+  const element = document.getElementById('pdfDownload');
+  // 🔹 esperar a que html2canvas renderice
+  await html2pdf().set({
+    margin: 0.5,
+    filename: 'Historial_Clinico_AMBULINK.pdf',
+    html2canvas: { scale: 3, letterRendering: true },
+    jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+  }).from(element).save();
 }
