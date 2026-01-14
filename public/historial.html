@@ -21,7 +21,7 @@ body{margin:0;background:#eaeaea}
 .brand{color:#e10600;font-size:30px;font-weight:800}
 .badge{background:#e10600;color:white;padding:6px 14px;border-radius:14px;font-size:13px;width:fit-content}
 
-.card{background:#004aad;color:white;border-radius:18px;padding:18px}
+.card{background:#004aad;color:white;border-radius:18px;padding:18px;margin-bottom:12px}
 .card h3{margin:0 0 10px;font-size:18px}
 
 /* 🔴 ALERTA HEMORRAGIA */
@@ -38,9 +38,20 @@ body{margin:0;background:#eaeaea}
 
 .table-container{margin-top:25px;flex:1;overflow:auto}
 table{width:100%;border-spacing:12px}
-th{background:#004aad;color:white;padding:14px;border-radius:14px}
+th{background:#004aad;color:white;padding:14px;border-radius:14px;font-weight:bold}
 td{background:white;border:2px solid #4f7cff;border-radius:14px;padding:14px;text-align:center}
 td.date{text-align:left}
+
+#btnPDF{
+  background:#e10600;
+  color:white;
+  border:none;
+  border-radius:12px;
+  padding:8px 16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+#btnPDF:hover{background:#b3050f}
 </style>
 </head>
 
@@ -62,7 +73,7 @@ td.date{text-align:left}
     <div class="brand">AMBULINK</div>
     <div class="badge" id="fechaActual"></div>
 
-    <input type="date" id="filtroFecha" style="margin-top:8px;padding:6px;border-radius:12px">
+    <input type="date" id="filtroFecha" style="margin-top:8px;padding:6px;border-radius:12px;width:100%">
     <select id="selectCaso" style="margin-top:6px;padding:6px;border-radius:12px;width:100%">
       <option value="">Seleccionar caso</option>
     </select>
