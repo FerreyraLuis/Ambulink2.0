@@ -41,13 +41,6 @@ table{width:100%;border-spacing:12px}
 th{background:#004aad;color:white;padding:14px;border-radius:14px}
 td{background:white;border:2px solid #4f7cff;border-radius:14px;padding:14px;text-align:center}
 td.date{text-align:left}
-
-/* PDF */
-@media print{
-  body{background:white}
-  .sidebar,button,input,select{display:none!important}
-  .alert-hemorragia{display:block!important}
-}
 </style>
 </head>
 
@@ -61,7 +54,8 @@ td.date{text-align:left}
   <button onclick="location.href='ambulancia.html'">VOLVER</button>
 </div>
 
-<div class="main" id="pdfHistorial">
+<!-- ❌ YA NO TIENE ID -->
+<div class="main">
 
 <div class="top-header">
 
@@ -90,7 +84,6 @@ td.date{text-align:left}
     <p><b>Tipo de Traslado:</b> <span id="pac_traslado">--</span></p>
     <p><b>Ubicación:</b> <span id="pac_ubicacion">--</span></p>
 
-    <!-- 🔴 HEMORRAGIA -->
     <div id="bloqueHemorragia" class="alert-hemorragia">
       ⚠ HEMORRAGIA REGISTRADA
     </div>
@@ -124,6 +117,19 @@ td.date{text-align:left}
 
 </div>
 </div>
+</div>
+
+<!-- ✅ CONTENEDOR EXCLUSIVO PARA PDF -->
+<div id="pdfDownload"
+     style="
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 210mm;
+       background: white;
+       padding: 20px;
+       display: none;
+     ">
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>

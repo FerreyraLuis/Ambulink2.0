@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+
   const fechaActual = document.getElementById('fechaActual');
   const filtroFecha = document.getElementById('filtroFecha');
   const selectCaso = document.getElementById('selectCaso');
@@ -16,9 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const par1 = document.getElementById('par1');
   const par2 = document.getElementById('par2');
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
+  const pdfContainer = document.getElementById('pdfDownload');
 
-  fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
-    day: 'numeric', month: 'long', year: 'numeric'
+  fechaActual.innerText = new Date().toLocaleDateString('es-ES',{
+    day:'numeric',month:'long',year:'numeric'
   });
 
   filtroFecha.addEventListener('change', async () => {
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const casos = await res.json();
 
     selectCaso.innerHTML = '<option value="">Seleccionar caso</option>';
-    casos.forEach(c => {
+    casos.forEach(c=>{
       selectCaso.innerHTML += `<option value="${c.id_salida}">Caso ${c.id_salida}</option>`;
     });
   });
@@ -58,9 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pac_traslado.innerText = p.tipo_traslado;
     pac_ubicacion.innerText = data.ubicacion;
 
-    if (p.hemorragia === true) {
-      bloqueHemorragia.style.display = 'block';
-    }
+    if (p.hemorragia) bloqueHemorragia.style.display = 'block';
 
     const pars = data.salida_paramedicos || [];
     par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
@@ -69,11 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
     const signos = await resHist.json();
 
-    tablaHistorial.innerHTML = '';
-    signos.forEach(s => {
+    signos.forEach(s=>{
       tablaHistorial.innerHTML += `
         <tr>
-          <td>${new Date(s.fecha).toLocaleString()}</td>
+          <td class="date">${new Date(s.fecha).toLocaleString()}</td>
           <td>${s.presion_diastolica ?? '--'}</td>
           <td>${s.presion_sistolica ?? '--'}</td>
           <td>${s.frecuencia_respiratoria ?? '--'}</td>
@@ -84,68 +83,34 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>`;
     });
 
+    pdfContainer.innerHTML = `
+      <div style="font-family:Arial;padding:30px">
+        <h1 style="color:#2e7d32">AMBULINK</h1>
+        <p><b>Fecha:</b> ${new Date().toLocaleDateString()}</p>
+        <p><b>Caso:</b> ${id}</p>
+        <hr>
+        <p><b>Paciente:</b> ${p.nombre}</p>
+        <p><b>Edad:</b> ${p.edad}</p>
+        <p><b>Sexo:</b> ${p.sexo}</p>
+        <p><b>Sangre:</b> ${p.tipo_sangre}</p>
+        <p><b>Ubicación:</b> ${data.ubicacion}</p>
+      </div>
+    `;
+
     btnPDF.style.display = 'block';
   });
 });
 
+function descargarPDF(){
+  const element = document.getElementById('pdfDownload');
+  element.style.display = 'block';
 
-// =====================
-// ✅ PDF FUNCIONAL REAL
-// =====================
-function descargarPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'mm', 'a4');
-
-  let y = 15;
-
-  doc.setFontSize(18);
-  doc.text('AMBULINK - HISTORIAL CLÍNICO', 105, y, { align: 'center' });
-  y += 10;
-
-  doc.setFontSize(11);
-  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, y);
-  y += 8;
-
-  doc.text(`Paciente: ${pac_nombre.innerText}`, 15, y); y += 6;
-  doc.text(`Edad: ${pac_edad.innerText}`, 15, y); y += 6;
-  doc.text(`Sexo: ${pac_sexo.innerText}`, 15, y); y += 6;
-  doc.text(`Tipo de sangre: ${pac_sangre.innerText}`, 15, y); y += 6;
-  doc.text(`Traslado: ${pac_traslado.innerText}`, 15, y); y += 6;
-  doc.text(`Ubicación: ${pac_ubicacion.innerText}`, 15, y); y += 10;
-
-  doc.setFontSize(13);
-  doc.text('Signos Vitales', 15, y);
-  y += 6;
-
-  doc.setFontSize(9);
-  doc.text('Fecha | PA Dia | PA Sis | FR | SpO₂ | Temp | FC | Glasgow', 15, y);
-  y += 5;
-
-  const filas = document.querySelectorAll('#tablaHistorial tr');
-
-  filas.forEach(fila => {
-    const cols = fila.querySelectorAll('td');
-    if (!cols.length) return;
-
-    const linea = [
-      cols[0].innerText,
-      cols[1].innerText,
-      cols[2].innerText,
-      cols[3].innerText,
-      cols[4].innerText,
-      cols[5].innerText,
-      cols[6].innerText,
-      cols[7].innerText
-    ].join(' | ');
-
-    if (y > 280) {
-      doc.addPage();
-      y = 15;
-    }
-
-    doc.text(linea, 15, y);
-    y += 5;
+  html2pdf().set({
+    margin:1,
+    filename:'Historial_Clinico_AMBULINK.pdf',
+    html2canvas:{scale:2},
+    jsPDF:{unit:'cm',format:'a4',orientation:'portrait'}
+  }).from(element).save().then(()=>{
+    element.style.display = 'none';
   });
-
-  doc.save('Historial_Clinico_AMBULINK.pdf');
 }
