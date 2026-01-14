@@ -17,16 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const par2 = document.getElementById('par2');
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
 
-  // Contenedor oculto para PDF
-  let pdfContainer = document.getElementById('pdfDownload');
-  if (!pdfContainer) {
-    pdfContainer = document.createElement('div');
-    pdfContainer.id = 'pdfDownload';
-    pdfContainer.style.position = 'absolute';
-    pdfContainer.style.left = '-9999px';
-    document.body.appendChild(pdfContainer);
-  }
-
   fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
     day: 'numeric', month: 'long', year: 'numeric'
   });
@@ -71,8 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (p.hemorragia) bloqueHemorragia.style.display = 'block';
 
     const pars = data.salida_paramedicos || [];
-    par1.innerText = pars[0] ? `👨‍✈️ ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
-    par2.innerText = pars[1] ? `🧰 ${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '🚑 --';
+    par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
+    par2.innerText = pars[1] ? `🚑 ${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '🚑 --';
 
     const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
     const signos = await resHist.json();
@@ -92,99 +82,98 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>`;
     });
 
+    // Mostrar botón PDF
     btnPDF.style.display = 'block';
-    btnPDF.onclick = () => descargarPDFMediaKit(p, signos, pars, id);
+
+    // Asignar acción del PDF
+    btnPDF.onclick = () => generarPDF(p, signos, pars, id);
   });
 });
 
-// PDF Media Kit usando html2canvas + jsPDF
-async function descargarPDFMediaKit(p, signos, pars, id) {
+// Función para generar PDF con estilo profesional
+function generarPDF(p, signos, pars, id) {
   const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
-  // Construir HTML para PDF
-  const html = `
-    <div style="
-      font-family: 'Open Sans', sans-serif;
-      width:850px;
-      padding:50px;
-      background:white;
-      border-top:8px solid #E30613;
-    ">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:40px;border-bottom:2px solid #000;padding-bottom:10px;">
-        <div style="color:#E30613;font-size:38px;font-weight:800;">AMBULINK</div>
-        <div style="text-align:right;font-size:14px;font-weight:700;line-height:1.6;">
-          FECHA: ${new Date().toLocaleDateString()}<br>
-          CASO: ${id}
-        </div>
-      </div>
+  const pageWidth = doc.internal.pageSize.getWidth();
 
-      <div style="font-weight:800;font-size:16px;margin-top:30px;margin-bottom:15px;text-transform:uppercase;">Información del Paciente</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 40px;margin-bottom:30px;">
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">NOMBRE:</span>${p.nombre}</div>
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">EDAD:</span>${p.edad}</div>
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">SEXO:</span>${p.sexo}</div>
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">TIPO DE SANGRE:</span>${p.tipo_sangre}</div>
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">UBICACIÓN INICIAL:</span>${p.ubicacion}</div>
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">TIPO DE TRASLADO:</span style="color:#E30613;font-weight:800">${p.tipo_traslado}</div>
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">DIAGNÓSTICO:</span>${p.diagnostico ?? '--'}</div>
-        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e0e0e0;padding:5px 0;font-size:14px;"><span style="font-weight:700">HEMORRAGIA:</span>${p.hemorragia ? 'SÍ' : 'NO'}</div>
-      </div>
+  // Título principal
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(24);
+  doc.setTextColor(227, 6, 19); // color rojo Ambulink
+  doc.text("AMBULINK", pageWidth / 2, 20, { align: "center" });
 
-      <div style="font-weight:800;font-size:16px;margin-top:30px;margin-bottom:15px;text-transform:uppercase;">Monitoreo de Signos Vitales</div>
-      <table style="width:100%;border-collapse:collapse;margin-top:10px;">
-        <thead>
-          <tr>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">HORA</th>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">PRESIÓN DIASTÓLICA</th>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">PRESIÓN SISTÓLICA</th>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">FREC. RESP.</th>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">SpO₂</th>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">FREC. CARDIACA</th>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">TEMP. (°C)</th>
-            <th style="border:1px solid #000;padding:6px;font-size:10px;font-weight:800;background:#f9f9f9;">GLASGOW</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${signos.map(s => `
-            <tr>
-              <td style="border:1px solid #ccc;height:28px;text-align:center;">${new Date(s.fecha).toLocaleString()}</td>
-              <td style="border:1px solid #ccc;text-align:center;">${s.presion_diastolica ?? '--'}</td>
-              <td style="border:1px solid #ccc;text-align:center;">${s.presion_sistolica ?? '--'}</td>
-              <td style="border:1px solid #ccc;text-align:center;">${s.frecuencia_respiratoria ?? '--'}</td>
-              <td style="border:1px solid #ccc;text-align:center;">${s.spo2 ?? '--'}</td>
-              <td style="border:1px solid #ccc;text-align:center;">${s.temperatura ?? '--'}</td>
-              <td style="border:1px solid #ccc;text-align:center;">${s.frecuencia_cardiaca ?? '--'}</td>
-              <td style="border:1px solid #ccc;text-align:center;">${s.escala_glasgow ?? '--'}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+  // Fecha y caso
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0,0,0);
+  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 32);
+  doc.text(`Caso: ${id}`, pageWidth - 50, 32);
 
-      <div style="font-weight:800;font-size:16px;margin-top:30px;margin-bottom:15px;text-transform:uppercase;">Personal a Cargo (Paramédicos)</div>
-      <div style="display:flex;gap:30px;margin-top:15px;">
-        ${pars.map(par => `
-          <div style="flex:1;padding:15px;border:1px solid #e0e0e0;border-radius:4px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:15px;">
-            <span style="font-size:24px;">👨‍✈️</span>
-            <span>${par.paramedicos.nombre} ${par.paramedicos.apellido}</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+  // Sección Información del Paciente
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(46, 125, 50); // verde título
+  doc.setFontSize(16);
+  doc.text("INFORMACIÓN DEL PACIENTE", 15, 45);
 
-  // Crear PDF
-  const container = document.createElement('div');
-  container.innerHTML = html;
-  container.style.position = 'absolute';
-  container.style.left = '-9999px';
-  document.body.appendChild(container);
+  doc.setFontSize(12);
+  doc.setTextColor(0,0,0);
+  doc.setFont("helvetica", "bold");
+  doc.text("Nombre:", 15, 55); doc.setFont("helvetica", "normal"); doc.text(p.nombre, 50, 55);
+  doc.setFont("helvetica", "bold");
+  doc.text("Edad:", 15, 62); doc.setFont("helvetica", "normal"); doc.text(`${p.edad} años`, 50, 62);
+  doc.setFont("helvetica", "bold");
+  doc.text("Sexo:", 15, 69); doc.setFont("helvetica", "normal"); doc.text(p.sexo, 50, 69);
+  doc.setFont("helvetica", "bold");
+  doc.text("Tipo de Sangre:", 15, 76); doc.setFont("helvetica", "normal"); doc.text(p.tipo_sangre, 50, 76);
+  doc.setFont("helvetica", "bold");
+  doc.text("Tipo de Traslado:", 15, 83); doc.setFont("helvetica", "normal"); doc.text(p.tipo_traslado, 50, 83);
+  doc.setFont("helvetica", "bold");
+  doc.text("Ubicación:", 15, 90); doc.setFont("helvetica", "normal"); doc.text(p.ubicacion, 50, 90);
+  doc.setFont("helvetica", "bold");
+  doc.text("Hemorragia:", 15, 97); doc.setFont("helvetica", "normal"); doc.text(p.hemorragia ? "SÍ" : "NO", 50, 97);
 
-  await html2pdf().set({
-    margin: 10,
-    filename: `Historial_Caso_${id}.pdf`,
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
-  }).from(container).save();
+  // Tabla signos vitales
+  const rows = signos.map(s => [
+    new Date(s.fecha).toLocaleString(),
+    s.presion_diastolica ?? '--',
+    s.presion_sistolica ?? '--',
+    s.frecuencia_respiratoria ?? '--',
+    s.spo2 ?? '--',
+    s.temperatura ?? '--',
+    s.frecuencia_cardiaca ?? '--',
+    s.escala_glasgow ?? '--'
+  ]);
 
-  document.body.removeChild(container);
+  doc.autoTable({
+    head: [[
+      { content: 'Hora', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+      { content: 'Presión Dia (mmHg)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+      { content: 'Presión Sist (mmHg)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+      { content: 'Frec Resp (rpm)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+      { content: 'SpO₂ (%)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+      { content: 'Temp (°C)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+      { content: 'Frec Card (lpm)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+      { content: 'Glasgow', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
+    ]],
+    body: rows,
+    startY: 110,
+    theme: 'grid',
+    headStyles: { fillColor: [240,240,240], textColor: [227,6,19], fontStyle: 'bold' },
+    styles: { fontSize: 10, cellPadding: 2 },
+  });
+
+  // Paramédicos
+  doc.setFont("helvetica","bold");
+  doc.setTextColor(0,0,0);
+  let startY = doc.lastAutoTable.finalY + 10;
+  doc.text("Paramédicos a Cargo:", pageWidth - 80, startY);
+
+  pars.forEach((par, i) => {
+    doc.text(`🚑 ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, pageWidth - 80, startY + 7 + i*7);
+  });
+
+  // Guardar PDF
+  doc.save(`Historial_Clinico_AMBULINK_Caso${id}.pdf`);
 }
+  
