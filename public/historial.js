@@ -98,7 +98,7 @@ function generarPDF(p, signos, pars, id) {
   doc.setTextColor(200, 0, 0);
   doc.text("AMBULINK", 15, 20);
 
-  // --- Fecha y caso ---
+  // --- Fecha y caso debajo ---
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(33, 33, 33);
@@ -115,12 +115,7 @@ function generarPDF(p, signos, pars, id) {
     doc.text(`${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
   });
 
-  // --- Cuadro de información del paciente ---
-  doc.setDrawColor(200, 0, 0); // borde rojo
-  doc.setFillColor(255, 255, 255); // fondo blanco
-  doc.rect(14, 45, 180, 65, 'FD');
-
-  // Título centrado y subrayado
+  // --- Título centrado y subrayado: Información del paciente ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   const infoTitle = "INFORMACIÓN DEL PACIENTE";
@@ -167,7 +162,7 @@ function generarPDF(p, signos, pars, id) {
     startY: 100,
     theme: 'striped',
     headStyles: { fillColor: [200, 0, 0], textColor: 255, fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [255, 235, 235] },
+    alternateRowStyles: { fillColor: [255, 245, 245] },
     margin: { left: 15, right: 15 },
     styles: { fontSize: 10 }
   });
