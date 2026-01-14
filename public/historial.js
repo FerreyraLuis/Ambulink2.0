@@ -124,16 +124,22 @@ function generarPDF(p, signos, pars, id) {
   doc.setLineWidth(0.5);
   doc.line(105 - infoWidth / 2, 57, 105 + infoWidth / 2, 57);
 
-  // Datos del paciente en negrilla
+  // Datos del paciente alineados profesionalmente (rectos, tipo columnas)
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text(`Nombre: ${p.nombre}`, 16, 63);
-  doc.text(`Edad: ${p.edad}`, 16, 70);
-  doc.text(`Sexo: ${p.sexo}`, 16, 77);
-  doc.text(`Tipo de Sangre: ${p.tipo_sangre}`, 100, 63);
-  doc.text(`Tipo de Traslado: ${p.tipo_traslado}`, 100, 70);
-  doc.text(`Ubicación: ${p.ubicacion}`, 100, 77);
-  doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, 100, 84);
+  const col1X = 16;
+  const col2X = 100;
+  let startY = 63;
+  const lineHeight = 7;
+
+  doc.text(`Nombre: ${p.nombre}`, col1X, startY);
+  doc.text(`Edad: ${p.edad}`, col1X, startY + lineHeight);
+  doc.text(`Sexo: ${p.sexo}`, col1X, startY + lineHeight * 2);
+
+  doc.text(`Tipo de Sangre: ${p.tipo_sangre}`, col2X, startY);
+  doc.text(`Tipo de Traslado: ${p.tipo_traslado}`, col2X, startY + lineHeight);
+  doc.text(`Ubicación: ${p.ubicacion}`, col2X, startY + lineHeight * 2);
+  doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, col2X, startY + lineHeight * 3);
 
   // --- Título de la tabla centrado y subrayado ---
   doc.setFont('helvetica', 'bold');
