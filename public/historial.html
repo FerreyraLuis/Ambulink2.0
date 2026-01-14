@@ -54,7 +54,6 @@ td.date{text-align:left}
   <button onclick="location.href='ambulancia.html'">VOLVER</button>
 </div>
 
-<!-- ❌ YA NO TIENE ID -->
 <div class="main">
 
 <div class="top-header">
@@ -70,7 +69,7 @@ td.date{text-align:left}
 
     <div class="badge" id="caseBadge" style="margin-top:6px">CASO</div>
 
-    <button id="btnPDF" style="margin-top:10px;display:none" onclick="descargarPDF()">
+    <button id="btnPDF" style="margin-top:10px;display:none">
       📄 DESCARGAR PDF
     </button>
   </div>
@@ -119,20 +118,9 @@ td.date{text-align:left}
 </div>
 </div>
 
-<!-- ✅ CONTENEDOR EXCLUSIVO PARA PDF -->
-<div id="pdfDownload"
-     style="
-       position: fixed;
-       top: 0;
-       left: 0;
-       width: 210mm;
-       background: white;
-       padding: 20px;
-       display: none;
-     ">
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Librerías para PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="historial.js"></script>
 
 </body>
