@@ -90,27 +90,46 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Función para generar PDF
+// Función para generar PDF con estilo profesional
 function generarPDF(p, signos, pars, id) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  doc.setFontSize(22);
+  // --- Encabezado ---
+  doc.setFontSize(26);
+  doc.setTextColor(33, 33, 33); // Gris oscuro
+  doc.setFont('helvetica', 'bold');
   doc.text("AMBULINK", 15, 20);
 
-  doc.setFontSize(14);
-  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 20);
-  doc.text(`Caso: ${id}`, 150, 28);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 20, { align: 'right' });
+  doc.text(`Caso: ${id}`, 150, 28, { align: 'right' });
 
-  doc.text(`Nombre: ${p.nombre}`, 15, 40);
-  doc.text(`Edad: ${p.edad}`, 15, 48);
-  doc.text(`Sexo: ${p.sexo}`, 15, 56);
-  doc.text(`Tipo de Sangre: ${p.tipo_sangre}`, 15, 64);
-  doc.text(`Tipo de Traslado: ${p.tipo_traslado}`, 15, 72);
-  doc.text(`Ubicación: ${p.ubicacion}`, 15, 80);
-  doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, 15, 88);
+  // --- Información del paciente en cuadro ---
+  doc.setFillColor(245, 245, 245); // Gris claro
+  doc.rect(14, 35, 180, 55, 'F'); // x, y, width, height, fill
 
-  // Tabla de signos vitales
+  doc.setTextColor(33,33,33);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Nombre:`, 16, 45);
+  doc.text(`Edad:`, 16, 53);
+  doc.text(`Sexo:`, 16, 61);
+  doc.text(`Tipo de Sangre:`, 100, 45);
+  doc.text(`Tipo de Traslado:`, 100, 53);
+  doc.text(`Ubicación:`, 100, 61);
+  doc.text(`Hemorragia:`, 100, 69);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${p.nombre}`, 45, 45);
+  doc.text(`${p.edad}`, 35, 53);
+  doc.text(`${p.sexo}`, 35, 61);
+  doc.text(`${p.tipo_sangre}`, 150, 45);
+  doc.text(`${p.tipo_traslado}`, 150, 53);
+  doc.text(`${p.ubicacion}`, 150, 61);
+  doc.text(`${p.hemorragia ? 'SI' : 'NO'}`, 150, 69);
+
+  // --- Tabla de signos vitales ---
   const rows = signos.map(s => [
     new Date(s.fecha).toLocaleString(),
     s.presion_diastolica ?? '--',
@@ -123,18 +142,27 @@ function generarPDF(p, signos, pars, id) {
   ]);
 
   doc.autoTable({
-    head: [['Hora','Presión Dia','Presión Sist','Frec Resp','SpO₂','Temp','Frec Card','Glasgow']],
+    head: [['Hora','Presión Diastólica','Presión Sistólica','Frec Resp','Saturación','Temp (°C)','Frec Card','Glasgow']],
     body: rows,
-    startY: 100,
-    theme: 'grid',
-    headStyles: { fillColor: [46,125,50], textColor: 255 },
+    startY: 95,
+    theme: 'striped',
+    headStyles: { fillColor: [33, 150, 243], textColor: 255, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [240, 248, 255] },
+    margin: { left: 15, right: 15 },
+    styles: { fontSize: 10 }
   });
 
-  // Paramédicos
-  doc.text(`Paramédicos:`, 15, doc.lastAutoTable.finalY + 10);
+  // --- Paramédicos ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(`Paramédicos:`, 15, doc.lastAutoTable.finalY + 12);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
   pars.forEach((par, i) => {
-    doc.text(`• ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 20, doc.lastAutoTable.finalY + 20 + i*8);
+    doc.text(`• ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 20, doc.lastAutoTable.finalY + 22 + i*8);
   });
 
-  doc.save('Historial_Clinico_AMBULINK.pdf');
+  // --- Guardar PDF ---
+  doc.save(`Historial_Clinico_AMBULINK_Caso${id}.pdf`);
 }
