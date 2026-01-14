@@ -82,58 +82,35 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>`;
     });
 
+    // Mostrar botón PDF
     btnPDF.style.display = 'block';
+
+    // Asignar acción del PDF
     btnPDF.onclick = () => generarPDF(p, signos, pars, id);
   });
 });
 
-// Función generar PDF con estilo profesional
+// Función para generar PDF
 function generarPDF(p, signos, pars, id) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setFontSize(22);
+  doc.text("AMBULINK", 15, 20);
 
-  // Título principal
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.setTextColor(227, 6, 19); // rojo Ambulink
-  doc.text("AMBULINK", pageWidth / 2, 20, { align: "center" });
+  doc.setFontSize(14);
+  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 20);
+  doc.text(`Caso: ${id}`, 150, 28);
 
-  // Fecha y caso
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0,0,0);
-  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 32);
-  doc.text(`Caso: ${id}`, pageWidth - 50, 32);
+  doc.text(`Nombre: ${p.nombre}`, 15, 40);
+  doc.text(`Edad: ${p.edad}`, 15, 48);
+  doc.text(`Sexo: ${p.sexo}`, 15, 56);
+  doc.text(`Tipo de Sangre: ${p.tipo_sangre}`, 15, 64);
+  doc.text(`Tipo de Traslado: ${p.tipo_traslado}`, 15, 72);
+  doc.text(`Ubicación: ${p.ubicacion}`, 15, 80);
+  doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, 15, 88);
 
-  // Información Paciente
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(46, 125, 50);
-  doc.setFontSize(16);
-  doc.text("INFORMACIÓN DEL PACIENTE", 15, 45);
-
-  doc.setFontSize(12);
-  doc.setTextColor(0,0,0);
-  let y = 55;
-  const info = [
-    ["Nombre:", p.nombre],
-    ["Edad:", `${p.edad} años`],
-    ["Sexo:", p.sexo],
-    ["Tipo de Sangre:", p.tipo_sangre],
-    ["Tipo de Traslado:", p.tipo_traslado],
-    ["Ubicación:", p.ubicacion],
-    ["Hemorragia:", p.hemorragia ? "SÍ" : "NO"]
-  ];
-  info.forEach(i => {
-    doc.setFont("helvetica","bold");
-    doc.text(i[0], 15, y);
-    doc.setFont("helvetica","normal");
-    doc.text(i[1], 50, y);
-    y += 7;
-  });
-
-  // Tabla Signos Vitales
+  // Tabla de signos vitales
   const rows = signos.map(s => [
     new Date(s.fecha).toLocaleString(),
     s.presion_diastolica ?? '--',
@@ -146,31 +123,18 @@ function generarPDF(p, signos, pars, id) {
   ]);
 
   doc.autoTable({
-    head: [[
-      { content: 'Hora', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-      { content: 'Presión Dia (mmHg)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-      { content: 'Presión Sist (mmHg)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-      { content: 'Frec Resp (rpm)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-      { content: 'SpO₂ (%)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-      { content: 'Temp (°C)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-      { content: 'Frec Card (lpm)', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-      { content: 'Glasgow', styles: { fontStyle: 'bold', textColor: [227,6,19] }},
-    ]],
+    head: [['Hora','Presión Dia','Presión Sist','Frec Resp','SpO₂','Temp','Frec Card','Glasgow']],
     body: rows,
-    startY: y+5,
+    startY: 100,
     theme: 'grid',
-    headStyles: { fillColor: [240,240,240], textColor: [227,6,19], fontStyle: 'bold' },
-    styles: { fontSize: 10, cellPadding: 2 },
+    headStyles: { fillColor: [46,125,50], textColor: 255 },
   });
 
   // Paramédicos
-  let startY = doc.lastAutoTable.finalY + 10;
-  doc.setFont("helvetica","bold");
-  doc.text("Paramédicos a Cargo:", pageWidth - 80, startY);
+  doc.text(`Paramédicos:`, 15, doc.lastAutoTable.finalY + 10);
   pars.forEach((par, i) => {
-    doc.text(`🚑 ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, pageWidth - 80, startY + 7 + i*7);
+    doc.text(`• ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 20, doc.lastAutoTable.finalY + 20 + i*8);
   });
 
-  // Guardar PDF
-  doc.save(`Historial_Clinico_AMBULINK_Caso${id}.pdf`);
+  doc.save('Historial_Clinico_AMBULINK.pdf');
 }
