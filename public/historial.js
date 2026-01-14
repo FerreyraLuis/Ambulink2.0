@@ -90,77 +90,76 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Función para generar PDF con estilo profesional
+// --- Función para generar PDF con estilo profesional ---
 function generarPDF(p, signos, pars, id) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // --- Encabezado ---
+  // --- Título ---
   doc.setFontSize(26);
-  doc.setTextColor(33, 33, 33); // Gris oscuro
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(200, 0, 0); // Rojo
   doc.text("AMBULINK", 15, 20);
 
+  // --- Fecha y Caso debajo ---
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 20, { align: 'right' });
-  doc.text(`Caso: ${id}`, 150, 28, { align: 'right' });
+  doc.setTextColor(33, 33, 33); // Gris oscuro
+  doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 28);
+  doc.text(`Caso: ${id}`, 15, 36);
 
-  // --- Información del paciente en cuadro ---
-  doc.setFillColor(245, 245, 245); // Gris claro
-  doc.rect(14, 35, 180, 55, 'F'); // x, y, width, height, fill
-
-  doc.setTextColor(33,33,33);
+  // --- Paramédicos esquina superior derecha ---
   doc.setFont('helvetica', 'bold');
-  doc.text(`Nombre:`, 16, 45);
-  doc.text(`Edad:`, 16, 53);
-  doc.text(`Sexo:`, 16, 61);
-  doc.text(`Tipo de Sangre:`, 100, 45);
-  doc.text(`Tipo de Traslado:`, 100, 53);
-  doc.text(`Ubicación:`, 100, 61);
-  doc.text(`Hemorragia:`, 100, 69);
+  doc.text(`🚑 Paramédicos:`, 150, 28, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  pars.forEach((par, i) => {
+    doc.text(`• ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
+  });
+
+  // --- Cuadro de datos del paciente ---
+  doc.setFillColor(200, 0, 0); // Rojo
+  doc.rect(14, 45, 180, 60, 'F');
+
+  doc.setTextColor(255, 255, 255); // Blanco
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Nombre:`, 16, 55);
+  doc.text(`Edad:`, 16, 63);
+  doc.text(`Sexo:`, 16, 71);
+  doc.text(`Tipo de Sangre:`, 100, 55);
+  doc.text(`Tipo de Traslado:`, 100, 63);
+  doc.text(`Ubicación:`, 100, 71);
+  doc.text(`Hemorragia:`, 100, 79);
 
   doc.setFont('helvetica', 'normal');
-  doc.text(`${p.nombre}`, 45, 45);
-  doc.text(`${p.edad}`, 35, 53);
-  doc.text(`${p.sexo}`, 35, 61);
-  doc.text(`${p.tipo_sangre}`, 150, 45);
-  doc.text(`${p.tipo_traslado}`, 150, 53);
-  doc.text(`${p.ubicacion}`, 150, 61);
-  doc.text(`${p.hemorragia ? 'SI' : 'NO'}`, 150, 69);
+  doc.text(`${p.nombre}`, 45, 55);
+  doc.text(`${p.edad}`, 35, 63);
+  doc.text(`${p.sexo}`, 35, 71);
+  doc.text(`${p.tipo_sangre}`, 150, 55);
+  doc.text(`${p.tipo_traslado}`, 150, 63);
+  doc.text(`${p.ubicacion}`, 150, 71);
+  doc.text(`${p.hemorragia ? 'SI' : 'NO'}`, 150, 79);
 
-  // --- Tabla de signos vitales ---
+  // --- Tabla de signos vitales con unidades ---
   const rows = signos.map(s => [
     new Date(s.fecha).toLocaleString(),
-    s.presion_diastolica ?? '--',
-    s.presion_sistolica ?? '--',
-    s.frecuencia_respiratoria ?? '--',
-    s.spo2 ?? '--',
-    s.temperatura ?? '--',
-    s.frecuencia_cardiaca ?? '--',
+    s.presion_diastolica ? `${s.presion_diastolica} mmHg` : '--',
+    s.presion_sistolica ? `${s.presion_sistolica} mmHg` : '--',
+    s.frecuencia_respiratoria ? `${s.frecuencia_respiratoria} rpm` : '--',
+    s.spo2 ? `${s.spo2} %` : '--',
+    s.temperatura ? `${s.temperatura} °C` : '--',
+    s.frecuencia_cardiaca ? `${s.frecuencia_cardiaca} lpm` : '--',
     s.escala_glasgow ?? '--'
   ]);
 
   doc.autoTable({
-    head: [['Hora','Presión Diastólica','Presión Sistólica','Frec Resp','Saturación','Temp (°C)','Frec Card','Glasgow']],
+    head: [['Hora','Presión Diastólica (mmHg)','Presión Sistólica (mmHg)','Frec Respiratoria (rpm)','Saturación de Oxígeno (%)','Temperatura (°C)','Frec Cardiaca (lpm)','Glasgow']],
     body: rows,
-    startY: 95,
+    startY: 110,
     theme: 'striped',
-    headStyles: { fillColor: [33, 150, 243], textColor: 255, fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [240, 248, 255] },
+    headStyles: { fillColor: [200, 0, 0], textColor: 255, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [255, 235, 235] },
     margin: { left: 15, right: 15 },
     styles: { fontSize: 10 }
-  });
-
-  // --- Paramédicos ---
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text(`Paramédicos:`, 15, doc.lastAutoTable.finalY + 12);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  pars.forEach((par, i) => {
-    doc.text(`• ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 20, doc.lastAutoTable.finalY + 22 + i*8);
   });
 
   // --- Guardar PDF ---
