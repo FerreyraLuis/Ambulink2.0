@@ -105,9 +105,11 @@ function generarPDF(p, signos, pars, id) {
   doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 28);
   doc.text(`Caso: ${id}`, 15, 36);
 
-  // --- Paramédicos alineados a la derecha ---
+  // --- Paramédicos alineados a la derecha con subrayado ---
   doc.setFont('helvetica', 'bold');
   doc.text("Paramédicos:", 150, 28, { align: 'right' });
+  doc.setLineWidth(0.5);
+  doc.line(150, 30, 190, 30); // subrayado del título
   doc.setFont('helvetica', 'normal');
   pars.forEach((par, i) => {
     doc.text(`${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
@@ -127,8 +129,8 @@ function generarPDF(p, signos, pars, id) {
   doc.setLineWidth(0.5);
   doc.line(105 - infoWidth / 2, 57, 105 + infoWidth / 2, 57);
 
-  // Datos del paciente
-  doc.setFont('helvetica', 'normal');
+  // Datos del paciente en negrilla
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.text(`Nombre: ${p.nombre}`, 16, 63);
   doc.text(`Edad: ${p.edad}`, 16, 70);
@@ -160,7 +162,7 @@ function generarPDF(p, signos, pars, id) {
   ]);
 
   doc.autoTable({
-    head: [['Hora','Presión Diastólica (mmHg)','Presión Sistólica (mmHg)','Frec Respiratoria (rpm)','Saturación de Oxígeno (%)','Temperatura (°C)','Frec Cardiaca (lpm)','Glasgow']],
+    head: [['Hora','Presión Diastólica (mmHg)','Presión Sistólica (mmHg)','Frecuencia Respiratoria (rpm)','Saturación de Oxígeno (%)','Temperatura (°C)','Frecuencia Cardiaca (lpm)','Glasgow']],
     body: rows,
     startY: 100,
     theme: 'striped',
