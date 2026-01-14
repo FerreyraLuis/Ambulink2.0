@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (p.hemorragia) bloqueHemorragia.style.display = 'block';
 
     const pars = data.salida_paramedicos || [];
-    par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
-    par2.innerText = pars[1] ? `🚑 ${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '🚑 --';
+    par1.innerText = pars[0] ? `${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '--';
+    par2.innerText = pars[1] ? `${pars[1].paramedicos.nombre} ${pars[1].paramedicos.apellido}` : '--';
 
     const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
     const signos = await resHist.json();
@@ -108,36 +108,38 @@ function generarPDF(p, signos, pars, id) {
   doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 28);
   doc.text(`Caso: ${id}`, 15, 36);
 
-  // --- Paramédicos esquina superior derecha ---
+  // --- Paramédicos esquina superior derecha (sin emojis) ---
   doc.setFont('helvetica', 'bold');
-  doc.text(`🚑 Paramédicos:`, 150, 28, { align: 'right' });
+  doc.text(`Paramédicos:`, 150, 28, { align: 'right' });
   doc.setFont('helvetica', 'normal');
   pars.forEach((par, i) => {
     doc.text(`• ${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
   });
 
   // --- Cuadro de datos del paciente ---
-  doc.setFillColor(200, 0, 0); // Rojo
-  doc.rect(14, 45, 180, 60, 'F');
+  doc.setDrawColor(200, 0, 0); // Borde rojo
+  doc.setFillColor(255, 255, 255); // Fondo blanco
+  doc.rect(14, 45, 180, 65, 'FD'); // F=fill, D=draw (borde rojo)
 
-  doc.setTextColor(255, 255, 255); // Blanco
+  doc.setTextColor(33, 33, 33); // Gris oscuro
   doc.setFont('helvetica', 'bold');
-  doc.text(`Nombre:`, 16, 55);
-  doc.text(`Edad:`, 16, 63);
-  doc.text(`Sexo:`, 16, 71);
-  doc.text(`Tipo de Sangre:`, 100, 55);
-  doc.text(`Tipo de Traslado:`, 100, 63);
-  doc.text(`Ubicación:`, 100, 71);
-  doc.text(`Hemorragia:`, 100, 79);
+  doc.setFontSize(12);
+  doc.text("INFORMACIÓN DEL PACIENTE", 16, 55);
 
   doc.setFont('helvetica', 'normal');
-  doc.text(`${p.nombre}`, 45, 55);
-  doc.text(`${p.edad}`, 35, 63);
-  doc.text(`${p.sexo}`, 35, 71);
-  doc.text(`${p.tipo_sangre}`, 150, 55);
-  doc.text(`${p.tipo_traslado}`, 150, 63);
-  doc.text(`${p.ubicacion}`, 150, 71);
-  doc.text(`${p.hemorragia ? 'SI' : 'NO'}`, 150, 79);
+  doc.setFontSize(11);
+  doc.text(`Nombre: ${p.nombre}`, 16, 63);
+  doc.text(`Edad: ${p.edad}`, 16, 70);
+  doc.text(`Sexo: ${p.sexo}`, 16, 77);
+  doc.text(`Tipo de Sangre: ${p.tipo_sangre}`, 100, 63);
+  doc.text(`Tipo de Traslado: ${p.tipo_traslado}`, 100, 70);
+  doc.text(`Ubicación: ${p.ubicacion}`, 100, 77);
+  doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, 100, 84);
+
+  // --- Título de la tabla ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text("TABLA DE SIGNOS VITALES", 15, 95);
 
   // --- Tabla de signos vitales con unidades ---
   const rows = signos.map(s => [
@@ -154,7 +156,7 @@ function generarPDF(p, signos, pars, id) {
   doc.autoTable({
     head: [['Hora','Presión Diastólica (mmHg)','Presión Sistólica (mmHg)','Frec Respiratoria (rpm)','Saturación de Oxígeno (%)','Temperatura (°C)','Frec Cardiaca (lpm)','Glasgow']],
     body: rows,
-    startY: 110,
+    startY: 100,
     theme: 'striped',
     headStyles: { fillColor: [200, 0, 0], textColor: 255, fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [255, 235, 235] },
