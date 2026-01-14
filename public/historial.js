@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
   const fechaActual = document.getElementById('fechaActual');
   const filtroFecha = document.getElementById('filtroFecha');
   const selectCaso = document.getElementById('selectCaso');
@@ -17,10 +16,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const par1 = document.getElementById('par1');
   const par2 = document.getElementById('par2');
   const bloqueHemorragia = document.getElementById('bloqueHemorragia');
-  const pdfContainer = document.getElementById('pdfDownload');
 
-  fechaActual.innerText = new Date().toLocaleDateString('es-ES',{
-    day:'numeric',month:'long',year:'numeric'
+  // 🔹 Contenedor invisible para PDF pero renderizable
+  let pdfContainer = document.getElementById('pdfDownload');
+  if (!pdfContainer) {
+    pdfContainer = document.createElement('div');
+    pdfContainer.id = 'pdfDownload';
+    pdfContainer.style.position = 'absolute';
+    pdfContainer.style.top = '0';
+    pdfContainer.style.left = '0';
+    pdfContainer.style.width = '800px';
+    pdfContainer.style.opacity = '0'; // invisible pero renderizable
+    pdfContainer.style.pointerEvents = 'none';
+    pdfContainer.style.background = 'white';
+    pdfContainer.style.padding = '20px';
+    pdfContainer.style.zIndex = '-1';
+    document.body.appendChild(pdfContainer);
+  }
+
+  fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
+    day: 'numeric', month: 'long', year: 'numeric'
   });
 
   filtroFecha.addEventListener('change', async () => {
@@ -36,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const casos = await res.json();
 
     selectCaso.innerHTML = '<option value="">Seleccionar caso</option>';
-    casos.forEach(c=>{
+    casos.forEach(c => {
       selectCaso.innerHTML += `<option value="${c.id_salida}">Caso ${c.id_salida}</option>`;
     });
   });
@@ -60,7 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pac_traslado.innerText = p.tipo_traslado;
     pac_ubicacion.innerText = data.ubicacion;
 
-    if (p.hemorragia) bloqueHemorragia.style.display = 'block';
+    if (p.hemorragia === true) {
+      bloqueHemorragia.style.display = 'block';
+    }
 
     const pars = data.salida_paramedicos || [];
     par1.innerText = pars[0] ? `🚑 ${pars[0].paramedicos.nombre} ${pars[0].paramedicos.apellido}` : '🚑 --';
@@ -69,7 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resHist = await fetch(`https://ambulink.doc-ia.cloud/historial/signos/${id}`);
     const signos = await resHist.json();
 
-    signos.forEach(s=>{
+    tablaHistorial.innerHTML = '';
+    signos.forEach(s => {
       tablaHistorial.innerHTML += `
         <tr>
           <td class="date">${new Date(s.fecha).toLocaleString()}</td>
@@ -83,17 +101,64 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>`;
     });
 
+    // 🔹 Construir contenido PDF con estilos
     pdfContainer.innerHTML = `
-      <div style="font-family:Arial;padding:30px">
-        <h1 style="color:#2e7d32">AMBULINK</h1>
-        <p><b>Fecha:</b> ${new Date().toLocaleDateString()}</p>
-        <p><b>Caso:</b> ${id}</p>
-        <hr>
-        <p><b>Paciente:</b> ${p.nombre}</p>
-        <p><b>Edad:</b> ${p.edad}</p>
-        <p><b>Sexo:</b> ${p.sexo}</p>
-        <p><b>Sangre:</b> ${p.tipo_sangre}</p>
-        <p><b>Ubicación:</b> ${data.ubicacion}</p>
+      <div style="font-family:Arial,sans-serif;background:#f4f4f4;padding:20px;">
+        <div style="background:white;width:800px;margin:0 auto;padding:40px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2e7d32;padding-bottom:10px;margin-bottom:20px;">
+            <h1 style="color:#2e7d32;font-size:28px;font-weight:bold;margin:0;">AMBULINK</h1>
+            <div style="text-align:right;font-size:14px;">
+              <div><strong>FECHA:</strong> ${new Date().toLocaleDateString()}</div>
+              <div><strong>CASO:</strong> ${id}</div>
+            </div>
+          </div>
+
+          <div style="background:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">INFORMACIÓN DEL PACIENTE</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+            <div><strong>NOMBRE:</strong> ${p.nombre}</div>
+            <div><strong>EDAD:</strong> ${p.edad}</div>
+            <div><strong>SEXO:</strong> ${p.sexo}</div>
+            <div><strong>TIPO DE SANGRE:</strong> ${p.tipo_sangre}</div>
+            <div><strong>TIPO DE TRASLADO:</strong> ${p.tipo_traslado}</div>
+            <div><strong>UBICACIÓN:</strong> ${data.ubicacion}</div>
+            <div><strong>DIAGNÓSTICO:</strong> ${p.diagnostico ?? '--'}</div>
+            <div><strong>HEMORRAGIA:</strong> ${p.hemorragia ? 'SI' : 'NO'}</div>
+          </div>
+
+          <div style="background:#2e7d32;color:white;padding:8px 12px;font-weight:bold;margin-bottom:12px;border-radius:8px;">MONITOREO DE SIGNOS VITALES</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#e8f5e9;color:#2e7d32;">
+                <th style="border:1px solid #ccc;padding:8px;">HORA</th>
+                <th style="border:1px solid #ccc;padding:8px;">PRESIÓN DIASTÓLICA</th>
+                <th style="border:1px solid #ccc;padding:8px;">PRESIÓN SISTÓLICA</th>
+                <th style="border:1px solid #ccc;padding:8px;">FREC. RESP.</th>
+                <th style="border:1px solid #ccc;padding:8px;">SpO₂</th>
+                <th style="border:1px solid #ccc;padding:8px;">FREC. CARDIACA</th>
+                <th style="border:1px solid #ccc;padding:8px;">TEMP (°C)</th>
+                <th style="border:1px solid #ccc;padding:8px;">GLASGOW</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${signos.map(s => `
+                <tr>
+                  <td>${new Date(s.fecha).toLocaleString()}</td>
+                  <td>${s.presion_diastolica ?? '--'}</td>
+                  <td>${s.presion_sistolica ?? '--'}</td>
+                  <td>${s.frecuencia_respiratoria ?? '--'}</td>
+                  <td>${s.spo2 ?? '--'}</td>
+                  <td>${s.temperatura ?? '--'}</td>
+                  <td>${s.frecuencia_cardiaca ?? '--'}</td>
+                  <td>${s.escala_glasgow ?? '--'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+
+          <div style="margin-top:25px;font-size:14px;">
+            <strong>PARAMÉDICOS:</strong><br>
+            ${pars.map(p => `• ${p.paramedicos.nombre} ${p.paramedicos.apellido}`).join('<br>')}
+          </div>
+        </div>
       </div>
     `;
 
@@ -101,16 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function descargarPDF(){
+// 🔹 FUNCION DESCARGAR PDF
+function descargarPDF() {
   const element = document.getElementById('pdfDownload');
-  element.style.display = 'block';
+  element.style.opacity = "1"; // mostrar para html2pdf
 
   html2pdf().set({
-    margin:1,
-    filename:'Historial_Clinico_AMBULINK.pdf',
-    html2canvas:{scale:2},
-    jsPDF:{unit:'cm',format:'a4',orientation:'portrait'}
-  }).from(element).save().then(()=>{
-    element.style.display = 'none';
+    margin: 0.5,
+    filename: 'Historial_Clinico_AMBULINK.pdf',
+    html2canvas: { scale: 3, letterRendering: true },
+    jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+  }).from(element).save().then(() => {
+    element.style.opacity = "0"; // volver invisible
   });
 }
