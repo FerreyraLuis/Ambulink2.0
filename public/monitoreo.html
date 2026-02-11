@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>AMBULINK | Monitoreo</title>
-
   <style>
-    /* ======= TODO TU CSS ORIGINAL (SIN CAMBIOS) ======= */
     * {
       box-sizing: border-box;
       font-family: Arial, Helvetica, sans-serif;
@@ -23,6 +21,8 @@
       background: #059bd8;
       border-radius: 22px;
       padding: 18px;
+      display: flex;
+      flex-direction: column;
     }
 
     .content {
@@ -54,6 +54,13 @@
       padding: 14px 0;
       font-weight: bold;
       font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .sidebar button:hover {
+      background: #009fe3;
+      color: white;
     }
 
     .main {
@@ -76,12 +83,12 @@
       font-weight: 900;
     }
 
-    .btn-blue,
-    .btn-outline {
+    .btn-blue, .btn-outline {
       padding: 10px 18px;
       border-radius: 18px;
       font-weight: bold;
       font-size: 14px;
+      cursor: pointer;
     }
 
     .btn-blue {
@@ -113,6 +120,7 @@
       font-size: 13px;
     }
 
+    /* ================= SIGNOS VITALES ================= */
     .signos {
       border: 3px solid #009fe3;
       border-radius: 20px;
@@ -128,22 +136,32 @@
       padding: 18px 10px;
       color: white;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: 0.3s;
     }
 
     .signo h4 {
-      margin: 0;
+      margin: 0 0 8px 0;
       font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
     }
 
     .signo .valor {
-      font-size: 30px;
+      font-size: 32px;
       font-weight: 900;
+      margin: 0;
     }
 
     .signo .unidad {
       font-size: 13px;
+      margin-top: 4px;
     }
 
+    /* ================= GRID PRINCIPAL ================= */
     .grid {
       display: grid;
       grid-template-columns: 1.2fr 1.5fr 1.1fr;
@@ -175,10 +193,10 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
+      margin-top: 6px;
     }
 
-    input,
-    select {
+    input, select {
       height: 40px;
       border: none;
       border-radius: 18px;
@@ -199,6 +217,12 @@
       border-radius: 18px;
       font-weight: bold;
       font-size: 14px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-red:hover {
+      background: #bf0000;
     }
 
     .glasgow-box {
@@ -218,12 +242,10 @@
       font-size: 48px;
       font-weight: 900;
     }
-
   </style>
 </head>
 
 <body>
-
   <div class="app">
     <div class="content">
 
@@ -239,7 +261,6 @@
         <div class="header">
           <div class="brand">AMBULINK</div>
           <button class="btn-outline" onclick="nuevoPaciente()">NUEVO PACIENTE</button>
-          <!-- 🔥 IDs agregados -->
           <button class="btn-blue" id="btnIniciarMonitoreo">MONITOREAR PACIENTE</button>
           <button class="btn-blue" id="btnPararMonitoreo">PARAR MONITOREO</button>
           <button class="btn-blue" id="btnHemorragia">HEMORRAGIA</button>
@@ -253,39 +274,43 @@
         <div class="signos">
           <div class="signo">
             <h4>PRESIÓN DIASTÓLICA</h4>
-            <div class="valor" id="v_pd">--<span class="unidad">mmHg</span></div>
+            <div class="valor" id="v_pd">--</div>
+            <div class="unidad">mmHg</div>
           </div>
 
           <div class="signo">
             <h4>PRESIÓN SISTÓLICA</h4>
-            <div class="valor" id="v_ps">--<span class="unidad">mmHg</span></div>
+            <div class="valor" id="v_ps">--</div>
+            <div class="unidad">mmHg</div>
           </div>
 
           <div class="signo">
             <h4>FREC. RESP.</h4>
-            <div class="valor" id="v_fr">--<span class="unidad">rpm</span></div>
+            <div class="valor" id="v_fr">--</div>
+            <div class="unidad">rpm</div>
           </div>
 
           <div class="signo">
             <h4>SPO2</h4>
-            <div class="valor">--<span class="unidad">%</span></div>
+            <div class="valor" id="v_spo2">--</div>
+            <div class="unidad">%</div>
           </div>
 
           <div class="signo">
             <h4>TEMP.</h4>
-            <div class="valor">--<span class="unidad">°C</span></div>
+            <div class="valor" id="v_temp">--</div>
+            <div class="unidad">°C</div>
           </div>
 
           <div class="signo">
             <h4>FREC. CARD.</h4>
-            <div class="valor">--<span class="unidad">lat/min</span></div>
+            <div class="valor" id="v_fc">--</div>
+            <div class="unidad">lat/min</div>
           </div>
         </div>
 
         <!-- GRID PRINCIPAL -->
         <div class="grid">
-
-          <!-- PACIENTE -->
           <div class="box">
             <h3>PACIENTE</h3>
             <p><b id="pac_nombre">---</b></p>
@@ -297,7 +322,6 @@
             <p id="pac_diagnostico">--</p>
           </div>
 
-          <!-- SIGNOS MANUALES -->
           <div class="box">
             <h3>Signos manuales</h3>
             <div class="input-grid">
@@ -329,7 +353,6 @@
             </div>
           </div>
 
-          <!-- PARAMÉDICOS -->
           <div class="box">
             <h3>PARAMÉDICOS</h3>
             <p id="par1">🚑 ---</p>
@@ -339,11 +362,9 @@
               <div class="glasgow-value" id="glasgow_total">--</div>
             </div>
           </div>
-
         </div>
 
       </div>
-
     </div>
   </div>
 
