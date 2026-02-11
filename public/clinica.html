@@ -170,23 +170,26 @@
     .signo {
       background: #004aad;
       border-radius: 16px;
-      padding: 14px;
+      padding: 14px 6px;
       color: white;
       text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      height: 90px;
     }
 
     .signo span.valor {
       font-size: 28px;
       font-weight: 900;
+      line-height: 1.2;
     }
 
     .signo span.unidad {
-      font-size: 16px;
+      font-size: 14px;
       margin-top: 4px;
+      line-height: 1;
     }
 
     /* Botón finalizar monitoreo */
@@ -268,37 +271,37 @@
               <div class="signos-grid">
                 <div class="signo">
                   PRESIÓN DIASTÓLICA
-                  <span id="pd" class="valor">--</span>
+                  <span class="valor" id="pd">--</span>
                   <span class="unidad">mmHg</span>
                 </div>
 
                 <div class="signo">
                   PRESIÓN SISTÓLICA
-                  <span id="ps" class="valor">--</span>
+                  <span class="valor" id="ps">--</span>
                   <span class="unidad">mmHg</span>
                 </div>
 
                 <div class="signo">
                   FREC. RESP.
-                  <span id="fr" class="valor">--</span>
+                  <span class="valor" id="fr">--</span>
                   <span class="unidad">rpm</span>
                 </div>
 
                 <div class="signo">
                   SpO₂
-                  <span id="c_spo2" class="valor">--</span>
+                  <span class="valor" id="c_spo2">--</span>
                   <span class="unidad">%</span>
                 </div>
 
                 <div class="signo">
                   TEMPERATURA
-                  <span id="c_temp" class="valor">--</span>
+                  <span class="valor" id="c_temp">--</span>
                   <span class="unidad">°C</span>
                 </div>
 
                 <div class="signo">
                   FREC. CARDIACA
-                  <span id="c_fc" class="valor">--</span>
+                  <span class="valor" id="c_fc">--</span>
                   <span class="unidad">lat/min</span>
                 </div>
               </div>
