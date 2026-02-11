@@ -10,11 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
   resetAmbulancia1();
   cargarClinica();
 
+  // Actualización automática cada 5 segundos
   setInterval(() => {
     cargarClinica();
   }, 5000);
 });
 
+// Escucha cambios globales si se resetea desde otra pestaña
 window.addEventListener('storage', (e) => {
   if (e.key === 'clinica_reset') {
     resetAmbulancia1();
@@ -35,17 +37,17 @@ async function cargarClinica() {
     }
 
     const amb = data[0];
-    if (monitoreoFinalizado) return;
-
-    if (amb.paciente) {
-      ultimoDato = new Date();
-    }
-
     const nuevoPacienteId = amb.paciente?.carnet || null;
+
+    // Si llega un nuevo paciente, se reactiva el monitoreo
     if (nuevoPacienteId !== pacienteActualId) {
-      resetAmbulancia1();
       pacienteActualId = nuevoPacienteId;
+      monitoreoFinalizado = false;
+      resetAmbulancia1();
     }
+
+    // Si no hay paciente o el monitoreo finalizó para este paciente, no actualizamos
+    if (!amb.paciente || monitoreoFinalizado) return;
 
     // Estado ambulancia
     const tag = document.getElementById('ambulancia1Tag');
@@ -57,10 +59,8 @@ async function cargarClinica() {
       tag.classList.add('red');
     }
 
-    // Datos paciente
+    // Datos del paciente
     const p = amb.paciente;
-    if (!p) return;
-
     p_nombre.innerText = p.nombre ?? '---';
     p_edad.innerText = p.edad ? `${p.edad} años` : '---';
     p_sexo.innerText = p.sexo ?? '---';
@@ -83,6 +83,9 @@ async function cargarClinica() {
     // Glasgow y hemorragia
     glasgowBadge.innerText = 'GLASGOW ' + (amb.glasgow ?? '--');
     hemorragiaBadge.className = 'badge ' + (amb.hemorragia ? 'green' : 'red');
+
+    // Actualizamos la hora del último dato
+    ultimoDato = new Date();
 
   } catch (err) {
     console.error('❌ Error clínica:', err);
