@@ -98,20 +98,22 @@
       gap: 20px;
     }
 
+    /* =================== PACIENTE =================== */
     .paciente {
       background: #009fe3;
       border-radius: 18px;
       padding: 18px;
       color: white;
-      font-size: 16px; /* 🔹 Más claro */
+      font-size: 16px;
     }
 
     .paciente h3 {
       margin: 0 0 12px;
-      font-size: 20px; /* 🔹 Más visible */
+      font-size: 20px;
       text-align: center;
     }
 
+    /* =================== SIGNOS =================== */
     .signos {
       border: 3px solid #009fe3;
       border-radius: 20px;
@@ -132,6 +134,17 @@
       font-size: 18px;
     }
 
+    /* 🟢 Fecha en óvalo */
+    #fechaHoy {
+      background: #004aad;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
     .badges {
       display: flex;
       gap: 10px;
@@ -139,9 +152,9 @@
     }
 
     .badge {
-      padding: 10px 20px; /* 🔹 Más grande */
+      padding: 10px 20px;
       border-radius: 14px;
-      font-size: 16px; /* 🔹 Más grande */
+      font-size: 16px;
       font-weight: bold;
       color: white;
       text-align: center;
@@ -165,26 +178,27 @@
       justify-content: center;
     }
 
-    .signo span {
-      font-size: 28px; /* 🔹 Número más grande */
+    .signo span.valor {
+      font-size: 28px;
       font-weight: 900;
     }
 
-    .signo .unidad {
-      font-size: 16px; /* 🔹 Unidad debajo, tamaño consistente */
+    .signo span.unidad {
+      font-size: 16px;
       margin-top: 4px;
     }
 
+    /* Botón finalizar monitoreo más pequeño */
     .btn-blue {
       background: #009fe3;
       color: white;
       border: none;
-      padding: 14px 24px; /* 🔹 Botón más grande */
+      padding: 10px 18px;
       border-radius: 16px;
       font-weight: bold;
       cursor: pointer;
       margin-top: 15px;
-      font-size: 18px;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -235,7 +249,8 @@
 
               <div class="signos-header">
                 <div class="signos-title">
-                  SIGNOS VITALES · <span id="fechaHoy"></span>
+                  SIGNOS VITALES
+                  <span id="fechaHoy"></span>
                 </div>
 
                 <div class="badges">
@@ -251,37 +266,37 @@
               <div class="signos-grid">
                 <div class="signo">
                   PRESIÓN DIASTÓLICA
-                  <span id="pd">--</span>
+                  <span id="pd" class="valor">--</span>
                   <span class="unidad">mmHg</span>
                 </div>
 
                 <div class="signo">
                   PRESIÓN SISTÓLICA
-                  <span id="ps">--</span>
+                  <span id="ps" class="valor">--</span>
                   <span class="unidad">mmHg</span>
                 </div>
 
                 <div class="signo">
                   FREC. RESP.
-                  <span id="fr">--</span>
+                  <span id="fr" class="valor">--</span>
                   <span class="unidad">rpm</span>
                 </div>
 
                 <div class="signo">
                   SpO₂
-                  <span id="c_spo2">--</span>
+                  <span id="c_spo2" class="valor">--</span>
                   <span class="unidad">%</span>
                 </div>
 
                 <div class="signo">
                   TEMPERATURA
-                  <span id="c_temp">--</span>
+                  <span id="c_temp" class="valor">--</span>
                   <span class="unidad">°C</span>
                 </div>
 
                 <div class="signo">
                   FREC. CARDIACA
-                  <span id="c_fc">--</span>
+                  <span id="c_fc" class="valor">--</span>
                   <span class="unidad">lat/min</span>
                 </div>
               </div>
@@ -306,7 +321,7 @@
   <script>
     protegerPagina('clinica');
 
-    // 🔹 Actualizar fecha automáticamente
+    // 🔹 Actualizar fecha en óvalo
     const fechaHoy = document.getElementById('fechaHoy');
     fechaHoy.innerText = new Date().toLocaleDateString('es-ES', {
       day: 'numeric',
