@@ -42,6 +42,7 @@ app.get('/paramedicos', async (req, res) => {
       .from('paramedicos')
       .select('*')
       .eq('activo', true);
+
     if (error) throw error;
     res.json(data || []);
   } catch (err) {
@@ -68,6 +69,7 @@ app.post('/ambulancia/salida', async (req, res) => {
       })
       .select()
       .single();
+
     if (error) throw error;
 
     await supabase.from('paciente').insert({
@@ -84,11 +86,20 @@ app.post('/ambulancia/salida', async (req, res) => {
     }
 
     await supabase.from('salida_paramedicos').insert([
-      { id_salida: salida.id_salida, id_paramedico: personal.chofer, rol_en_la_salida: 'chofer' },
-      { id_salida: salida.id_salida, id_paramedico: personal.paramedico, rol_en_la_salida: 'paramedico' }
+      {
+        id_salida: salida.id_salida,
+        id_paramedico: personal.chofer,
+        rol_en_la_salida: 'chofer'
+      },
+      {
+        id_salida: salida.id_salida,
+        id_paramedico: personal.paramedico,
+        rol_en_la_salida: 'paramedico'
+      }
     ]);
 
     res.json({ ok: true, id_salida: salida.id_salida });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -96,8 +107,7 @@ app.post('/ambulancia/salida', async (req, res) => {
 });
 
 /* ===============================
-   ACTUALIZAR SIGNOS MANUALES
-   Siempre guardar aunque monitoreo_activo=false
+   ACTUALIZAR SIGNOS
 =============================== */
 app.put('/paciente/signos', async (req, res) => {
   try {
@@ -117,6 +127,7 @@ app.put('/paciente/signos', async (req, res) => {
     });
 
     res.json({ ok: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -142,6 +153,7 @@ app.put('/paciente/glasgow', async (req, res) => {
     });
 
     res.json({ ok: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -161,6 +173,7 @@ app.put('/paciente/hemorragia', async (req, res) => {
       .eq('id_salida', id_salida);
 
     res.json({ ok: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -180,40 +193,7 @@ app.put('/salida/monitoreo', async (req, res) => {
       .eq('id_salida', id_salida);
 
     res.json({ ok: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ ok: false });
-  }
-});
 
-/* ===============================
-   ESP32 – DATOS
-   Solo guardar si monitoreo_activo=true
-=============================== */
-app.post('/esp32/datos', async (req, res) => {
-  try {
-    const { spo2, frecuencia_cardiaca, temperatura } = req.body;
-
-    // Buscar salida activa con monitoreo activo
-    const { data: salida } = await supabase
-      .from('salida')
-      .select('id_salida')
-      .eq('monitoreo_activo', true)
-      .order('fecha', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (!salida) return res.json({ ok: true, guardado: false, mensaje: "Monitoreo inactivo" });
-
-    const datosInsertar = { id_salida: salida.id_salida, fecha: new Date().toISOString() };
-
-    if (spo2 !== undefined) datosInsertar.spo2 = Number(spo2);
-    if (frecuencia_cardiaca !== undefined) datosInsertar.frecuencia_cardiaca = Number(frecuencia_cardiaca);
-    if (temperatura !== undefined) datosInsertar.temperatura = Number(temperatura);
-
-    await supabase.from('signos_vitales').insert(datosInsertar);
-
-    res.json({ ok: true, guardado: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -249,6 +229,7 @@ app.get('/salidas/:id', async (req, res) => {
       paciente,
       salida_paramedicos: paramedicos || []
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({});
@@ -272,6 +253,7 @@ app.get('/historial/fecha/:fecha', async (req, res) => {
       .order('fecha', { ascending: false });
 
     res.json(data || []);
+
   } catch (err) {
     console.error(err);
     res.status(500).json([]);
@@ -321,6 +303,7 @@ app.get('/signos/ultimo/:id', async (req, res) => {
 ===================================================== */
 app.get('/clinica/ambulancias', async (req, res) => {
   try {
+    // Todas las ambulancias en curso
     const { data: salidas, error } = await supabase
       .from('salida')
       .select('*')
@@ -331,12 +314,14 @@ app.get('/clinica/ambulancias', async (req, res) => {
 
     const resultado = await Promise.all(
       salidas.map(async (s) => {
+        // Paciente
         const { data: paciente } = await supabase
           .from('paciente')
           .select('*')
           .eq('id_salida', s.id_salida)
           .single();
 
+        // Últimos signos vitales (manual + ESP32)
         const { data: signos } = await supabase
           .from('signos_vitales')
           .select('*')
@@ -345,6 +330,7 @@ app.get('/clinica/ambulancias', async (req, res) => {
           .limit(1)
           .single();
 
+        // Paramédicos
         const { data: paramedicos } = await supabase
           .from('salida_paramedicos')
           .select(`rol_en_la_salida, paramedicos(nombre, apellido)`)
@@ -366,9 +352,43 @@ app.get('/clinica/ambulancias', async (req, res) => {
     );
 
     res.json(resultado);
+
   } catch (err) {
     console.error(err);
     res.status(500).json([]);
+  }
+});
+
+/* ===============================
+   ESP32 – DATOS
+=============================== */
+app.post('/esp32/datos', async (req, res) => {
+  try {
+    const { spo2, frecuencia_cardiaca, temperatura } = req.body;
+
+    const { data: salida } = await supabase
+      .from('salida')
+      .select('id_salida')
+      .eq('monitoreo_activo', true)
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!salida) return res.json({ ok: true, guardado: false });
+
+    await supabase.from('signos_vitales').insert({
+      id_salida: salida.id_salida,
+      spo2,
+      frecuencia_cardiaca,
+      temperatura,
+      fecha: new Date().toISOString()
+    });
+
+    res.json({ ok: true, guardado: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false });
   }
 });
 
@@ -381,10 +401,12 @@ app.get('/auth/me', async (req, res) => {
     if (!authHeader) return res.status(401).json({ ok: false });
 
     const token = authHeader.replace('Bearer ', '');
+
     const { data: userData, error } = await supabaseAuth.auth.getUser(token);
     if (error || !userData?.user) return res.status(401).json({ ok: false });
 
     const email = userData.user.email;
+
     const { data: usuario } = await supabase
       .from('usuarios')
       .select('tipo_rol')
@@ -394,6 +416,7 @@ app.get('/auth/me', async (req, res) => {
     if (!usuario) return res.status(403).json({ ok: false });
 
     res.json({ ok: true, email, tipo_rol: usuario.tipo_rol });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });

@@ -97,41 +97,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /* ========================= TIEMPO REAL (SOLO SI MONITOREO ACTIVO) ========================= */
-   setInterval(async () => {
-  if (!monitoreoActivo) return;
+    setInterval(async () => {
+      if (!monitoreoActivo) return;
 
-  try {
-    const r = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${idSalida}`);
-    const s = await r.json();
-    if (!s) return;
+      try {
+        const r = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${idSalida}`);
+        const s = await r.json();
+        if (!s) return;
 
-    // Signos automáticos ESP32
-    if (s.spo2 !== undefined) {
-      document.querySelector('.signo:nth-child(4) .valor').innerHTML = `${s.spo2}<span class="unidad">%</span>`;
-    }
+        // Signos automáticos ESP32
+        if (s.spo2 !== undefined) {
+          document.querySelector('.signo:nth-child(4) .valor').innerHTML = `${s.spo2}<span class="unidad">%</span>`;
+        }
 
-    if (s.frecuencia_cardiaca !== undefined) {
-      document.querySelector('.signo:nth-child(6) .valor').innerHTML = `${s.frecuencia_cardiaca}<span class="unidad">lat/min</span>`;
-    }
+        if (s.frecuencia_cardiaca !== undefined) {
+          document.querySelector('.signo:nth-child(6) .valor').innerHTML = `${s.frecuencia_cardiaca}<span class="unidad">lat/min</span>`;
+        }
 
-    if (s.temperatura !== undefined) {
-      document.querySelector('.signo:nth-child(5) .valor').innerHTML = `${s.temperatura}<span class="unidad">°C</span>`;
-    }
+        if (s.temperatura !== undefined) {
+          document.querySelector('.signo:nth-child(5) .valor').innerHTML = `${s.temperatura}<span class="unidad">°C</span>`;
+        }
 
-    // Signos manuales (presión y respiratoria)
-    const pd = v_pd.innerText.replace(/\D/g,''); // solo números
-    const ps = v_ps.innerText.replace(/\D/g,'');
-    const fr = v_fr.innerText.replace(/\D/g,'');
-
-    v_pd.innerHTML = pd ? `${pd}<span class="unidad">mmHg</span>` : '--<span class="unidad">mmHg</span>';
-    v_ps.innerHTML = ps ? `${ps}<span class="unidad">mmHg</span>` : '--<span class="unidad">mmHg</span>';
-    v_fr.innerHTML = fr ? `${fr}<span class="unidad">rpm</span>` : '--<span class="unidad">rpm</span>';
-
-  } catch (e) {
-    console.error('Error tiempo real:', e);
-  }
-}, 5001);
-
+      } catch (e) {
+        console.error('Error tiempo real:', e);
+      }
+    }, 5001);
 
   } catch (err) {
     console.error(err);
