@@ -103,42 +103,48 @@
       border-radius: 18px;
       padding: 18px;
       color: white;
-      font-size: 14px;
+      font-size: 16px; /* 🔹 Más claro */
     }
 
     .paciente h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
+      margin: 0 0 12px;
+      font-size: 20px; /* 🔹 Más visible */
+      text-align: center;
     }
 
     .signos {
       border: 3px solid #009fe3;
       border-radius: 20px;
-      padding: 14px;
+      padding: 18px;
     }
 
     .signos-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .signos-title {
       color: #e10600;
       font-weight: 900;
+      font-size: 18px;
     }
 
     .badges {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .badge {
-      padding: 6px 14px;
+      padding: 10px 20px; /* 🔹 Más grande */
       border-radius: 14px;
-      font-size: 12px;
+      font-size: 16px; /* 🔹 Más grande */
       font-weight: bold;
       color: white;
+      text-align: center;
     }
 
     .signos-grid {
@@ -154,23 +160,31 @@
       padding: 14px;
       color: white;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .signo span {
-      display: block;
-      font-size: 24px;
+      font-size: 28px; /* 🔹 Número más grande */
       font-weight: 900;
+    }
+
+    .signo .unidad {
+      font-size: 16px; /* 🔹 Unidad debajo, tamaño consistente */
+      margin-top: 4px;
     }
 
     .btn-blue {
       background: #009fe3;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 14px;
+      padding: 14px 24px; /* 🔹 Botón más grande */
+      border-radius: 16px;
       font-weight: bold;
       cursor: pointer;
       margin-top: 15px;
+      font-size: 18px;
     }
   </style>
 </head>
@@ -237,32 +251,38 @@
               <div class="signos-grid">
                 <div class="signo">
                   PRESIÓN DIASTÓLICA
-                  <span id="pd">--</span>mmHg
+                  <span id="pd">--</span>
+                  <span class="unidad">mmHg</span>
                 </div>
 
                 <div class="signo">
                   PRESIÓN SISTÓLICA
-                  <span id="ps">--</span>mmHg
+                  <span id="ps">--</span>
+                  <span class="unidad">mmHg</span>
                 </div>
 
                 <div class="signo">
                   FREC. RESP.
-                  <span id="fr">--</span>rpm
+                  <span id="fr">--</span>
+                  <span class="unidad">rpm</span>
                 </div>
 
                 <div class="signo">
                   SpO₂
-                  <span id="c_spo2">--</span>%
+                  <span id="c_spo2">--</span>
+                  <span class="unidad">%</span>
                 </div>
 
                 <div class="signo">
                   TEMPERATURA
-                  <span id="c_temp">--</span>°C
+                  <span id="c_temp">--</span>
+                  <span class="unidad">°C</span>
                 </div>
 
                 <div class="signo">
                   FREC. CARDIACA
-                  <span id="c_fc">--</span>lat/min
+                  <span id="c_fc">--</span>
+                  <span class="unidad">lat/min</span>
                 </div>
               </div>
 
@@ -285,6 +305,14 @@
   <script src="guard.js"></script>
   <script>
     protegerPagina('clinica');
+
+    // 🔹 Actualizar fecha automáticamente
+    const fechaHoy = document.getElementById('fechaHoy');
+    fechaHoy.innerText = new Date().toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   </script>
 
 </body>
