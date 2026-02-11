@@ -117,7 +117,13 @@ function irMonitoreo() {
    LOGOUT
 ========================= */
 function logout() {
-  localStorage.clear();
+  // Limpiamos solo lo necesario para cerrar sesión
+  localStorage.removeItem('salida_activa');
+  localStorage.removeItem('paciente_activo');
+  localStorage.removeItem('ubicacion_activa');
+  localStorage.removeItem('ambulancia1_color');
+
+  // Redirigimos al login
   location.href = 'index.html';
 }
 
