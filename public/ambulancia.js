@@ -1,21 +1,26 @@
-let enCamino = false;
+let enCamino = localStorage.getItem('ambulancia1_color') === 'green' || false;
 
 /* =========================
    CARGAR PARAMÉDICOS
 ========================= */
 async function cargarParamedicos() {
-  const res = await fetch('https://ambulink.doc-ia.cloud/paramedicos');
-  const data = await res.json();
+  try {
+    const res = await fetch('https://ambulink.doc-ia.cloud/paramedicos');
+    const data = await res.json();
 
-  chofer.innerHTML = '<option value="">Seleccionar</option>';
-  paramedico.innerHTML = '<option value="">Seleccionar</option>';
+    if (!chofer || !paramedico) return;
 
-  data.forEach(p => {
-    const nombre = `${p.nombre} ${p.apellido}`;
+    chofer.innerHTML = '<option value="">Seleccionar</option>';
+    paramedico.innerHTML = '<option value="">Seleccionar</option>';
 
-    chofer.innerHTML += `<option value="${p.id_paramedico}">${nombre}</option>`;
-    paramedico.innerHTML += `<option value="${p.id_paramedico}">${nombre}</option>`;
-  });
+    data.forEach(p => {
+      const nombre = `${p.nombre} ${p.apellido}`;
+      chofer.innerHTML += `<option value="${p.id_paramedico}">${nombre}</option>`;
+      paramedico.innerHTML += `<option value="${p.id_paramedico}">${nombre}</option>`;
+    });
+  } catch (e) {
+    console.error('Error al cargar paramédicos:', e);
+  }
 }
 
 /* =========================
@@ -28,14 +33,13 @@ function toggleEnCamino(valor) {
     enCamino = !enCamino;
   }
 
+  if (!estadoAmbulancia || !btnEnCamino) return;
+
   estadoAmbulancia.innerText = enCamino ? 'EN CAMINO' : 'DETENIDA';
   estadoAmbulancia.style.background = enCamino ? '#1bb14c' : '#e10600';
   btnEnCamino.className = enCamino ? 'btn-green' : 'btn-stop';
 
-  localStorage.setItem(
-    'ambulancia1_color',
-    enCamino ? 'green' : 'red'
-  );
+  localStorage.setItem('ambulancia1_color', enCamino ? 'green' : 'red');
 }
 
 /* =========================
@@ -60,42 +64,41 @@ async function guardar() {
     }
   };
 
-  if (
-    !payload.ubicacion ||
-    !payload.personal.chofer ||
-    !payload.personal.paramedico ||
-    !payload.paciente.nombre ||
-    !payload.paciente.carnet ||
-    !payload.paciente.edad ||
-    !payload.paciente.sexo ||
-    !payload.paciente.tipo_sangre ||
-    !payload.paciente.tipo_traslado ||
-    !payload.paciente.diagnostico
-  ) {
+  // Validación simple
+  for (const key in payload.paciente) {
+    if (!payload.paciente[key] && key !== 'edad') {
+      alert('⚠️ Completa todos los campos');
+      return;
+    }
+  }
+
+  if (!payload.ubicacion || !payload.personal.chofer || !payload.personal.paramedico) {
     alert('⚠️ Completa todos los campos');
     return;
   }
 
-  const res = await fetch(
-    'https://ambulink.doc-ia.cloud/ambulancia/salida',
-    {
+  try {
+    const res = await fetch('https://ambulink.doc-ia.cloud/ambulancia/salida', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
+    });
+
+    const r = await res.json();
+
+    if (r.ok) {
+      localStorage.setItem('salida_activa', r.id_salida);
+      localStorage.setItem('paciente_activo', JSON.stringify(payload.paciente));
+      localStorage.setItem('ubicacion_activa', payload.ubicacion);
+
+      alert('✅ Paciente registrado correctamente');
+      window.location.href = 'monitoreo.html';
+    } else {
+      alert('❌ Error al guardar');
     }
-  );
-
-  const r = await res.json();
-
-  if (r.ok) {
-    localStorage.setItem('salida_activa', r.id_salida);
-    localStorage.setItem('paciente_activo', JSON.stringify(payload.paciente));
-    localStorage.setItem('ubicacion_activa', payload.ubicacion);
-
-    alert('✅ Paciente registrado correctamente');
-    window.location.href = 'monitoreo.html';
-  } else {
-    alert('❌ Error al guardar');
+  } catch (e) {
+    console.error('Error al guardar paciente:', e);
+    alert('❌ Error de conexión al guardar');
   }
 }
 
@@ -107,7 +110,6 @@ function irMonitoreo() {
     alert('⚠️ Primero debes registrar un paciente');
     return;
   }
-
   window.location.href = 'monitoreo.html';
 }
 
@@ -123,8 +125,11 @@ function logout() {
    LIMPIAR CLÍNICA AL ENTRAR
 ========================= */
 document.addEventListener('DOMContentLoaded', () => {
-  limpiarClinica();   // ✅ Todos los campos vacíos
-  cargarParamedicos(); // cargar lista de paramédicos como siempre
+  limpiarClinica();   
+  cargarParamedicos(); 
+
+  // Restaurar estado de ambulancia
+  toggleEnCamino(enCamino);
 });
 
 function limpiarClinica() {

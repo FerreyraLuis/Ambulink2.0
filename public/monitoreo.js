@@ -189,7 +189,17 @@ function nuevoPaciente() {
   // 🔹 Avisar al dashboard de la clínica que haga reset
   localStorage.setItem('reset_clinica_ambulancia1', 'true');
 
+  // 🔹 Cambiar color de la ambulancia a rojo
   localStorage.setItem('ambulancia1_color', 'red');
+
+  // 🔹 Limpiar salida activa
   localStorage.removeItem('salida_activa');
-  window.location.href = 'ambulancia.html';
+
+  // 🔹 Redireccionar solo si no estamos ya en ambulancia.html
+  if (!window.location.href.includes('ambulancia.html')) {
+    window.location.href = 'ambulancia.html';
+  } else {
+    // 🔹 Refrescar página para resetear datos
+    location.reload();
+  }
 }
