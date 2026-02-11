@@ -1,11 +1,13 @@
 let pacienteActualId = null;
 let monitoreoFinalizado = false;
 let ultimoDato = null;
+let pacientesFinalizados = []; // Lista de pacientes finalizados
 
 document.addEventListener('DOMContentLoaded', () => {
   pacienteActualId = null;
   monitoreoFinalizado = false;
   ultimoDato = null;
+  pacientesFinalizados = [];
 
   resetAmbulancia1();
   cargarClinica();
@@ -23,6 +25,7 @@ window.addEventListener('storage', (e) => {
     pacienteActualId = null;
     monitoreoFinalizado = false;
     ultimoDato = null;
+    pacientesFinalizados = [];
   }
 });
 
@@ -39,14 +42,22 @@ async function cargarClinica() {
     const amb = data[0];
     const nuevoPacienteId = amb.paciente?.carnet || null;
 
-    // Si llega un nuevo paciente, se reactiva el monitoreo
+    // Ignorar paciente ya finalizado
+    if (pacientesFinalizados.includes(nuevoPacienteId)) {
+      resetAmbulancia1();
+      pacienteActualId = null;
+      monitoreoFinalizado = true;
+      return;
+    }
+
+    // Si llega un nuevo paciente, reactivamos el monitoreo
     if (nuevoPacienteId !== pacienteActualId) {
       pacienteActualId = nuevoPacienteId;
       monitoreoFinalizado = false;
       resetAmbulancia1();
     }
 
-    // Si no hay paciente o el monitoreo finalizó para este paciente, no actualizamos
+    // Si no hay paciente o el monitoreo está finalizado, no actualizamos
     if (!amb.paciente || monitoreoFinalizado) return;
 
     // Estado ambulancia
@@ -117,6 +128,9 @@ function resetAmbulancia1() {
 }
 
 function finalizarMonitoreo() {
+  if (pacienteActualId) {
+    pacientesFinalizados.push(pacienteActualId); // marcar paciente como finalizado
+  }
   resetAmbulancia1();
   pacienteActualId = null;
   monitoreoFinalizado = true;
@@ -128,6 +142,7 @@ function salir() {
   pacienteActualId = null;
   monitoreoFinalizado = false;
   ultimoDato = null;
+  pacientesFinalizados = [];
   resetAmbulancia1();
   location.href = 'login.html';
 }
