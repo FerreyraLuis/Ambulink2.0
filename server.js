@@ -16,13 +16,12 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
-
 const supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
 
-// __dirname para ES Modules
+// __dirname para import
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -100,6 +99,7 @@ app.post('/ambulancia/salida', async (req, res) => {
     ]);
 
     res.json({ ok: true, id_salida: salida.id_salida });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -107,16 +107,11 @@ app.post('/ambulancia/salida', async (req, res) => {
 });
 
 /* ===============================
-   ACTUALIZAR SIGNOS MANUALES
+   ACTUALIZAR SIGNOS
 =============================== */
 app.put('/paciente/signos', async (req, res) => {
   try {
-    const {
-      id_salida,
-      presion_diastolica,
-      presion_sistolica,
-      frecuencia_respiratoria
-    } = req.body;
+    const { id_salida, presion_diastolica, presion_sistolica, frecuencia_respiratoria } = req.body;
 
     await supabase
       .from('paciente')
@@ -132,6 +127,7 @@ app.put('/paciente/signos', async (req, res) => {
     });
 
     res.json({ ok: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -139,7 +135,7 @@ app.put('/paciente/signos', async (req, res) => {
 });
 
 /* ===============================
-   GLASGOW
+   ACTUALIZAR GLASGOW
 =============================== */
 app.put('/paciente/glasgow', async (req, res) => {
   try {
@@ -157,6 +153,7 @@ app.put('/paciente/glasgow', async (req, res) => {
     });
 
     res.json({ ok: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -164,7 +161,7 @@ app.put('/paciente/glasgow', async (req, res) => {
 });
 
 /* ===============================
-   HEMORRAGIA
+   ACTUALIZAR HEMORRAGIA
 =============================== */
 app.put('/paciente/hemorragia', async (req, res) => {
   try {
@@ -176,6 +173,7 @@ app.put('/paciente/hemorragia', async (req, res) => {
       .eq('id_salida', id_salida);
 
     res.json({ ok: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -183,7 +181,7 @@ app.put('/paciente/hemorragia', async (req, res) => {
 });
 
 /* ===============================
-   MONITOREO ON / OFF
+   ACTIVAR / DESACTIVAR MONITOREO
 =============================== */
 app.put('/salida/monitoreo', async (req, res) => {
   try {
@@ -195,6 +193,7 @@ app.put('/salida/monitoreo', async (req, res) => {
       .eq('id_salida', id_salida);
 
     res.json({ ok: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
@@ -210,7 +209,7 @@ app.get('/salidas/:id', async (req, res) => {
 
     const { data: salida } = await supabase
       .from('salida')
-      .select('*')
+      .select('id_salida, fecha, ubicacion, en_camino, monitoreo_activo')
       .eq('id_salida', id)
       .single();
 
@@ -230,6 +229,7 @@ app.get('/salidas/:id', async (req, res) => {
       paciente,
       salida_paramedicos: paramedicos || []
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({});
@@ -237,24 +237,91 @@ app.get('/salidas/:id', async (req, res) => {
 });
 
 /* ===============================
-   CLÍNICA – AMBULANCIAS
+   HISTORIAL POR FECHA
 =============================== */
+app.get('/historial/fecha/:fecha', async (req, res) => {
+  try {
+    const fecha = req.params.fecha;
+    const inicio = `${fecha}T00:00:00`;
+    const fin = `${fecha}T23:59:59`;
+
+    const { data } = await supabase
+      .from('salida')
+      .select('id_salida, fecha, ubicacion, en_camino')
+      .gte('fecha', inicio)
+      .lte('fecha', fin)
+      .order('fecha', { ascending: false });
+
+    res.json(data || []);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json([]);
+  }
+});
+
+/* ===============================
+   HISTORIAL DE SIGNOS
+=============================== */
+app.get('/historial/signos/:id', async (req, res) => {
+  try {
+    const { data } = await supabase
+      .from('signos_vitales')
+      .select('*')
+      .eq('id_salida', req.params.id)
+      .order('fecha', { ascending: false });
+
+    res.json(data || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json([]);
+  }
+});
+
+/* ===============================
+   ÚLTIMO SIGNO VITAL
+=============================== */
+app.get('/signos/ultimo/:id', async (req, res) => {
+  try {
+    const { data } = await supabase
+      .from('signos_vitales')
+      .select('*')
+      .eq('id_salida', req.params.id)
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .single();
+
+    res.json(data || {});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({});
+  }
+});
+
+/* =====================================================
+   🚑 ESTADO AMBULANCIAS COMPLETO – PACIENTES + SIGNOS
+===================================================== */
 app.get('/clinica/ambulancias', async (req, res) => {
   try {
-    const { data: salidas } = await supabase
+    // Todas las ambulancias en curso
+    const { data: salidas, error } = await supabase
       .from('salida')
       .select('*')
       .eq('estado', 'en curso')
       .order('fecha', { ascending: false });
 
+    if (error) throw error;
+
     const resultado = await Promise.all(
       salidas.map(async (s) => {
+        // Paciente
         const { data: paciente } = await supabase
           .from('paciente')
           .select('*')
           .eq('id_salida', s.id_salida)
           .single();
 
+        // Últimos signos vitales (manual + ESP32)
         const { data: signos } = await supabase
           .from('signos_vitales')
           .select('*')
@@ -263,29 +330,44 @@ app.get('/clinica/ambulancias', async (req, res) => {
           .limit(1)
           .single();
 
+        // Paramédicos
+        const { data: paramedicos } = await supabase
+          .from('salida_paramedicos')
+          .select(`rol_en_la_salida, paramedicos(nombre, apellido)`)
+          .eq('id_salida', s.id_salida);
+
         return {
-          ...s,
+          id_salida: s.id_salida,
+          fecha: s.fecha,
+          ubicacion: s.ubicacion,
+          en_camino: s.en_camino,
+          monitoreo_activo: s.monitoreo_activo,
           paciente: paciente || null,
-          signos: signos || {}
+          signos: signos || {},
+          hemorragia: paciente?.hemorragia ?? false,
+          glasgow: paciente?.escala_glasgow ?? null,
+          paramedicos: paramedicos || []
         };
       })
     );
 
     res.json(resultado);
+
   } catch (err) {
     console.error(err);
     res.status(500).json([]);
   }
 });
 
-/* =====================================================
-   🚑 ESP32 – DATOS (SOLUCIÓN DEFINITIVA)
-===================================================== */
+/* ===============================
+   ESP32 – DATOS (MEJORADO)
+   Permite envío independiente
+=============================== */
 app.post('/esp32/datos', async (req, res) => {
   try {
     const { spo2, frecuencia_cardiaca, temperatura } = req.body;
 
-    // Buscar salida con monitoreo activo
+    // Buscar salida activa
     const { data: salida } = await supabase
       .from('salida')
       .select('id_salida')
@@ -294,37 +376,48 @@ app.post('/esp32/datos', async (req, res) => {
       .limit(1)
       .single();
 
-    if (!salida) {
-      return res.json({ ok: true, guardado: false });
-    }
+    if (!salida) return res.json({ ok: true, guardado: false });
 
-    // Último signo vital
-    const { data: ultimo } = await supabase
-      .from('signos_vitales')
-      .select('*')
-      .eq('id_salida', salida.id_salida)
-      .order('fecha', { ascending: false })
-      .limit(1)
-      .single();
-
-    const datosFinales = {
+    // Construir objeto dinámicamente
+    const datosInsertar = {
       id_salida: salida.id_salida,
-      spo2: spo2 ?? ultimo?.spo2 ?? null,
-      frecuencia_cardiaca: frecuencia_cardiaca ?? ultimo?.frecuencia_cardiaca ?? null,
-      temperatura: temperatura ?? ultimo?.temperatura ?? null,
       fecha: new Date().toISOString()
     };
 
-    await supabase.from('signos_vitales').insert(datosFinales);
+    // Solo agregar si vienen definidos
+    if (spo2 !== undefined) {
+      datosInsertar.spo2 = spo2 === null ? null : Number(spo2);
+    }
 
-    console.log('📡 ESP32 → Backend:', datosFinales);
+    if (frecuencia_cardiaca !== undefined) {
+      datosInsertar.frecuencia_cardiaca =
+        frecuencia_cardiaca === null ? null : Number(frecuencia_cardiaca);
+    }
+
+    if (temperatura !== undefined) {
+      datosInsertar.temperatura =
+        temperatura === null ? null : Number(temperatura);
+    }
+
+    // Si no vino ningún dato válido, no guardar
+    if (
+      datosInsertar.spo2 === undefined &&
+      datosInsertar.frecuencia_cardiaca === undefined &&
+      datosInsertar.temperatura === undefined
+    ) {
+      return res.json({ ok: true, guardado: false });
+    }
+
+    await supabase.from('signos_vitales').insert(datosInsertar);
 
     res.json({ ok: true, guardado: true });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
   }
 });
+
 
 /* ===============================
    AUTH / ME
@@ -336,16 +429,21 @@ app.get('/auth/me', async (req, res) => {
 
     const token = authHeader.replace('Bearer ', '');
 
-    const { data: userData } = await supabaseAuth.auth.getUser(token);
-    if (!userData?.user) return res.status(401).json({ ok: false });
+    const { data: userData, error } = await supabaseAuth.auth.getUser(token);
+    if (error || !userData?.user) return res.status(401).json({ ok: false });
+
+    const email = userData.user.email;
 
     const { data: usuario } = await supabase
       .from('usuarios')
       .select('tipo_rol')
-      .eq('email', userData.user.email)
+      .eq('email', email)
       .single();
 
-    res.json({ ok: true, tipo_rol: usuario.tipo_rol });
+    if (!usuario) return res.status(403).json({ ok: false });
+
+    res.json({ ok: true, email, tipo_rol: usuario.tipo_rol });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
