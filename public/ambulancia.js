@@ -124,7 +124,7 @@ function logout() {
   localStorage.removeItem('ambulancia1_color');
 
   // Redirigimos al login
-  location.href = 'index.html';
+  location.href = 'login.html';
 }
 
 /* =========================
