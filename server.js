@@ -196,7 +196,6 @@ app.post('/esp32/datos', async (req, res) => {
   try {
     const { spo2, frecuencia_cardiaca, temperatura } = req.body;
 
-    // Buscar salida activa con monitoreo activo
     const { data: salida } = await supabase
       .from('salida')
       .select('id_salida')
@@ -205,11 +204,12 @@ app.post('/esp32/datos', async (req, res) => {
       .limit(1)
       .single();
 
-    if (!salida) return res.json({ ok: true, guardado: false, mensaje: "Monitoreo inactivo" });
+    if (!salida) {
+      return res.json({ ok: true, guardado: false, mensaje: "Monitoreo inactivo" });
+    }
 
     const id_salida = salida.id_salida;
 
-    // Traer el último registro de signos para mantener los valores anteriores
     const { data: ultimo } = await supabase
       .from('signos_vitales')
       .select('*')
@@ -218,39 +218,31 @@ app.post('/esp32/datos', async (req, res) => {
       .limit(1)
       .single();
 
-    // Construir objeto dinámico con independencia de campos
-    const datosInsertar = { id_salida, fecha: new Date().toISOString() };
+    const datosInsertar = {
+      id_salida,
+      fecha: new Date().toISOString(),
+      spo2: spo2 ?? ultimo?.spo2 ?? null,
+      frecuencia_cardiaca: frecuencia_cardiaca ?? ultimo?.frecuencia_cardiaca ?? null,
+      temperatura: temperatura ?? ultimo?.temperatura ?? null
+    };
 
-    // SPO2
-    if (spo2 !== undefined && spo2 !== null) {
-      datosInsertar.spo2 = Number(spo2);
-    } else {
-      datosInsertar.spo2 = ultimo?.spo2 ?? "-";
+    const { error } = await supabase
+      .from('signos_vitales')
+      .insert(datosInsertar);
+
+    if (error) {
+      console.error("ERROR INSERT:", error);
+      return res.status(500).json({ ok: false });
     }
-
-    // Frecuencia cardíaca
-    if (frecuencia_cardiaca !== undefined && frecuencia_cardiaca !== null) {
-      datosInsertar.frecuencia_cardiaca = Number(frecuencia_cardiaca);
-    } else {
-      datosInsertar.frecuencia_cardiaca = ultimo?.frecuencia_cardiaca ?? "-";
-    }
-
-    // Temperatura
-    if (temperatura !== undefined && temperatura !== null) {
-      datosInsertar.temperatura = Number(temperatura);
-    } else {
-      datosInsertar.temperatura = ultimo?.temperatura ?? "-";
-    }
-
-    // Insertar en la tabla signos_vitales
-    await supabase.from('signos_vitales').insert(datosInsertar);
 
     res.json({ ok: true, guardado: true, datos: datosInsertar });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false });
   }
 });
+
 
 
 /* ===============================
