@@ -1,23 +1,20 @@
 let enCamino = localStorage.getItem('ambulancia1_color') === 'green' || false;
 
 /* =========================
-   MAPEO INTELIGENTE DE DATOS
+   MAPEO INTELIGENTE (Corregido para tu HTML)
 ========================= */
 const smartMaps = {
   "tipo_sangre": {
-    "o positivo": "O+", "o +": "O+", "o negativo": "O-", "o -": "O-",
-    "a positivo": "A+", "a +": "A+", "a negativo": "A-", "a -": "A-",
-    "b positivo": "B+", "b +": "B+", "b negativo": "B-", "b -": "B-",
-    "ab positivo": "AB+", "ab +": "AB+", "ab negativo": "AB-", "ab -": "AB-"
+    "o positivo": "O+", "o negativo": "O-", "a positivo": "A+", "a negativo": "A-",
+    "b positivo": "B+", "b negativo": "B-", "ab positivo": "AB+", "ab negativo": "AB-"
   },
   "sexo": {
-    "masculino": "Masculino", "hombre": "Masculino", "varón": "Masculino", "niño": "Masculino",
-    "femenino": "Femenino", "mujer": "Femenino", "niña": "Femenino"
+    "masculino": "Masculino", "hombre": "Masculino", "varón": "Masculino",
+    "femenino": "Femenino", "mujer": "Femenino"
   },
   "tipo_traslado": {
     "emergencia": "Emergencia", "urgencia": "Emergencia",
-    "alta": "Alta", "recuperado": "Alta",
-    "traslado": "Traslado", "remisión": "Traslado"
+    "alta": "Alta", "traslado": "Traslado"
   }
 };
 
@@ -28,38 +25,23 @@ async function cargarParamedicos() {
   try {
     const res = await fetch('https://ambulink.doc-ia.cloud/paramedicos');
     const data = await res.json();
-    const choferSelect = document.getElementById('chofer');
-    const paramedicoSelect = document.getElementById('paramedico');
-    if (!choferSelect || !paramedicoSelect) return;
+    const chofer = document.getElementById('chofer');
+    const paramedico = document.getElementById('paramedico');
+    if (!chofer || !paramedico) return;
 
-    choferSelect.innerHTML = '<option value="">Seleccionar</option>';
-    paramedicoSelect.innerHTML = '<option value="">Seleccionar</option>';
+    chofer.innerHTML = '<option value="">Seleccionar</option>';
+    paramedico.innerHTML = '<option value="">Seleccionar</option>';
 
     data.forEach(p => {
-      const nombreCompleto = `${p.nombre} ${p.apellido}`;
-      choferSelect.innerHTML += `<option value="${p.id_paramedico}">${nombreCompleto}</option>`;
-      paramedicoSelect.innerHTML += `<option value="${p.id_paramedico}">${nombreCompleto}</option>`;
+      const nombre = `${p.nombre} ${p.apellido}`;
+      chofer.innerHTML += `<option value="${p.id_paramedico}">${nombre}</option>`;
+      paramedico.innerHTML += `<option value="${p.id_paramedico}">${nombre}</option>`;
     });
-  } catch (e) { console.error('Error:', e); }
+  } catch (e) { console.error('Error cargando paramédicos:', e); }
 }
 
 /* =========================
-   ESTADO EN CAMINO
-========================= */
-function toggleEnCamino(valor) {
-  if (valor !== undefined) enCamino = valor;
-  else enCamino = !enCamino;
-  const estadoAmbulancia = document.getElementById('estadoAmbulancia');
-  const btnEnCamino = document.getElementById('btnEnCamino');
-  if (!estadoAmbulancia || !btnEnCamino) return;
-  estadoAmbulancia.innerText = enCamino ? 'EN CAMINO' : 'DETENIDA';
-  estadoAmbulancia.style.background = enCamino ? '#1bb14c' : '#e10600';
-  btnEnCamino.className = enCamino ? 'btn-green' : 'btn-stop';
-  localStorage.setItem('ambulancia1_color', enCamino ? 'green' : 'red');
-}
-
-/* =========================
-   SISTEMA DE VOZ INTELIGENTE
+   SISTEMA DE VOZ
 ========================= */
 let recognition;
 let isListeningVoice = false;
@@ -79,7 +61,7 @@ function toggleVoz() {
   recognition.onstart = () => {
     isListeningVoice = true;
     document.getElementById('btnVoz').classList.add('listening');
-    document.getElementById('status-voz').innerText = "ESCUCHANDO...";
+    document.getElementById('status-voz').innerText = "ESCUCHANDO COMANDO...";
   };
 
   recognition.onresult = (event) => {
@@ -95,14 +77,12 @@ function toggleVoz() {
       "carnet": "carnet", "traslado": "tipo_traslado"
     };
 
-    // 1. Detección de cambio de campo
+    // Detectar cambio de campo
     for (let key in keywords) {
       if (transcript.startsWith(key)) {
         if (targetField) document.getElementById(targetField).classList.remove('active-field');
         targetField = keywords[key];
-        const el = document.getElementById(targetField);
-        el.classList.remove('confirmed-field');
-        el.classList.add('active-field');
+        document.getElementById(targetField).classList.add('active-field');
         document.getElementById('status-voz').innerText = `EDITANDO: ${key.toUpperCase()}`;
       }
     }
@@ -115,22 +95,30 @@ function toggleVoz() {
       if (transcript.includes("confirmado") || transcript.includes("confirmar")) {
         let finalValue = currentText.replace(/confirmado|confirmar/gi, "").trim();
         
-        // APLICAR MAPEO INTELIGENTE SEGÚN EL CAMPO
+        // Aplicar Mapeo
         if (smartMaps[targetField]) {
           for (let keyMap in smartMaps[targetField]) {
-            if (finalValue.includes(keyMap)) {
-              finalValue = smartMaps[targetField][keyMap];
-              break;
-            }
+            if (finalValue.includes(keyMap)) { finalValue = smartMaps[targetField][keyMap]; break; }
           }
         }
 
-        if (finalValue !== "") {
-          // Si es un número (edad), convertirlo
-          if (targetField === "edad") {
-            campo.value = finalValue.replace(/\D/g, ""); // Solo números
-          } else {
-            campo.value = finalValue.charAt(0).toUpperCase() + finalValue.slice(1);
+        // --- LÓGICA PARA SELECTS (TU CASO) ---
+        if (campo.tagName === "SELECT") {
+          let found = false;
+          for (let i = 0; i < campo.options.length; i++) {
+            // Comparamos contra el TEXTO (ej: "O+") o el VALOR (ej: "O+")
+            if (campo.options[i].text === finalValue || campo.options[i].value === finalValue) {
+              campo.selectedIndex = i;
+              found = true;
+              break;
+            }
+          }
+          if (!found) console.log("No se encontró la opción para: " + finalValue);
+        } else {
+          // Lógica para Inputs
+          if (finalValue !== "") {
+            if (targetField === "edad") campo.value = finalValue.replace(/\D/g, "");
+            else campo.value = finalValue.charAt(0).toUpperCase() + finalValue.slice(1);
           }
         }
         
@@ -140,24 +128,31 @@ function toggleVoz() {
         document.getElementById('status-voz').innerText = "CONFIRMADO.";
         recognition.stop(); 
       } else {
-        if (currentText !== "") campo.value = currentText;
+        if (currentText !== "" && campo.tagName !== "SELECT") campo.value = currentText;
       }
     }
   };
 
-  recognition.onend = () => {
-    if (isListeningVoice) recognition.start(); 
-    else {
-      document.getElementById('btnVoz').classList.remove('listening');
-      document.getElementById('status-voz').innerText = "SISTEMA DE VOZ: STANDBY";
-    }
-  };
+  recognition.onend = () => { if (isListeningVoice) recognition.start(); else {
+    document.getElementById('btnVoz').classList.remove('listening');
+    document.getElementById('status-voz').innerText = "SISTEMA DE VOZ: STANDBY";
+  }};
   recognition.start();
 }
 
 /* =========================
-   RESTO DE FUNCIONES
+   BOTONES Y GUARDADO
 ========================= */
+function toggleEnCamino() {
+  enCamino = !enCamino;
+  const estado = document.getElementById('estadoAmbulancia');
+  const btn = document.getElementById('btnEnCamino');
+  estado.innerText = enCamino ? 'EN CAMINO' : 'DETENIDA';
+  estado.style.background = enCamino ? '#1bb14c' : '#e10600';
+  btn.className = enCamino ? 'btn-green' : 'btn-stop';
+  localStorage.setItem('ambulancia1_color', enCamino ? 'green' : 'red');
+}
+
 async function guardar() {
   const payload = {
     ubicacion: document.getElementById('ubicacion').value,
@@ -176,6 +171,7 @@ async function guardar() {
       diagnostico: document.getElementById('diagnostico').value
     }
   };
+
   try {
     const res = await fetch('https://ambulink.doc-ia.cloud/ambulancia/salida', {
       method: 'POST',
@@ -185,26 +181,11 @@ async function guardar() {
     const r = await res.json();
     if (r.ok) {
       localStorage.setItem('salida_activa', r.id_salida);
-      alert('✅ Guardado.');
+      alert('✅ Guardado correctamente');
       window.location.href = 'monitoreo.html';
     }
-  } catch (e) { console.error(e); }
-}
-
-function irMonitoreo() { 
-  if (!localStorage.getItem('salida_activa')) return alert('⚠️ Falta registro');
-  location.href = 'monitoreo.html'; 
+  } catch (e) { alert('Error al guardar'); }
 }
 
 function logout() { localStorage.clear(); location.href = 'login.html'; }
-
-function limpiarAlEntrar() {
-  ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.value = ''; el.classList.remove('active-field', 'confirmed-field'); }
-  });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  limpiarAlEntrar(); cargarParamedicos(); toggleEnCamino(enCamino);
-});
+function irMonitoreo() { location.href = 'monitoreo.html'; }
