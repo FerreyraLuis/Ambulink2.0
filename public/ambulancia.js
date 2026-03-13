@@ -1,7 +1,7 @@
 let enCamino = localStorage.getItem('ambulancia1_color') === 'green' || false;
 
 /* =========================
-   MAPEO INTELIGENTE (Coincide con tu HTML)
+   MAPEO INTELIGENTE
 ========================= */
 const smartMaps = {
   "tipo_sangre": {
@@ -60,7 +60,7 @@ function toggleEnCamino(valor) {
 }
 
 /* =========================
-   SISTEMA DE VOZ (COMPLETO)
+   SISTEMA DE VOZ
 ========================= */
 let recognition;
 let isListeningVoice = false;
@@ -90,10 +90,9 @@ function toggleVoz() {
     }
     transcript = transcript.trim();
 
-    // --- COMANDO GLOBAL: GUARDAR TODO + CONFIRMAR ---
+    // COMANDO GLOBAL: GUARDAR TODO + CONFIRMAR
     if (transcript.includes("guardar todo")) {
       document.getElementById('status-voz').innerText = "¿ENVIAR REGISTRO? DIGA 'CONFIRMAR'";
-      document.getElementById('status-voz').style.color = "#f1c40f"; // Color de advertencia
       if (transcript.includes("confirmar") || transcript.includes("confirmado")) {
         isListeningVoice = false;
         recognition.stop();
@@ -108,7 +107,6 @@ function toggleVoz() {
       "carnet": "carnet", "traslado": "tipo_traslado"
     };
 
-    // Detección de activación de campo
     for (let key in keywords) {
       if (transcript.split(" ").includes(key)) {
         if (targetField) document.getElementById(targetField).classList.remove('active-field');
@@ -117,7 +115,6 @@ function toggleVoz() {
         el.classList.remove('confirmed-field');
         el.classList.add('active-field');
         document.getElementById('status-voz').innerText = `DICTANDO EN: ${key.toUpperCase()}`;
-        document.getElementById('status-voz').style.color = "#0f0";
       }
     }
 
@@ -164,7 +161,6 @@ function toggleVoz() {
     else {
       document.getElementById('btnVoz').classList.remove('listening');
       document.getElementById('status-voz').innerText = "SISTEMA DE VOZ: STANDBY";
-      document.getElementById('status-voz').style.color = "#0f0";
     }
   };
 
@@ -172,27 +168,19 @@ function toggleVoz() {
 }
 
 /* =========================
-   GUARDAR (LÓGICA N/N INTEGRADA)
+   GUARDAR (SALTO DIRECTO)
 ========================= */
 async function guardar() {
-  let nombre = document.getElementById('nombre').value.trim();
-  let carnet = document.getElementById('carnet').value.trim();
+  let nombre = document.getElementById('nombre').value.trim() || "N/N";
+  let carnet = document.getElementById('carnet').value.trim() || "0";
   let edadVal = document.getElementById('edad').value.trim();
-  let sexo = document.getElementById('sexo').value;
-  let sangre = document.getElementById('tipo_sangre').value;
-  let traslado = document.getElementById('tipo_traslado').value;
-  let diagnostico = document.getElementById('diagnostico').value.trim();
-  let ubicacion = document.getElementById('ubicacion').value.trim();
-
-  // Autocompletado N/N y 0 para campos vacíos
-  if (!nombre) nombre = "N/N";
-  if (!carnet) carnet = "0";
   let edad = (edadVal === "" || isNaN(edadVal)) ? 0 : Number(edadVal);
-  if (!sexo) sexo = "N/N";
-  if (!sangre) sangre = "N/N";
-  if (!traslado) traslado = "Traslado";
-  if (!diagnostico) diagnostico = "N/N";
-  if (!ubicacion) ubicacion = "Sin dirección registrada";
+  
+  let sexo = document.getElementById('sexo').value || "N/N";
+  let sangre = document.getElementById('tipo_sangre').value || "N/N";
+  let traslado = document.getElementById('tipo_traslado').value || "Traslado";
+  let diagnostico = document.getElementById('diagnostico').value.trim() || "N/N";
+  let ubicacion = document.getElementById('ubicacion').value.trim() || "Sin dirección registrada";
 
   const payload = {
     ubicacion: ubicacion,
@@ -213,20 +201,16 @@ async function guardar() {
     const r = await res.json();
     if (r.ok) {
       localStorage.setItem('salida_activa', r.id_salida);
-      alert('✅ Registro exitoso (Campos vacíos como N/N).');
+      // Eliminamos el alert para saltar directo
       window.location.href = 'monitoreo.html';
     }
   } catch (e) { 
     console.error(e);
-    alert('❌ Error de conexión al servidor');
   }
 }
 
-/* =========================
-   FUNCIONES DE NAVEGACIÓN
-========================= */
 function irMonitoreo() { 
-  if (!localStorage.getItem('salida_activa')) return alert('⚠️ Registra al paciente primero');
+  if (!localStorage.getItem('salida_activa')) return;
   location.href = 'monitoreo.html'; 
 }
 
