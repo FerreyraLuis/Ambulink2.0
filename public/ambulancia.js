@@ -1,7 +1,7 @@
 let enCamino = localStorage.getItem('ambulancia1_color') === 'green' || false;
 
 /* =========================
-   MAPEO INTELIGENTE (Coincide con tu HTML)
+   MAPEO INTELIGENTE
 ========================= */
 const smartMaps = {
   "tipo_sangre": {
@@ -30,10 +30,8 @@ async function cargarParamedicos() {
     const choferSelect = document.getElementById('chofer');
     const paramedicoSelect = document.getElementById('paramedico');
     if (!choferSelect || !paramedicoSelect) return;
-
     choferSelect.innerHTML = '<option value="">Seleccionar</option>';
     paramedicoSelect.innerHTML = '<option value="">Seleccionar</option>';
-
     data.forEach(p => {
       const nombreCompleto = `${p.nombre} ${p.apellido}`;
       choferSelect.innerHTML += `<option value="${p.id_paramedico}">${nombreCompleto}</option>`;
@@ -48,11 +46,9 @@ async function cargarParamedicos() {
 function toggleEnCamino(valor) {
   if (valor !== undefined) enCamino = valor;
   else enCamino = !enCamino;
-
   const estadoAmbulancia = document.getElementById('estadoAmbulancia');
   const btnEnCamino = document.getElementById('btnEnCamino');
   if (!estadoAmbulancia || !btnEnCamino) return;
-
   estadoAmbulancia.innerText = enCamino ? 'EN CAMINO' : 'DETENIDA';
   estadoAmbulancia.style.background = enCamino ? '#1bb14c' : '#e10600';
   btnEnCamino.className = enCamino ? 'btn-green' : 'btn-stop';
@@ -60,21 +56,16 @@ function toggleEnCamino(valor) {
 }
 
 /* =========================
-   SISTEMA DE VOZ (RE-EDITABLE Y SOPORTE SELECT)
+   SISTEMA DE VOZ (FLUJO CONTINUO)
 ========================= */
 let recognition;
 let isListeningVoice = false;
 let targetField = null;
 
 function toggleVoz() {
-  if (isListeningVoice) {
-    isListeningVoice = false;
-    recognition.stop();
-    return;
-  }
-
+  if (isListeningVoice) { isListeningVoice = false; recognition.stop(); return; }
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) return alert("Usa Chrome para el dictado por voz.");
+  if (!SpeechRecognition) return alert("Usa Chrome.");
 
   recognition = new SpeechRecognition();
   recognition.lang = 'es-ES';
@@ -100,8 +91,9 @@ function toggleVoz() {
       "carnet": "carnet", "traslado": "tipo_traslado"
     };
 
+    // Detectar si el usuario quiere cambiar de campo
     for (let key in keywords) {
-      if (transcript.startsWith(key)) {
+      if (transcript.split(" ").includes(key)) {
         if (targetField) document.getElementById(targetField).classList.remove('active-field');
         targetField = keywords[key];
         const el = document.getElementById(targetField);
@@ -113,6 +105,7 @@ function toggleVoz() {
 
     if (targetField) {
       let campo = document.getElementById(targetField);
+      // Limpiamos la palabra clave del dictado actual para que no se escriba "nombre Juan"
       let cleanRegex = new RegExp("(nombre|edad|ubicación|informe|sangre|sexo|carnet|traslado)", "gi");
       let currentText = transcript.replace(cleanRegex, "").trim();
 
@@ -121,10 +114,7 @@ function toggleVoz() {
         
         if (smartMaps[targetField]) {
           for (let keyMap in smartMaps[targetField]) {
-            if (finalValue.includes(keyMap)) {
-              finalValue = smartMaps[targetField][keyMap];
-              break;
-            }
+            if (finalValue.includes(keyMap)) { finalValue = smartMaps[targetField][keyMap]; break; }
           }
         }
 
@@ -143,8 +133,9 @@ function toggleVoz() {
         campo.classList.add('confirmed-field');
         targetField = null; 
         document.getElementById('status-voz').innerText = "CONFIRMADO. DIGA EL SIGUIENTE...";
-        recognition.stop(); 
+        recognition.stop(); // Reinicia para limpiar el buffer de voz
       } else {
+        // Solo actualizamos el valor si NO es un select y hay texto nuevo
         if (currentText !== "" && campo.tagName !== "SELECT") {
           campo.value = currentText;
         }
@@ -152,22 +143,20 @@ function toggleVoz() {
     }
   };
 
-  recognition.onend = () => {
+  recognition.onend = () => { 
     if (isListeningVoice) recognition.start(); 
     else {
       document.getElementById('btnVoz').classList.remove('listening');
       document.getElementById('status-voz').innerText = "SISTEMA DE VOZ: STANDBY";
     }
   };
-
   recognition.start();
 }
 
 /* =========================
-   GUARDAR (CON AUTOCOMPLETADO N/N)
+   GUARDAR (CON LÓGICA N/N)
 ========================= */
 async function guardar() {
-  // Capturamos valores
   let nombre = document.getElementById('nombre').value.trim();
   let carnet = document.getElementById('carnet').value.trim();
   let edadVal = document.getElementById('edad').value.trim();
@@ -177,15 +166,15 @@ async function guardar() {
   let diagnostico = document.getElementById('diagnostico').value.trim();
   let ubicacion = document.getElementById('ubicacion').value.trim();
 
-  // Aplicamos N/N y 0 si están vacíos
-  if (nombre === "") nombre = "N/N";
-  if (carnet === "") carnet = "0";
+  // Si están vacíos al dar click en guardar, ponemos N/N o 0
+  if (!nombre) nombre = "N/N";
+  if (!carnet) carnet = "0";
   let edad = (edadVal === "" || isNaN(edadVal)) ? 0 : Number(edadVal);
-  if (sexo === "") sexo = "N/N";
-  if (sangre === "") sangre = "N/N";
-  if (traslado === "") traslado = "Traslado";
-  if (diagnostico === "") diagnostico = "N/N";
-  if (ubicacion === "") ubicacion = "Sin dirección";
+  if (!sexo) sexo = "N/N";
+  if (!sangre) sangre = "N/N";
+  if (!traslado) traslado = "Traslado";
+  if (!diagnostico) diagnostico = "N/N";
+  if (!ubicacion) ubicacion = "Sin dirección";
 
   const payload = {
     ubicacion: ubicacion,
@@ -194,15 +183,7 @@ async function guardar() {
       chofer: document.getElementById('chofer').value,
       paramedico: document.getElementById('paramedico').value
     },
-    paciente: {
-      nombre: nombre,
-      carnet: carnet,
-      edad: edad,
-      sexo: sexo,
-      tipo_sangre: sangre,
-      tipo_traslado: traslado,
-      diagnostico: diagnostico
-    }
+    paciente: { nombre, carnet, edad, sexo, tipo_sangre: sangre, tipo_traslado: traslado, diagnostico }
   };
 
   try {
@@ -214,13 +195,10 @@ async function guardar() {
     const r = await res.json();
     if (r.ok) {
       localStorage.setItem('salida_activa', r.id_salida);
-      alert('✅ Registro guardado con éxito.');
+      alert('✅ Registro guardado.');
       window.location.href = 'monitoreo.html';
     }
-  } catch (e) { 
-    console.error(e);
-    alert('❌ Error al conectar con el servidor');
-  }
+  } catch (e) { alert('❌ Error de conexión'); }
 }
 
 function irMonitoreo() { 
@@ -228,10 +206,7 @@ function irMonitoreo() {
   location.href = 'monitoreo.html'; 
 }
 
-function logout() { 
-  localStorage.clear(); 
-  location.href = 'login.html'; 
-}
+function logout() { localStorage.clear(); location.href = 'login.html'; }
 
 function limpiarAlEntrar() {
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id => {
