@@ -1,3 +1,8 @@
+/* ========================= SISTEMA DE VOZ GLOBAL ========================= */
+let recognition;
+let isListeningVoice = true; // Se activa por defecto al cargar
+let targetField = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
   const idSalida = localStorage.getItem('salida_activa');
   if (!idSalida) {
@@ -5,6 +10,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = 'ambulancia.html';
     return;
   }
+
+  // --- INICIAR VOZ AUTOMÁTICAMENTE ---
+  iniciarVozMonitoreo();
 
   /* ========================= FECHA ========================= */
   fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
@@ -35,12 +43,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const res = await fetch(`https://ambulink.doc-ia.cloud/salidas/${idSalida}`);
     const data = await res.json();
-
     if (!data.paciente) return;
-
     const p = data.paciente;
 
-    /* ========================= PACIENTE ========================= */
+    /* ========================= CARGAR DATOS PACIENTE ========================= */
     pac_nombre.innerText = p.nombre || '--';
     pac_edad.innerText = p.edad ? `${p.edad} años` : '--';
     pac_sexo.innerText = p.sexo || '--';
@@ -49,33 +55,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     pac_ubicacion.innerText = data.ubicacion || '--';
     pac_diagnostico.innerText = p.diagnostico || '--';
 
-    /* ========================= SIGNOS (ESTADO INICIAL) ========================= */
     v_pd.innerText = p.presion_diastolica ?? '--';
     v_ps.innerText = p.presion_sistolica ?? '--';
     v_fr.innerText = p.frecuencia_respiratoria ?? '--';
     glasgow_total.innerText = p.escala_glasgow ?? '--';
 
-    /* ========================= PARAMÉDICOS ========================= */
     const pars = data.salida_paramedicos || [];
     const chofer = pars.find(x => x.rol_en_la_salida === 'chofer');
     const param = pars.find(x => x.rol_en_la_salida === 'paramedico');
-
     par1.innerText = chofer ? `🚑 ${chofer.paramedicos.nombre} ${chofer.paramedicos.apellido}` : '🚑 ---';
     par2.innerText = param ? `🚑 ${param.paramedicos.nombre} ${param.paramedicos.apellido}` : '🚑 ---';
 
-    /* ========================= HEMORRAGIA ========================= */
+    /* ========================= BOTONES ACCIÓN ========================= */
     let estadoHemorragia = p.hemorragia === true;
-
-    const pintarHemorragia = () => {
-      btnHemorragia.style.background = estadoHemorragia ? '#14b866' : '#e10600';
-    };
-
+    const pintarHemorragia = () => { btnHemorragia.style.background = estadoHemorragia ? '#14b866' : '#e10600'; };
     pintarHemorragia();
 
     btnHemorragia.onclick = async () => {
       estadoHemorragia = !estadoHemorragia;
       pintarHemorragia();
-
       await fetch('https://ambulink.doc-ia.cloud/paciente/hemorragia', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -83,7 +81,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     };
 
-    /* ========================= BOTONES MONITOREO ========================= */
     btnIniciarMonitoreo.onclick = async () => {
       monitoreoActivo = true;
       pintarMonitoreo();
@@ -96,31 +93,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       await actualizarMonitoreo(false);
     };
 
-    /* ========================= TIEMPO REAL (SOLO SI MONITOREO ACTIVO) ========================= */
+    /* ========================= TIEMPO REAL (INTERVALO) ========================= */
     setInterval(async () => {
       if (!monitoreoActivo) return;
-
       try {
         const r = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${idSalida}`);
         const s = await r.json();
         if (!s) return;
-
-        // Signos automáticos ESP32
-        if (s.spo2 !== undefined) {
-          document.querySelector('.signo:nth-child(4) .valor').innerHTML = `${s.spo2}<span class="unidad">%</span>`;
-        }
-
-        if (s.frecuencia_cardiaca !== undefined) {
-          document.querySelector('.signo:nth-child(6) .valor').innerHTML = `${s.frecuencia_cardiaca}<span class="unidad">lat/min</span>`;
-        }
-
-        if (s.temperatura !== undefined) {
-          document.querySelector('.signo:nth-child(5) .valor').innerHTML = `${s.temperatura}<span class="unidad">°C</span>`;
-        }
-
-      } catch (e) {
-        console.error('Error tiempo real:', e);
-      }
+        if (s.spo2 !== undefined) document.querySelector('.signo:nth-child(4) .valor').innerHTML = `${s.spo2}<span class="unidad">%</span>`;
+        if (s.frecuencia_cardiaca !== undefined) document.querySelector('.signo:nth-child(6) .valor').innerHTML = `${s.frecuencia_cardiaca}<span class="unidad">lat/min</span>`;
+        if (s.temperatura !== undefined) document.querySelector('.signo:nth-child(5) .valor').innerHTML = `${s.temperatura}<span class="unidad">°C</span>`;
+      } catch (e) { console.error('Error tiempo real:', e); }
     }, 5001);
 
   } catch (err) {
@@ -129,7 +112,60 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-/* ========================= MONITOREO ACTIVO (BACKEND) ========================= */
+/* ========================= LÓGICA DE VOZ PARA MONITOREO ========================= */
+function iniciarVozMonitoreo() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return;
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'es-ES';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = (event) => {
+    let transcript = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript.toLowerCase();
+    }
+    
+    const keywords = {
+      "diastólica": "in_pd", "sistólica": "in_ps", "respiración": "in_fr",
+      "ocular": "g_o", "verbal": "g_v", "motora": "g_m"
+    };
+
+    // Detectar qué campo quiere llenar el paramédico
+    for (let key in keywords) {
+      if (transcript.includes(key)) { targetField = keywords[key]; }
+    }
+
+    if (targetField) {
+      let campo = document.getElementById(targetField);
+      let numeros = transcript.match(/\d+/g);
+      let valorNumerico = numeros ? numeros[numeros.length - 1] : "";
+
+      if (valorNumerico !== "") campo.value = valorNumerico;
+
+      // SI DICE CONFIRMAR -> GUARDAR AUTOMÁTICAMENTE
+      if (transcript.includes("confirmar") || transcript.includes("confirmado")) {
+        if (targetField.startsWith("in_")) {
+          guardarSignos(); // Guarda Diastólica, Sistólica o Respiración
+        } else if (targetField.startsWith("g_")) {
+          // Si los 3 campos de Glasgow tienen algo, guarda automáticamente
+          if (g_o.value && g_v.value && g_m.value) {
+            guardarGlasgow();
+          }
+        }
+        targetField = null;
+        recognition.stop(); // Reinicia para limpiar el buffer de voz
+      }
+    }
+  };
+
+  recognition.onend = () => { if (isListeningVoice) recognition.start(); };
+  recognition.start();
+}
+
+/* ========================= FUNCIONES DE ACTUALIZACIÓN ========================= */
 async function actualizarMonitoreo(valor) {
   const idSalida = localStorage.getItem('salida_activa');
   await fetch('https://ambulink.doc-ia.cloud/salida/monitoreo', {
@@ -139,12 +175,11 @@ async function actualizarMonitoreo(valor) {
   });
 }
 
-/* ========================= GUARDAR SIGNOS MANUALES ========================= */
 async function guardarSignos() {
   const idSalida = localStorage.getItem('salida_activa');
-  const pd = in_pd.value;
-  const ps = in_ps.value;
-  const fr = in_fr.value;
+  const pd = document.getElementById('in_pd').value;
+  const ps = document.getElementById('in_ps').value;
+  const fr = document.getElementById('in_fr').value;
 
   await fetch('https://ambulink.doc-ia.cloud/paciente/signos', {
     method: 'PUT',
@@ -152,26 +187,19 @@ async function guardarSignos() {
     body: JSON.stringify({ id_salida: idSalida, presion_diastolica: pd, presion_sistolica: ps, frecuencia_respiratoria: fr })
   });
 
-  v_pd.innerText = pd || '--';
-  v_ps.innerText = ps || '--';
-  v_fr.innerText = fr || '--';
+  if(pd) v_pd.innerText = pd;
+  if(ps) v_ps.innerText = ps;
+  if(fr) v_fr.innerText = fr;
 
-  in_pd.value = '';
-  in_ps.value = '';
-  in_fr.value = '';
+  // Limpiar solo los que tenían datos
+  if(pd && ps && fr) { in_pd.value = ''; in_ps.value = ''; in_fr.value = ''; }
 }
 
-/* ========================= GUARDAR GLASGOW ========================= */
 async function guardarGlasgow() {
   const idSalida = localStorage.getItem('salida_activa');
-
-  if (!g_o.value || !g_v.value || !g_m.value) {
-    alert('⚠️ Selecciona los 3 valores de Glasgow');
-    return;
-  }
+  if (!g_o.value || !g_v.value || !g_m.value) return;
 
   const total = Number(g_o.value) + Number(g_v.value) + Number(g_m.value);
-
   await fetch('https://ambulink.doc-ia.cloud/paciente/glasgow', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -179,27 +207,12 @@ async function guardarGlasgow() {
   });
 
   glasgow_total.innerText = total;
-  g_o.value = '';
-  g_v.value = '';
-  g_m.value = '';
+  g_o.value = ''; g_v.value = ''; g_m.value = '';
 }
 
-/* ========================= NUEVO PACIENTE ========================= */
 function nuevoPaciente() {
-  // 🔹 Avisar al dashboard de la clínica que haga reset
   localStorage.setItem('reset_clinica_ambulancia1', 'true');
-
-  // 🔹 Cambiar color de la ambulancia a rojo
   localStorage.setItem('ambulancia1_color', 'red');
-
-  // 🔹 Limpiar salida activa
   localStorage.removeItem('salida_activa');
-
-  // 🔹 Redireccionar solo si no estamos ya en ambulancia.html
-  if (!window.location.href.includes('ambulancia.html')) {
-    window.location.href = 'ambulancia.html';
-  } else {
-    // 🔹 Refrescar página para resetear datos
-    location.reload();
-  }
+  location.href = 'ambulancia.html';
 }
