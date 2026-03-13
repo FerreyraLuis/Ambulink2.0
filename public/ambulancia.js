@@ -1,6 +1,27 @@
 let enCamino = localStorage.getItem('ambulancia1_color') === 'green' || false;
 
 /* =========================
+   MAPEO INTELIGENTE DE DATOS
+========================= */
+const smartMaps = {
+  "tipo_sangre": {
+    "o positivo": "O+", "o +": "O+", "o negativo": "O-", "o -": "O-",
+    "a positivo": "A+", "a +": "A+", "a negativo": "A-", "a -": "A-",
+    "b positivo": "B+", "b +": "B+", "b negativo": "B-", "b -": "B-",
+    "ab positivo": "AB+", "ab +": "AB+", "ab negativo": "AB-", "ab -": "AB-"
+  },
+  "sexo": {
+    "masculino": "Masculino", "hombre": "Masculino", "varón": "Masculino", "niño": "Masculino",
+    "femenino": "Femenino", "mujer": "Femenino", "niña": "Femenino"
+  },
+  "tipo_traslado": {
+    "emergencia": "Emergencia", "urgencia": "Emergencia",
+    "alta": "Alta", "recuperado": "Alta",
+    "traslado": "Traslado", "remisión": "Traslado"
+  }
+};
+
+/* =========================
    CARGAR PARAMÉDICOS
 ========================= */
 async function cargarParamedicos() {
@@ -19,9 +40,7 @@ async function cargarParamedicos() {
       choferSelect.innerHTML += `<option value="${p.id_paramedico}">${nombreCompleto}</option>`;
       paramedicoSelect.innerHTML += `<option value="${p.id_paramedico}">${nombreCompleto}</option>`;
     });
-  } catch (e) {
-    console.error('Error al cargar paramédicos:', e);
-  }
+  } catch (e) { console.error('Error:', e); }
 }
 
 /* =========================
@@ -30,11 +49,9 @@ async function cargarParamedicos() {
 function toggleEnCamino(valor) {
   if (valor !== undefined) enCamino = valor;
   else enCamino = !enCamino;
-
   const estadoAmbulancia = document.getElementById('estadoAmbulancia');
   const btnEnCamino = document.getElementById('btnEnCamino');
   if (!estadoAmbulancia || !btnEnCamino) return;
-
   estadoAmbulancia.innerText = enCamino ? 'EN CAMINO' : 'DETENIDA';
   estadoAmbulancia.style.background = enCamino ? '#1bb14c' : '#e10600';
   btnEnCamino.className = enCamino ? 'btn-green' : 'btn-stop';
@@ -42,21 +59,17 @@ function toggleEnCamino(valor) {
 }
 
 /* =========================
-   SISTEMA DE VOZ (MEJORADO: RE-EDITABLE)
+   SISTEMA DE VOZ INTELIGENTE
 ========================= */
 let recognition;
 let isListeningVoice = false;
 let targetField = null;
 
 function toggleVoz() {
-  if (isListeningVoice) {
-    isListeningVoice = false;
-    recognition.stop();
-    return;
-  }
+  if (isListeningVoice) { isListeningVoice = false; recognition.stop(); return; }
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) return alert("Usa Chrome para el dictado por voz.");
+  if (!SpeechRecognition) return alert("Usa Chrome.");
 
   recognition = new SpeechRecognition();
   recognition.lang = 'es-ES';
@@ -78,55 +91,56 @@ function toggleVoz() {
 
     const keywords = {
       "nombre": "nombre", "edad": "edad", "ubicación": "ubicacion",
-      "informe": "diagnostico", "sangre": "tipo_sangre", "sexo": "sexo", "carnet": "carnet"
+      "informe": "diagnostico", "sangre": "tipo_sangre", "sexo": "sexo", 
+      "carnet": "carnet", "traslado": "tipo_traslado"
     };
 
-    // 1. SIEMPRE BUSCAR SI EL USUARIO QUIERE CAMBIAR DE CAMPO (Incluso si ya hay uno activo)
+    // 1. Detección de cambio de campo
     for (let key in keywords) {
-      // Si la frase empieza con una palabra clave, cambiamos el foco inmediatamente
       if (transcript.startsWith(key)) {
-        // Si ya había uno, le quitamos el amarillo de "activo"
         if (targetField) document.getElementById(targetField).classList.remove('active-field');
-        
         targetField = keywords[key];
         const el = document.getElementById(targetField);
-        el.classList.remove('confirmed-field'); // Quitamos el verde para poder editar
-        el.classList.add('active-field'); // Ponemos amarillo
+        el.classList.remove('confirmed-field');
+        el.classList.add('active-field');
         document.getElementById('status-voz').innerText = `EDITANDO: ${key.toUpperCase()}`;
-        
-        // No retornamos aquí para que pueda procesar el resto del texto en la misma frase
       }
     }
 
-    // 2. PROCESAR EL TEXTO PARA EL CAMPO ACTIVO
     if (targetField) {
       let campo = document.getElementById(targetField);
-      
-      // Limpiamos las palabras de activación del texto
-      let cleanRegex = new RegExp("(nombre|edad|ubicación|informe|sangre|sexo|carnet)", "gi");
+      let cleanRegex = new RegExp("(nombre|edad|ubicación|informe|sangre|sexo|carnet|traslado)", "gi");
       let currentText = transcript.replace(cleanRegex, "").trim();
 
       if (transcript.includes("confirmado") || transcript.includes("confirmar")) {
         let finalValue = currentText.replace(/confirmado|confirmar/gi, "").trim();
         
+        // APLICAR MAPEO INTELIGENTE SEGÚN EL CAMPO
+        if (smartMaps[targetField]) {
+          for (let keyMap in smartMaps[targetField]) {
+            if (finalValue.includes(keyMap)) {
+              finalValue = smartMaps[targetField][keyMap];
+              break;
+            }
+          }
+        }
+
         if (finalValue !== "") {
-          campo.value = finalValue.charAt(0).toUpperCase() + finalValue.slice(1);
+          // Si es un número (edad), convertirlo
+          if (targetField === "edad") {
+            campo.value = finalValue.replace(/\D/g, ""); // Solo números
+          } else {
+            campo.value = finalValue.charAt(0).toUpperCase() + finalValue.slice(1);
+          }
         }
         
-        // Efecto Visual de Confirmado (Verde)
         campo.classList.remove('active-field');
         campo.classList.add('confirmed-field');
-        
-        // Liberamos el campo para el siguiente
         targetField = null; 
-        document.getElementById('status-voz').innerText = "CONFIRMADO. ESPERANDO SIGUIENTE...";
-        
-        recognition.stop(); // Reset para limpiar el buffer de audio
+        document.getElementById('status-voz').innerText = "CONFIRMADO.";
+        recognition.stop(); 
       } else {
-        // Escribir en tiempo real
-        if (currentText !== "") {
-          campo.value = currentText;
-        }
+        if (currentText !== "") campo.value = currentText;
       }
     }
   };
@@ -138,12 +152,11 @@ function toggleVoz() {
       document.getElementById('status-voz').innerText = "SISTEMA DE VOZ: STANDBY";
     }
   };
-
   recognition.start();
 }
 
 /* =========================
-   GUARDAR EN SUPABASE
+   RESTO DE FUNCIONES
 ========================= */
 async function guardar() {
   const payload = {
@@ -163,7 +176,6 @@ async function guardar() {
       diagnostico: document.getElementById('diagnostico').value
     }
   };
-
   try {
     const res = await fetch('https://ambulink.doc-ia.cloud/ambulancia/salida', {
       method: 'POST',
@@ -173,21 +185,18 @@ async function guardar() {
     const r = await res.json();
     if (r.ok) {
       localStorage.setItem('salida_activa', r.id_salida);
-      alert('✅ Registro exitoso');
+      alert('✅ Guardado.');
       window.location.href = 'monitoreo.html';
     }
   } catch (e) { console.error(e); }
 }
 
 function irMonitoreo() { 
-  if (!localStorage.getItem('salida_activa')) return alert('⚠️ Registra al paciente primero');
+  if (!localStorage.getItem('salida_activa')) return alert('⚠️ Falta registro');
   location.href = 'monitoreo.html'; 
 }
 
-function logout() { 
-  localStorage.clear(); 
-  location.href = 'login.html'; 
-}
+function logout() { localStorage.clear(); location.href = 'login.html'; }
 
 function limpiarAlEntrar() {
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id => {
