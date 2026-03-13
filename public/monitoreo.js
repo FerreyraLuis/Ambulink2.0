@@ -1,6 +1,6 @@
 /* ========================= SISTEMA DE VOZ GLOBAL ========================= */
 let recognition;
-let isListeningVoice = true; // Se activa por defecto al cargar
+let isListeningVoice = true; 
 let targetField = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // --- INICIAR VOZ AUTOMÁTICAMENTE ---
   iniciarVozMonitoreo();
 
   /* ========================= FECHA ========================= */
@@ -21,23 +20,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     year: 'numeric'
   });
 
-  /* ========================= ESTADO MONITOREO (LOCAL) ========================= */
+  /* ========================= ESTADO MONITOREO ========================= */
   let monitoreoActivo = false;
-
   const pintarMonitoreo = () => {
     if (monitoreoActivo) {
       btnIniciarMonitoreo.style.background = '#14b866';
       btnIniciarMonitoreo.innerText = '🟢 MONITOREO ACTIVO';
       btnPararMonitoreo.style.background = '#cccccc';
-      btnPararMonitoreo.innerText = 'PARAR MONITOREO';
     } else {
       btnIniciarMonitoreo.style.background = '#009fe3';
       btnIniciarMonitoreo.innerText = 'MONITOREAR PACIENTE';
       btnPararMonitoreo.style.background = '#e10600';
-      btnPararMonitoreo.innerText = '🔴 MONITOREO DETENIDO';
     }
   };
-
   pintarMonitoreo();
 
   try {
@@ -46,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!data.paciente) return;
     const p = data.paciente;
 
-    /* ========================= CARGAR DATOS PACIENTE ========================= */
     pac_nombre.innerText = p.nombre || '--';
     pac_edad.innerText = p.edad ? `${p.edad} años` : '--';
     pac_sexo.innerText = p.sexo || '--';
@@ -66,7 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     par1.innerText = chofer ? `🚑 ${chofer.paramedicos.nombre} ${chofer.paramedicos.apellido}` : '🚑 ---';
     par2.innerText = param ? `🚑 ${param.paramedicos.nombre} ${param.paramedicos.apellido}` : '🚑 ---';
 
-    /* ========================= BOTONES ACCIÓN ========================= */
     let estadoHemorragia = p.hemorragia === true;
     const pintarHemorragia = () => { btnHemorragia.style.background = estadoHemorragia ? '#14b866' : '#e10600'; };
     pintarHemorragia();
@@ -81,38 +74,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     };
 
-    btnIniciarMonitoreo.onclick = async () => {
-      monitoreoActivo = true;
-      pintarMonitoreo();
-      await actualizarMonitoreo(true);
-    };
+    btnIniciarMonitoreo.onclick = async () => { monitoreoActivo = true; pintarMonitoreo(); await actualizarMonitoreo(true); };
+    btnPararMonitoreo.onclick = async () => { monitoreoActivo = false; pintarMonitoreo(); await actualizarMonitoreo(false); };
 
-    btnPararMonitoreo.onclick = async () => {
-      monitoreoActivo = false;
-      pintarMonitoreo();
-      await actualizarMonitoreo(false);
-    };
-
-    /* ========================= TIEMPO REAL (INTERVALO) ========================= */
     setInterval(async () => {
       if (!monitoreoActivo) return;
       try {
         const r = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${idSalida}`);
         const s = await r.json();
         if (!s) return;
-        if (s.spo2 !== undefined) document.querySelector('.signo:nth-child(4) .valor').innerHTML = `${s.spo2}<span class="unidad">%</span>`;
-        if (s.frecuencia_cardiaca !== undefined) document.querySelector('.signo:nth-child(6) .valor').innerHTML = `${s.frecuencia_cardiaca}<span class="unidad">lat/min</span>`;
-        if (s.temperatura !== undefined) document.querySelector('.signo:nth-child(5) .valor').innerHTML = `${s.temperatura}<span class="unidad">°C</span>`;
+        if (s.spo2 !== undefined) v_spo2.innerHTML = s.spo2;
+        if (s.frecuencia_cardiaca !== undefined) v_fc.innerHTML = s.frecuencia_cardiaca;
+        if (s.temperatura !== undefined) v_temp.innerHTML = s.temperatura;
       } catch (e) { console.error('Error tiempo real:', e); }
     }, 5001);
 
-  } catch (err) {
-    console.error(err);
-    alert('❌ Error de conexión');
-  }
+  } catch (err) { console.error(err); alert('❌ Error de conexión'); }
 });
 
-/* ========================= LÓGICA DE VOZ PARA MONITOREO ========================= */
+/* ========================= LÓGICA DE VOZ CON RESALTADO AMARILLO ========================= */
 function iniciarVozMonitoreo() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) return;
@@ -133,9 +113,15 @@ function iniciarVozMonitoreo() {
       "ocular": "g_o", "verbal": "g_v", "motora": "g_m"
     };
 
-    // Detectar qué campo quiere llenar el paramédico
+    // Detectar palabra clave y pintar de amarillo
     for (let key in keywords) {
-      if (transcript.includes(key)) { targetField = keywords[key]; }
+      if (transcript.includes(key)) { 
+        // Quitar amarillo del anterior si existe
+        if (targetField) document.getElementById(targetField).classList.remove('campo-activo');
+        
+        targetField = keywords[key];
+        document.getElementById(targetField).classList.add('campo-activo');
+      }
     }
 
     if (targetField) {
@@ -145,18 +131,19 @@ function iniciarVozMonitoreo() {
 
       if (valorNumerico !== "") campo.value = valorNumerico;
 
-      // SI DICE CONFIRMAR -> GUARDAR AUTOMÁTICAMENTE
+      // Al decir confirmar, se quita el amarillo y se envía
       if (transcript.includes("confirmar") || transcript.includes("confirmado")) {
+        campo.classList.remove('campo-activo');
+
         if (targetField.startsWith("in_")) {
-          guardarSignos(); // Guarda Diastólica, Sistólica o Respiración
+          guardarSignos(); 
         } else if (targetField.startsWith("g_")) {
-          // Si los 3 campos de Glasgow tienen algo, guarda automáticamente
           if (g_o.value && g_v.value && g_m.value) {
             guardarGlasgow();
           }
         }
         targetField = null;
-        recognition.stop(); // Reinicia para limpiar el buffer de voz
+        recognition.stop(); 
       }
     }
   };
@@ -165,7 +152,7 @@ function iniciarVozMonitoreo() {
   recognition.start();
 }
 
-/* ========================= FUNCIONES DE ACTUALIZACIÓN ========================= */
+/* ========================= FUNCIONES DE ENVÍO ========================= */
 async function actualizarMonitoreo(valor) {
   const idSalida = localStorage.getItem('salida_activa');
   await fetch('https://ambulink.doc-ia.cloud/salida/monitoreo', {
@@ -190,9 +177,6 @@ async function guardarSignos() {
   if(pd) v_pd.innerText = pd;
   if(ps) v_ps.innerText = ps;
   if(fr) v_fr.innerText = fr;
-
-  // Limpiar solo los que tenían datos
-  if(pd && ps && fr) { in_pd.value = ''; in_ps.value = ''; in_fr.value = ''; }
 }
 
 async function guardarGlasgow() {
