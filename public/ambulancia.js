@@ -42,7 +42,7 @@ function toggleEnCamino(valor) {
 }
 
 /* =========================
-   SISTEMA DE VOZ (MEJORADO: MANTIENE DATOS)
+   SISTEMA DE VOZ (MEJORADO: RE-EDITABLE)
 ========================= */
 let recognition;
 let isListeningVoice = false;
@@ -66,7 +66,7 @@ function toggleVoz() {
   recognition.onstart = () => {
     isListeningVoice = true;
     document.getElementById('btnVoz').classList.add('listening');
-    document.getElementById('status-voz').innerText = "ESCUCHANDO... DIGA UN CAMPO (EJ: 'NOMBRE...')";
+    document.getElementById('status-voz').innerText = "ESCUCHANDO...";
   };
 
   recognition.onresult = (event) => {
@@ -81,30 +81,32 @@ function toggleVoz() {
       "informe": "diagnostico", "sangre": "tipo_sangre", "sexo": "sexo", "carnet": "carnet"
     };
 
-    // 1. SI NO HAY CAMPO ACTIVO: Buscar comando de inicio
-    if (!targetField) {
-      for (let key in keywords) {
-        if (transcript.includes(key)) {
-          targetField = keywords[key];
-          const el = document.getElementById(targetField);
-          el.classList.remove('confirmed-field');
-          el.classList.add('active-field');
-          document.getElementById('status-voz').innerText = `DICTANDO EN: ${key.toUpperCase()}`;
-          return;
-        }
+    // 1. SIEMPRE BUSCAR SI EL USUARIO QUIERE CAMBIAR DE CAMPO (Incluso si ya hay uno activo)
+    for (let key in keywords) {
+      // Si la frase empieza con una palabra clave, cambiamos el foco inmediatamente
+      if (transcript.startsWith(key)) {
+        // Si ya había uno, le quitamos el amarillo de "activo"
+        if (targetField) document.getElementById(targetField).classList.remove('active-field');
+        
+        targetField = keywords[key];
+        const el = document.getElementById(targetField);
+        el.classList.remove('confirmed-field'); // Quitamos el verde para poder editar
+        el.classList.add('active-field'); // Ponemos amarillo
+        document.getElementById('status-voz').innerText = `EDITANDO: ${key.toUpperCase()}`;
+        
+        // No retornamos aquí para que pueda procesar el resto del texto en la misma frase
       }
     }
 
-    // 2. SI HAY CAMPO ACTIVO: Escribir y esperar CONFIRMACIÓN
+    // 2. PROCESAR EL TEXTO PARA EL CAMPO ACTIVO
     if (targetField) {
       let campo = document.getElementById(targetField);
       
-      // Limpiamos las palabras de activación del texto que va al input
+      // Limpiamos las palabras de activación del texto
       let cleanRegex = new RegExp("(nombre|edad|ubicación|informe|sangre|sexo|carnet)", "gi");
       let currentText = transcript.replace(cleanRegex, "").trim();
 
       if (transcript.includes("confirmado") || transcript.includes("confirmar")) {
-        // Bloqueamos el valor final sin las palabras de control
         let finalValue = currentText.replace(/confirmado|confirmar/gi, "").trim();
         
         if (finalValue !== "") {
@@ -115,14 +117,13 @@ function toggleVoz() {
         campo.classList.remove('active-field');
         campo.classList.add('confirmed-field');
         
-        // Liberamos el campo para el siguiente, pero EL TEXTO SE QUEDA
+        // Liberamos el campo para el siguiente
         targetField = null; 
-        document.getElementById('status-voz').innerText = "CAMPO LISTO. DIGA EL SIGUIENTE...";
+        document.getElementById('status-voz').innerText = "CONFIRMADO. ESPERANDO SIGUIENTE...";
         
-        // Reset momentáneo para limpiar el motor de voz interno
-        recognition.stop(); 
+        recognition.stop(); // Reset para limpiar el buffer de audio
       } else {
-        // Mientras el usuario habla, vamos llenando el input
+        // Escribir en tiempo real
         if (currentText !== "") {
           campo.value = currentText;
         }
@@ -131,9 +132,8 @@ function toggleVoz() {
   };
 
   recognition.onend = () => {
-    if (isListeningVoice) {
-      recognition.start(); 
-    } else {
+    if (isListeningVoice) recognition.start(); 
+    else {
       document.getElementById('btnVoz').classList.remove('listening');
       document.getElementById('status-voz').innerText = "SISTEMA DE VOZ: STANDBY";
     }
@@ -173,7 +173,7 @@ async function guardar() {
     const r = await res.json();
     if (r.ok) {
       localStorage.setItem('salida_activa', r.id_salida);
-      alert('✅ Paciente registrado con éxito.');
+      alert('✅ Registro exitoso');
       window.location.href = 'monitoreo.html';
     }
   } catch (e) { console.error(e); }
@@ -189,8 +189,7 @@ function logout() {
   location.href = 'login.html'; 
 }
 
-// Esta función solo se llama al INICIO de la página, no al dictar
-function limpiarPantallaAlEntrar() {
+function limpiarAlEntrar() {
   ['nombre','carnet','edad','sexo','tipo_sangre','tipo_traslado','diagnostico','ubicacion'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.value = ''; el.classList.remove('active-field', 'confirmed-field'); }
@@ -198,7 +197,5 @@ function limpiarPantallaAlEntrar() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  limpiarPantallaAlEntrar(); 
-  cargarParamedicos(); 
-  toggleEnCamino(enCamino);
+  limpiarAlEntrar(); cargarParamedicos(); toggleEnCamino(enCamino);
 });
