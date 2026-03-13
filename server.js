@@ -97,7 +97,6 @@ app.post('/ambulancia/salida', async (req, res) => {
 
 /* ===============================
    ACTUALIZAR SIGNOS MANUALES
-   Siempre guardar aunque monitoreo_activo=false
 =============================== */
 app.put('/paciente/signos', async (req, res) => {
   try {
@@ -188,9 +187,6 @@ app.put('/salida/monitoreo', async (req, res) => {
 
 /* ===============================
    ESP32 – DATOS INDEPENDIENTES
-   Solo guardar si monitoreo_activo=true
-   Mantener valores anteriores si no se envían
-   Si no existen, marcar con "-"
 =============================== */
 app.post('/esp32/datos', async (req, res) => {
   try {
@@ -242,8 +238,6 @@ app.post('/esp32/datos', async (req, res) => {
     res.status(500).json({ ok: false });
   }
 });
-
-
 
 /* ===============================
    SALIDA COMPLETA
