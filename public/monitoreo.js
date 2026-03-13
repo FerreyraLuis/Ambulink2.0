@@ -1,4 +1,4 @@
-/* ========================= SISTEMA DE VOZ GLOBAL ========================= */
+// }/* ========================= SISTEMA DE VOZ GLOBAL ========================= */
 let recognition;
 let isListeningVoice = true; 
 let targetField = null;
@@ -13,12 +13,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   iniciarVozMonitoreo();
 
+  /* ========================= ELEMENTOS DE INTERFAZ ========================= */
+  const fechaActual = document.getElementById('fechaActual');
+  const glasgow_total = document.getElementById('glasgow_total');
+  const btnIniciarMonitoreo = document.getElementById('btnIniciarMonitoreo');
+  const btnPararMonitoreo = document.getElementById('btnPararMonitoreo');
+  const btnHemorragia = document.getElementById('btnHemorragia');
+
   /* ========================= FECHA ========================= */
-  fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  if (fechaActual) {
+    fechaActual.innerText = new Date().toLocaleDateString('es-ES', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  }
 
   /* ========================= ESTADO MONITOREO ========================= */
   let monitoreoActivo = false;
@@ -41,25 +48,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!data.paciente) return;
     const p = data.paciente;
 
-    pac_nombre.innerText = p.nombre || '--';
-    pac_edad.innerText = p.edad ? `${p.edad} años` : '--';
-    pac_sexo.innerText = p.sexo || '--';
-    pac_sangre.innerText = p.tipo_sangre || '--';
-    pac_traslado.innerText = p.tipo_traslado || '--';
-    pac_ubicacion.innerText = data.ubicacion || '--';
-    pac_diagnostico.innerText = p.diagnostico || '--';
+    // Llenar datos del paciente
+    document.getElementById('pac_nombre').innerText = p.nombre || '--';
+    document.getElementById('pac_edad').innerText = p.edad ? `${p.edad} años` : '--';
+    document.getElementById('pac_sexo').innerText = p.sexo || '--';
+    document.getElementById('pac_sangre').innerText = p.tipo_sangre || '--';
+    document.getElementById('pac_traslado').innerText = p.tipo_traslado || '--';
+    document.getElementById('pac_ubicacion').innerText = data.ubicacion || '--';
+    document.getElementById('pac_diagnostico').innerText = p.diagnostico || '--';
 
-    v_pd.innerText = p.presion_diastolica ?? '--';
-    v_ps.innerText = p.presion_sistolica ?? '--';
-    v_fr.innerText = p.frecuencia_respiratoria ?? '--';
+    // Signos iniciales
+    document.getElementById('v_pd').innerText = p.presion_diastolica ?? '--';
+    document.getElementById('v_ps').innerText = p.presion_sistolica ?? '--';
+    document.getElementById('v_fr').innerText = p.frecuencia_respiratoria ?? '--';
     glasgow_total.innerText = p.escala_glasgow ?? '--';
 
+    // Paratrabajadores
     const pars = data.salida_paramedicos || [];
     const chofer = pars.find(x => x.rol_en_la_salida === 'chofer');
     const param = pars.find(x => x.rol_en_la_salida === 'paramedico');
-    par1.innerText = chofer ? `🚑 ${chofer.paramedicos.nombre} ${chofer.paramedicos.apellido}` : '🚑 ---';
-    par2.innerText = param ? `🚑 ${param.paramedicos.nombre} ${param.paramedicos.apellido}` : '🚑 ---';
+    document.getElementById('par1').innerText = chofer ? `🚑 ${chofer.paramedicos.nombre} ${chofer.paramedicos.apellido}` : '🚑 ---';
+    document.getElementById('par2').innerText = param ? `🚑 ${param.paramedicos.nombre} ${param.paramedicos.apellido}` : '🚑 ---';
 
+    // Hemorragia
     let estadoHemorragia = p.hemorragia === true;
     const pintarHemorragia = () => { btnHemorragia.style.background = estadoHemorragia ? '#14b866' : '#e10600'; };
     pintarHemorragia();
@@ -77,22 +88,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnIniciarMonitoreo.onclick = async () => { monitoreoActivo = true; pintarMonitoreo(); await actualizarMonitoreo(true); };
     btnPararMonitoreo.onclick = async () => { monitoreoActivo = false; pintarMonitoreo(); await actualizarMonitoreo(false); };
 
+    // Tiempo Real (ESP32)
     setInterval(async () => {
       if (!monitoreoActivo) return;
       try {
         const r = await fetch(`https://ambulink.doc-ia.cloud/signos/ultimo/${idSalida}`);
         const s = await r.json();
         if (!s) return;
-        if (s.spo2 !== undefined) v_spo2.innerHTML = s.spo2;
-        if (s.frecuencia_cardiaca !== undefined) v_fc.innerHTML = s.frecuencia_cardiaca;
-        if (s.temperatura !== undefined) v_temp.innerHTML = s.temperatura;
+        if (s.spo2 !== undefined) document.getElementById('v_spo2').innerHTML = s.spo2;
+        if (s.frecuencia_cardiaca !== undefined) document.getElementById('v_fc').innerHTML = s.frecuencia_cardiaca;
+        if (s.temperatura !== undefined) document.getElementById('v_temp').innerHTML = s.temperatura;
       } catch (e) { console.error('Error tiempo real:', e); }
     }, 5001);
 
   } catch (err) { console.error(err); alert('❌ Error de conexión'); }
 });
 
-/* ========================= LÓGICA DE VOZ CON RESALTADO AMARILLO ========================= */
+/* ========================= LÓGICA DE VOZ ========================= */
 function iniciarVozMonitoreo() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) return;
@@ -109,16 +121,14 @@ function iniciarVozMonitoreo() {
     }
     
     const keywords = {
-      "diastólica": "in_pd", "sistólica": "in_ps", "respiración": "in_fr",
+      "diastólica": "in_pd", "sistólica": "in_ps", "respiratoria": "in_fr",
+      "respiración": "in_fr", "frecuencia": "in_fr",
       "ocular": "g_o", "verbal": "g_v", "motora": "g_m"
     };
 
-    // Detectar palabra clave y pintar de amarillo
     for (let key in keywords) {
       if (transcript.includes(key)) { 
-        // Quitar amarillo del anterior si existe
         if (targetField) document.getElementById(targetField).classList.remove('campo-activo');
-        
         targetField = keywords[key];
         document.getElementById(targetField).classList.add('campo-activo');
       }
@@ -131,14 +141,14 @@ function iniciarVozMonitoreo() {
 
       if (valorNumerico !== "") campo.value = valorNumerico;
 
-      // Al decir confirmar, se quita el amarillo y se envía
       if (transcript.includes("confirmar") || transcript.includes("confirmado")) {
         campo.classList.remove('campo-activo');
-
         if (targetField.startsWith("in_")) {
           guardarSignos(); 
         } else if (targetField.startsWith("g_")) {
-          if (g_o.value && g_v.value && g_m.value) {
+          if (document.getElementById('g_o').value !== "" && 
+              document.getElementById('g_v').value !== "" && 
+              document.getElementById('g_m').value !== "") {
             guardarGlasgow();
           }
         }
@@ -171,27 +181,36 @@ async function guardarSignos() {
   await fetch('https://ambulink.doc-ia.cloud/paciente/signos', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id_salida: idSalida, presion_diastolica: pd, presion_sistolica: ps, frecuencia_respiratoria: fr })
+    body: JSON.stringify({ 
+      id_salida: idSalida, 
+      presion_diastolica: pd || null, 
+      presion_sistolica: ps || null, 
+      frecuencia_respiratoria: fr || null 
+    })
   });
 
-  if(pd) v_pd.innerText = pd;
-  if(ps) v_ps.innerText = ps;
-  if(fr) v_fr.innerText = fr;
+  if(pd) document.getElementById('v_pd').innerText = pd;
+  if(ps) document.getElementById('v_ps').innerText = ps;
+  if(fr) document.getElementById('v_fr').innerText = fr;
 }
 
 async function guardarGlasgow() {
   const idSalida = localStorage.getItem('salida_activa');
-  if (!g_o.value || !g_v.value || !g_m.value) return;
+  const go = document.getElementById('g_o').value;
+  const gv = document.getElementById('g_v').value;
+  const gm = document.getElementById('g_m').value;
 
-  const total = Number(g_o.value) + Number(g_v.value) + Number(g_m.value);
+  const total = Number(go) + Number(gv) + Number(gm);
   await fetch('https://ambulink.doc-ia.cloud/paciente/glasgow', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id_salida: idSalida, escala_glasgow: total })
   });
 
-  glasgow_total.innerText = total;
-  g_o.value = ''; g_v.value = ''; g_m.value = '';
+  document.getElementById('glasgow_total').innerText = total;
+  document.getElementById('g_o').value = ''; 
+  document.getElementById('g_v').value = ''; 
+  document.getElementById('g_m').value = '';
 }
 
 function nuevoPaciente() {
