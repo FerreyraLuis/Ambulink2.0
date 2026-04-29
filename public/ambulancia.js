@@ -86,8 +86,6 @@ function toggleVoz() {
   recognition = new SpeechRecognition();
   recognition.lang = 'es-ES';
   recognition.continuous = true;
-
-  // ✅ MEJORA: evita resultados incompletos de voz
   recognition.interimResults = false;
 
   recognition.onstart = () => {
@@ -170,7 +168,7 @@ function toggleVoz() {
           campo.blur();
         } else {
           if (finalValue !== "") {
-            if (targetField === "edad") {
+            if (targetField === "edad" || targetField === "carnet") {
               campo.value = finalValue.replace(/\D/g, "");
             } else {
               campo.value = finalValue.charAt(0).toUpperCase() + finalValue.slice(1);
@@ -188,7 +186,7 @@ function toggleVoz() {
 
       } else {
         if (currentText !== "" && campo.tagName !== "SELECT") {
-          if (targetField === "edad") {
+          if (targetField === "edad" || targetField === "carnet") {
             campo.value = currentText.replace(/\D/g, "");
           } else {
             campo.value = currentText;
@@ -214,16 +212,16 @@ function toggleVoz() {
    GUARDAR
 ========================= */
 async function guardar() {
-  // ✅ MEJORA: detiene voz antes de leer los inputs
   if (recognition && isListeningVoice) {
     recognition.stop();
-
-    // ✅ MEJORA: espera un poco para que el último dato reconocido entre al input
     await new Promise(resolve => setTimeout(resolve, 400));
   }
 
   let nombre = document.getElementById('nombre').value.trim();
-  let carnet = document.getElementById('carnet').value.trim();
+
+  // ✅ CORRECCIÓN CLAVE: carnet solo números, sin espacios
+  let carnet = document.getElementById('carnet').value.replace(/\D/g, '').trim();
+
   let edadVal = document.getElementById('edad').value.trim();
   let sexo = document.getElementById('sexo').value;
   let sangre = document.getElementById('tipo_sangre').value;
@@ -275,6 +273,9 @@ async function guardar() {
       localStorage.setItem('salida_activa', r.id_salida);
       alert('✅ Registro guardado.');
       window.location.href = 'monitoreo.html';
+    } else {
+      alert('❌ No se pudo guardar el paciente. Revisa consola o PM2 logs.');
+      console.error("Respuesta del servidor:", r);
     }
 
   } catch (e) {
