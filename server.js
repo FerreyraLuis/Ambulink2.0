@@ -522,12 +522,18 @@ app.get('/clinica/ambulancias', async (req, res) => {
 /* ===============================
    AUTH / ME
 =============================== */
+/* ===============================
+   AUTH / ME
+=============================== */
 app.get('/auth/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      return res.status(401).json({ ok: false });
+      return res.status(401).json({
+        ok: false,
+        mensaje: 'No se recibió token'
+      });
     }
 
     const token = authHeader.replace('Bearer ', '');
@@ -535,33 +541,43 @@ app.get('/auth/me', async (req, res) => {
     const { data: userData, error } = await supabaseAuth.auth.getUser(token);
 
     if (error || !userData?.user) {
-      return res.status(401).json({ ok: false });
+      return res.status(401).json({
+        ok: false,
+        mensaje: 'Token inválido o sesión expirada'
+      });
     }
 
-    const email = userData.user.email;
+    const auth_uid = userData.user.id;
 
-    const { data: usuario } = await supabase
+    const { data: usuario, error: usuarioError } = await supabase
       .from('usuarios')
-      .select('tipo_rol')
-      .eq('email', email)
+      .select('id_usuario, email, tipo_rol, auth_uid')
+      .eq('auth_uid', auth_uid)
       .single();
 
-    if (!usuario) {
-      return res.status(403).json({ ok: false });
+    if (usuarioError || !usuario) {
+      return res.status(403).json({
+        ok: false,
+        mensaje: 'Usuario autenticado, pero no registrado en la tabla usuarios'
+      });
     }
 
     res.json({
       ok: true,
-      email,
-      tipo_rol: usuario.tipo_rol
+      id_usuario: usuario.id_usuario,
+      email: usuario.email,
+      tipo_rol: usuario.tipo_rol,
+      auth_uid: usuario.auth_uid
     });
 
   } catch (err) {
     console.error("ERROR AUTH ME:", err);
-    res.status(500).json({ ok: false });
+    res.status(500).json({
+      ok: false,
+      mensaje: 'Error interno en autenticación'
+    });
   }
 });
-
 /* ===============================
    START SERVER
 =============================== */

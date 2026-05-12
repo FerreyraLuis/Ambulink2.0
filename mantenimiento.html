@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>AMBULINK | Mantenimiento</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    header {
+      background: #0b4aa6;
+      color: white;
+      padding: 18px 35px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header button {
+      background: #e10600;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    main {
+      padding: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #0b4aa6;
+    }
+
+    .card button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 11px;
+      border: none;
+      border-radius: 10px;
+      background: #0aa0df;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .card button:hover {
+      opacity: 0.9;
+    }
+
+    .resultado {
+      margin-top: 25px;
+      background: #111827;
+      color: #d1fae5;
+      padding: 18px;
+      border-radius: 12px;
+      min-height: 120px;
+      white-space: pre-line;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>AMBULINK | Panel de Mantenimiento</h1>
+  <button onclick="cerrarSesion()">Cerrar sesión</button>
+</header>
+
+<main>
+
+  <div class="grid">
+
+    <div class="card">
+      <h2>Oxímetro</h2>
+      <button onclick="mostrarResultado('Prueba LED WiFi enviada')">Probar LED WiFi</button>
+      <button onclick="mostrarResultado('Prueba LED Envío enviada')">Probar LED Envío</button>
+      <button onclick="mostrarResultado('Verificando comunicación UART del oxímetro...')">Verificar UART</button>
+    </div>
+
+    <div class="card">
+      <h2>Temperatura</h2>
+      <button onclick="mostrarResultado('Prueba enviada a pantalla OLED')">Probar OLED</button>
+      <button onclick="mostrarResultado('Verificando sensor MLX90614 por I2C...')">Verificar sensor</button>
+      <button onclick="ajusteTemperatura()">Ajuste por referencia</button>
+    </div>
+
+    <div class="card">
+      <h2>Conectividad</h2>
+      <button onclick="probarServidor()">Probar servidor</button>
+      <button onclick="mostrarResultado('Verificando conexión WiFi del dispositivo...')">Verificar WiFi</button>
+    </div>
+
+    <div class="card">
+      <h2>Estado general</h2>
+      <button onclick="verificarSesion()">Verificar usuario actual</button>
+      <button onclick="mostrarResultado('Historial de mantenimiento pendiente de conectar a Supabase')">Ver historial</button>
+    </div>
+
+  </div>
+
+  <div id="resultado" class="resultado">
+    Resultado de las pruebas...
+  </div>
+
+</main>
+
+<script>
+  const API_URL = 'https://ambulink.doc-ia.cloud';
+
+  function mostrarResultado(texto) {
+    document.getElementById('resultado').innerText =
+      `[${new Date().toLocaleString()}]\n${texto}`;
+  }
+
+  async function verificarSesion() {
+    const token = localStorage.getItem('access_token');
+
+    if (!token) {
+      location.href = 'login.html';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/auth/me`, {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
+      });
+
+      const data = await res.json();
+
+      if (!data.ok || data.tipo_rol !== 'mantenimiento') {
+        alert('No tienes permiso para entrar a mantenimiento');
+        location.href = 'login.html';
+        return;
+      }
+
+      mostrarResultado(
+        `Usuario autorizado\nEmail: ${data.email}\nRol: ${data.tipo_rol}`
+      );
+
+    } catch (error) {
+      mostrarResultado('Error al verificar sesión');
+    }
+  }
+
+  async function probarServidor() {
+    try {
+      const token = localStorage.getItem('access_token');
+
+      const res = await fetch(`${API_URL}/auth/me`, {
+        headers: {
+          Authorization: 'Bearer ' + token
+        }
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        mostrarResultado('Servidor conectado correctamente\nBackend operativo\nAutenticación correcta');
+      } else {
+        mostrarResultado('Servidor respondió, pero el usuario no está autorizado');
+      }
+
+    } catch (error) {
+      mostrarResultado('Error de conexión con el servidor');
+    }
+  }
+
+  function ajusteTemperatura() {
+    const referencia = prompt('Ingrese temperatura del equipo de referencia, por ejemplo: 36.5');
+    const sensor = prompt('Ingrese temperatura medida por el sensor, por ejemplo: 35.9');
+
+    if (!referencia || !sensor) {
+      mostrarResultado('Ajuste cancelado');
+      return;
+    }
+
+    const ref = parseFloat(referencia);
+    const sen = parseFloat(sensor);
+
+    if (isNaN(ref) || isNaN(sen)) {
+      mostrarResultado('Valores inválidos');
+      return;
+    }
+
+    const error = ref - sen;
+
+    mostrarResultado(
+      `Verificación por contraste\n` +
+      `Temperatura referencia: ${ref.toFixed(2)} °C\n` +
+      `Temperatura sensor: ${sen.toFixed(2)} °C\n` +
+      `Diferencia: ${error.toFixed(2)} °C\n\n` +
+      `Recomendación: aplicar ajuste de ${error.toFixed(2)} °C en el procesamiento.`
+    );
+  }
+
+  function cerrarSesion() {
+    localStorage.clear();
+    location.href = 'login.html';
+  }
+
+  verificarSesion();
+</script>
+
+</body>
+</html>
