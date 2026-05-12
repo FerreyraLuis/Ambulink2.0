@@ -578,6 +578,218 @@ app.get('/auth/me', async (req, res) => {
     });
   }
 });
+
+/* ===============================
+   MANTENIMIENTO - VALIDAR TÉCNICO
+=============================== */
+async function validarMantenimiento(req, res) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    res.status(401).json({ ok: false, mensaje: 'No se recibió token' });
+    return null;
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+
+  const { data: userData, error } = await supabaseAuth.auth.getUser(token);
+
+  if (error || !userData?.user) {
+    res.status(401).json({ ok: false, mensaje: 'Token inválido o sesión expirada' });
+    return null;
+  }
+
+  const { data: usuario, error: usuarioError } = await supabase
+    .from('usuarios')
+    .select('id_usuario, email, tipo_rol')
+    .eq('auth_uid', userData.user.id)
+    .single();
+
+  if (usuarioError || !usuario || usuario.tipo_rol !== 'mantenimiento') {
+    res.status(403).json({ ok: false, mensaje: 'Usuario no autorizado para mantenimiento' });
+    return null;
+  }
+
+  return usuario;
+}
+
+/* ===============================
+   MANTENIMIENTO - ESTADO DISPOSITIVOS
+=============================== */
+app.get('/mantenimiento/estado', async (req, res) => {
+  try {
+    const usuario = await validarMantenimiento(req, res);
+    if (!usuario) return;
+
+    const { data, error } = await supabase
+      .from('estado_dispositivos')
+      .select('*')
+      .order('dispositivo', { ascending: true });
+
+    if (error) throw error;
+
+    res.json({ ok: true, estados: data || [] });
+
+  } catch (err) {
+    console.error('ERROR /mantenimiento/estado:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+/* ===============================
+   MANTENIMIENTO - GUARDAR ESTADO DESDE ESP32
+=============================== */
+app.post('/mantenimiento/estado', async (req, res) => {
+  try {
+    const {
+      dispositivo,
+      wifi_conectado,
+      servidor_conectado,
+      led_wifi,
+      led_envio,
+      uart_ok,
+      i2c_ok,
+      oled_ok,
+      sensor_ok,
+      rssi,
+      ultimo_spo2,
+      ultima_fc,
+      ultima_temperatura,
+      monitoreo_activo
+    } = req.body;
+
+    if (!['oximetria', 'temperatura'].includes(dispositivo)) {
+      return res.status(400).json({ ok: false, mensaje: 'Dispositivo inválido' });
+    }
+
+    const { data, error } = await supabase
+      .from('estado_dispositivos')
+      .upsert({
+        dispositivo,
+        wifi_conectado,
+        servidor_conectado,
+        led_wifi,
+        led_envio,
+        uart_ok,
+        i2c_ok,
+        oled_ok,
+        sensor_ok,
+        rssi,
+        ultimo_spo2,
+        ultima_fc,
+        ultima_temperatura,
+        monitoreo_activo,
+        ultima_actualizacion: new Date().toISOString()
+      }, {
+        onConflict: 'dispositivo'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ ok: true, estado: data });
+
+  } catch (err) {
+    console.error('ERROR POST /mantenimiento/estado:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+/* ===============================
+   MANTENIMIENTO - GUARDAR LOG
+=============================== */
+app.post('/mantenimiento/log', async (req, res) => {
+  try {
+    const usuario = await validarMantenimiento(req, res);
+    if (!usuario) return;
+
+    const {
+      dispositivo,
+      modulo,
+      prueba,
+      resultado,
+      detalle
+    } = req.body;
+
+    const { data, error } = await supabase
+      .from('mantenimiento_logs')
+      .insert({
+        id_usuario: usuario.id_usuario,
+        dispositivo,
+        modulo,
+        prueba,
+        resultado,
+        detalle
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ ok: true, log: data });
+
+  } catch (err) {
+    console.error('ERROR /mantenimiento/log:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+/* ===============================
+   MANTENIMIENTO - HISTORIAL LOGS
+=============================== */
+app.get('/mantenimiento/logs', async (req, res) => {
+  try {
+    const usuario = await validarMantenimiento(req, res);
+    if (!usuario) return;
+
+    const { data, error } = await supabase
+      .from('mantenimiento_logs')
+      .select(`
+        id_mantenimiento,
+        dispositivo,
+        modulo,
+        prueba,
+        resultado,
+        detalle,
+        creado_en,
+        usuarios(email)
+      `)
+      .order('creado_en', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
+    res.json({ ok: true, logs: data || [] });
+
+  } catch (err) {
+    console.error('ERROR /mantenimiento/logs:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+/* ===============================
+   MANTENIMIENTO - GUÍA DE FALLAS
+=============================== */
+app.get('/mantenimiento/fallas', async (req, res) => {
+  try {
+    const usuario = await validarMantenimiento(req, res);
+    if (!usuario) return;
+
+    const { data, error } = await supabase
+      .from('mantenimiento_fallas')
+      .select('*')
+      .order('dispositivo', { ascending: true });
+
+    if (error) throw error;
+
+    res.json({ ok: true, fallas: data || [] });
+
+  } catch (err) {
+    console.error('ERROR /mantenimiento/fallas:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
 /* ===============================
    START SERVER
 =============================== */
