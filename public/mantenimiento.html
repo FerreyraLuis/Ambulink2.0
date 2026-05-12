@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>AMBULINK | Mantenimiento</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMBULINK | Mantenimiento Técnico</title>
 
   <style>
     * {
@@ -12,17 +13,18 @@
 
     body {
       margin: 0;
-      background: #f4f7fb;
-      color: #222;
+      background: #eef3f8;
+      color: #1f2937;
     }
 
     header {
-      background: #0b4aa6;
+      background: linear-gradient(135deg, #063b8e, #0aa0df);
       color: white;
-      padding: 18px 35px;
+      padding: 22px 35px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     }
 
     header h1 {
@@ -30,64 +32,365 @@
       font-size: 24px;
     }
 
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .header-info span {
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
     header button {
       background: #e10600;
       color: white;
       border: none;
-      padding: 10px 18px;
-      border-radius: 20px;
-      cursor: pointer;
+      padding: 11px 20px;
+      border-radius: 25px;
       font-weight: bold;
+      cursor: pointer;
     }
 
     main {
       padding: 30px;
     }
 
+    .estado-general,
+    .historial,
+    .fallas {
+      background: white;
+      padding: 25px;
+      border-radius: 18px;
+      margin-bottom: 28px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #063b8e;
+    }
+
+    .cards-mini {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 18px;
+    }
+
+    .mini-card {
+      padding: 18px;
+      border-radius: 14px;
+      background: #f9fafb;
+      border-left: 6px solid #9ca3af;
+    }
+
+    .mini-card span {
+      display: block;
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .mini-card strong {
+      font-size: 19px;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 22px;
+      grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+      gap: 25px;
+      margin-bottom: 28px;
     }
 
-    .card {
+    .card-dispositivo {
       background: white;
-      border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.09);
     }
 
-    .card h2 {
-      margin-top: 0;
-      color: #0b4aa6;
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 15px;
     }
 
-    .card button {
+    .card-header h2 {
+      margin: 0;
+    }
+
+    .badge {
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .correcto {
+      background: #dcfce7;
+      color: #166534;
+      border-left-color: #22c55e;
+    }
+
+    .advertencia {
+      background: #fef3c7;
+      color: #92400e;
+      border-left-color: #f59e0b;
+    }
+
+    .fallo {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left-color: #ef4444;
+    }
+
+    .sin-datos {
+      background: #e5e7eb;
+      color: #374151;
+      border-left-color: #6b7280;
+    }
+
+    .datos {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .dato {
+      margin: 0;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      min-height: 54px;
+    }
+
+    .dato b {
       display: block;
-      width: 100%;
-      margin-top: 10px;
-      padding: 11px;
+      color: #374151;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .dato span {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .diagnostico {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .correcto-box {
+      background: #ecfdf5;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .advertencia-box {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .fallo-box {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .sin-datos-box {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .acciones {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .acciones button,
+    .toolbar button {
+      flex: 1;
+      min-width: 140px;
       border: none;
-      border-radius: 10px;
-      background: #0aa0df;
+      padding: 12px;
+      border-radius: 12px;
+      background: #0b4aa6;
       color: white;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .card button:hover {
+    .acciones button.secundario,
+    .toolbar button.secundario {
+      background: #0aa0df;
+    }
+
+    .acciones button:hover,
+    .toolbar button:hover,
+    header button:hover {
       opacity: 0.9;
     }
 
-    .resultado {
-      margin-top: 25px;
-      background: #111827;
-      color: #d1fae5;
-      padding: 18px;
-      border-radius: 12px;
-      min-height: 120px;
-      white-space: pre-line;
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+    }
+
+    thead {
+      background: #063b8e;
+      color: white;
+    }
+
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
       font-size: 14px;
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 20;
+    }
+
+    .modal-content {
+      background: white;
+      width: 560px;
+      max-width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 18px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      padding: 11px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      outline: none;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .modal-actions button {
+      border: none;
+      padding: 11px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-cancelar {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-guardar {
+      background: #0b4aa6;
+      color: white;
+    }
+
+    .mensaje {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      display: none;
+      font-size: 14px;
+    }
+
+    .mensaje.ok {
+      background: #dcfce7;
+      color: #166534;
+      display: block;
+    }
+
+    .mensaje.error {
+      background: #fee2e2;
+      color: #991b1b;
+      display: block;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+
+      .header-info {
+        flex-direction: column;
+      }
+
+      main {
+        padding: 18px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .datos {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -95,137 +398,699 @@
 <body>
 
 <header>
-  <h1>AMBULINK | Panel de Mantenimiento</h1>
-  <button onclick="cerrarSesion()">Cerrar sesión</button>
+  <h1>AMBULINK | Mantenimiento Técnico</h1>
+  <div class="header-info">
+    <span id="usuarioActual">Verificando sesión...</span>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
 </header>
 
 <main>
 
-  <div class="grid">
+  <section class="estado-general">
+    <h2>Estado general del sistema</h2>
 
-    <div class="card">
-      <h2>Oxímetro</h2>
-      <button onclick="mostrarResultado('Prueba LED WiFi enviada')">Probar LED WiFi</button>
-      <button onclick="mostrarResultado('Prueba LED Envío enviada')">Probar LED Envío</button>
-      <button onclick="mostrarResultado('Verificando comunicación UART del oxímetro...')">Verificar UART</button>
+    <div class="toolbar">
+      <button onclick="cargarTodo()">Actualizar datos</button>
+      <button class="secundario" onclick="abrirRegistro('sistema', 'Conectividad')">Registrar mantenimiento general</button>
     </div>
 
-    <div class="card">
-      <h2>Temperatura</h2>
-      <button onclick="mostrarResultado('Prueba enviada a pantalla OLED')">Probar OLED</button>
-      <button onclick="mostrarResultado('Verificando sensor MLX90614 por I2C...')">Verificar sensor</button>
-      <button onclick="ajusteTemperatura()">Ajuste por referencia</button>
+    <div class="cards-mini">
+      <div class="mini-card correcto">
+        <span>Backend</span>
+        <strong id="estadoBackend">Operativo</strong>
+      </div>
+
+      <div class="mini-card correcto">
+        <span>Autenticación</span>
+        <strong id="estadoAuth">Validada</strong>
+      </div>
+
+      <div class="mini-card sin-datos">
+        <span>Última actualización</span>
+        <strong id="ultimaActualizacionGlobal">Cargando...</strong>
+      </div>
+
+      <div class="mini-card sin-datos">
+        <span>Estado global</span>
+        <strong id="estadoGlobal">Evaluando...</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+
+    <div class="card-dispositivo">
+      <div class="card-header">
+        <h2>Módulo de Oximetría</h2>
+        <span id="badgeOximetria" class="badge sin-datos">Sin datos</span>
+      </div>
+
+      <div class="datos">
+        <p class="dato"><b>WiFi</b><span id="oxiWifi">--</span></p>
+        <p class="dato"><b>RSSI</b><span id="oxiRssi">--</span></p>
+        <p class="dato"><b>Servidor</b><span id="oxiServidor">--</span></p>
+        <p class="dato"><b>LED WiFi</b><span id="oxiLedWifi">--</span></p>
+        <p class="dato"><b>LED Envío</b><span id="oxiLedEnvio">--</span></p>
+        <p class="dato"><b>UART Oxímetro</b><span id="oxiUart">--</span></p>
+        <p class="dato"><b>Último SpO₂</b><span id="oxiSpo2">--</span></p>
+        <p class="dato"><b>Última FC</b><span id="oxiFc">--</span></p>
+        <p class="dato"><b>Monitoreo</b><span id="oxiMonitoreo">--</span></p>
+        <p class="dato"><b>Última actualización</b><span id="oxiActualizacion">--</span></p>
+      </div>
+
+      <div id="diagnosticoOximetria" class="diagnostico sin-datos-box">
+        Esperando datos técnicos del módulo de oximetría.
+      </div>
+
+      <div class="acciones">
+        <button onclick="abrirRegistro('oximetria', 'UART')">Registrar prueba UART</button>
+        <button class="secundario" onclick="abrirRegistro('oximetria', 'LED WiFi')">Registrar LED WiFi</button>
+        <button onclick="mostrarFallas('oximetria')">Guía de fallas</button>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Conectividad</h2>
-      <button onclick="probarServidor()">Probar servidor</button>
-      <button onclick="mostrarResultado('Verificando conexión WiFi del dispositivo...')">Verificar WiFi</button>
+    <div class="card-dispositivo">
+      <div class="card-header">
+        <h2>Módulo de Temperatura</h2>
+        <span id="badgeTemperatura" class="badge sin-datos">Sin datos</span>
+      </div>
+
+      <div class="datos">
+        <p class="dato"><b>WiFi</b><span id="tempWifi">--</span></p>
+        <p class="dato"><b>RSSI</b><span id="tempRssi">--</span></p>
+        <p class="dato"><b>Servidor</b><span id="tempServidor">--</span></p>
+        <p class="dato"><b>LED WiFi</b><span id="tempLedWifi">--</span></p>
+        <p class="dato"><b>LED Envío</b><span id="tempLedEnvio">--</span></p>
+        <p class="dato"><b>I²C</b><span id="tempI2c">--</span></p>
+        <p class="dato"><b>OLED</b><span id="tempOled">--</span></p>
+        <p class="dato"><b>MLX90614</b><span id="tempSensor">--</span></p>
+        <p class="dato"><b>Última temperatura</b><span id="tempValor">--</span></p>
+        <p class="dato"><b>Monitoreo</b><span id="tempMonitoreo">--</span></p>
+        <p class="dato"><b>Última actualización</b><span id="tempActualizacion">--</span></p>
+      </div>
+
+      <div id="diagnosticoTemperatura" class="diagnostico sin-datos-box">
+        Esperando datos técnicos del módulo de temperatura.
+      </div>
+
+      <div class="acciones">
+        <button onclick="abrirRegistro('temperatura', 'MLX90614')">Registrar sensor</button>
+        <button class="secundario" onclick="abrirAjusteTemperatura()">Ajuste por contraste</button>
+        <button onclick="mostrarFallas('temperatura')">Guía de fallas</button>
+      </div>
     </div>
 
-    <div class="card">
-      <h2>Estado general</h2>
-      <button onclick="verificarSesion()">Verificar usuario actual</button>
-      <button onclick="mostrarResultado('Historial de mantenimiento pendiente de conectar a Supabase')">Ver historial</button>
-    </div>
+  </section>
 
-  </div>
+  <section class="historial">
+    <h2>Historial técnico real</h2>
 
-  <div id="resultado" class="resultado">
-    Resultado de las pruebas...
-  </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Técnico</th>
+          <th>Dispositivo</th>
+          <th>Módulo</th>
+          <th>Prueba</th>
+          <th>Resultado</th>
+          <th>Detalle</th>
+        </tr>
+      </thead>
+
+      <tbody id="tablaHistorial">
+        <tr>
+          <td colspan="7">Cargando historial...</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="fallas">
+    <h2>Guía técnica de fallas</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Dispositivo</th>
+          <th>Módulo</th>
+          <th>Descripción</th>
+          <th>Posible causa</th>
+          <th>Acción recomendada</th>
+          <th>Severidad</th>
+        </tr>
+      </thead>
+
+      <tbody id="tablaFallas">
+        <tr>
+          <td colspan="6">Cargando guía de fallas...</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
 </main>
+
+<div class="modal" id="modalRegistro">
+  <div class="modal-content">
+    <h2>Registrar mantenimiento</h2>
+
+    <label>Dispositivo</label>
+    <select id="registroDispositivo">
+      <option value="oximetria">Oximetría</option>
+      <option value="temperatura">Temperatura</option>
+      <option value="sistema">Sistema</option>
+    </select>
+
+    <label>Módulo revisado</label>
+    <input id="registroModulo" placeholder="Ej: WiFi, UART, OLED, MLX90614" />
+
+    <label>Prueba realizada</label>
+    <input id="registroPrueba" placeholder="Ej: Verificación funcional, inspección visual, contraste" />
+
+    <label>Resultado</label>
+    <select id="registroResultado">
+      <option value="correcto">Correcto</option>
+      <option value="advertencia">Advertencia</option>
+      <option value="fallo">Fallo</option>
+    </select>
+
+    <label>Detalle técnico</label>
+    <textarea id="registroDetalle" placeholder="Describe qué se revisó y qué se observó..."></textarea>
+
+    <div id="mensajeRegistro" class="mensaje"></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-guardar" onclick="guardarRegistro()">Guardar en Supabase</button>
+    </div>
+  </div>
+</div>
 
 <script>
   const API_URL = 'https://ambulink.doc-ia.cloud';
 
-  function mostrarResultado(texto) {
-    document.getElementById('resultado').innerText =
-      `[${new Date().toLocaleString()}]\n${texto}`;
+  let fallasGlobales = [];
+
+  function token() {
+    return localStorage.getItem('access_token');
+  }
+
+  function headersAuth(json = false) {
+    const h = {
+      Authorization: 'Bearer ' + token()
+    };
+
+    if (json) {
+      h['Content-Type'] = 'application/json';
+    }
+
+    return h;
   }
 
   async function verificarSesion() {
-    const token = localStorage.getItem('access_token');
-
-    if (!token) {
+    if (!token()) {
       location.href = 'login.html';
       return;
     }
 
     try {
       const res = await fetch(`${API_URL}/auth/me`, {
-        headers: {
-          Authorization: 'Bearer ' + token
-        }
+        headers: headersAuth()
       });
 
       const data = await res.json();
 
       if (!data.ok || data.tipo_rol !== 'mantenimiento') {
-        alert('No tienes permiso para entrar a mantenimiento');
+        alert('No tienes permiso para entrar al módulo de mantenimiento.');
+        localStorage.clear();
         location.href = 'login.html';
         return;
       }
 
-      mostrarResultado(
-        `Usuario autorizado\nEmail: ${data.email}\nRol: ${data.tipo_rol}`
-      );
+      document.getElementById('usuarioActual').innerText =
+        `Técnico: ${data.email}`;
 
     } catch (error) {
-      mostrarResultado('Error al verificar sesión');
+      alert('No se pudo verificar la sesión.');
+      localStorage.clear();
+      location.href = 'login.html';
     }
   }
 
-  async function probarServidor() {
-    try {
-      const token = localStorage.getItem('access_token');
+  async function cargarTodo() {
+    await cargarEstados();
+    await cargarHistorial();
+    await cargarFallas();
 
-      const res = await fetch(`${API_URL}/auth/me`, {
-        headers: {
-          Authorization: 'Bearer ' + token
-        }
+    document.getElementById('ultimaActualizacionGlobal').innerText =
+      new Date().toLocaleTimeString();
+  }
+
+  async function cargarEstados() {
+    try {
+      const res = await fetch(`${API_URL}/mantenimiento/estado`, {
+        headers: headersAuth()
       });
 
       const data = await res.json();
 
-      if (data.ok) {
-        mostrarResultado('Servidor conectado correctamente\nBackend operativo\nAutenticación correcta');
-      } else {
-        mostrarResultado('Servidor respondió, pero el usuario no está autorizado');
+      if (!data.ok) {
+        throw new Error(data.mensaje || 'No se pudo cargar estado');
       }
 
+      const estados = data.estados || [];
+      const oxi = estados.find(e => e.dispositivo === 'oximetria');
+      const temp = estados.find(e => e.dispositivo === 'temperatura');
+
+      pintarOximetria(oxi);
+      pintarTemperatura(temp);
+      evaluarGlobal(oxi, temp);
+
     } catch (error) {
-      mostrarResultado('Error de conexión con el servidor');
+      console.error(error);
+      document.getElementById('estadoBackend').innerText = 'Error';
+      document.getElementById('estadoGlobal').innerText = 'Fallo';
     }
   }
 
-  function ajusteTemperatura() {
-    const referencia = prompt('Ingrese temperatura del equipo de referencia, por ejemplo: 36.5');
-    const sensor = prompt('Ingrese temperatura medida por el sensor, por ejemplo: 35.9');
-
-    if (!referencia || !sensor) {
-      mostrarResultado('Ajuste cancelado');
+  function pintarOximetria(e) {
+    if (!e) {
+      setBadge('badgeOximetria', 'sin-datos', 'Sin datos');
+      setDiagnostico('diagnosticoOximetria', 'sin-datos-box', 'No existen datos técnicos del módulo de oximetría.');
       return;
     }
+
+    const estado = calcularEstadoOximetria(e);
+
+    setBadge('badgeOximetria', estado.clase, estado.texto);
+    setDiagnostico('diagnosticoOximetria', estado.box, estado.mensaje);
+
+    setText('oxiWifi', boolText(e.wifi_conectado));
+    setText('oxiRssi', e.rssi !== null && e.rssi !== undefined ? `${e.rssi} dBm` : '--');
+    setText('oxiServidor', boolText(e.servidor_conectado));
+    setText('oxiLedWifi', boolText(e.led_wifi, 'Encendido', 'Apagado'));
+    setText('oxiLedEnvio', boolText(e.led_envio, 'Encendido', 'Apagado'));
+    setText('oxiUart', boolText(e.uart_ok, 'Correcto', 'Fallo'));
+    setText('oxiSpo2', e.ultimo_spo2 ? `${e.ultimo_spo2} %` : '--');
+    setText('oxiFc', e.ultima_fc ? `${e.ultima_fc} bpm` : '--');
+    setText('oxiMonitoreo', boolText(e.monitoreo_activo, 'Activo', 'Inactivo'));
+    setText('oxiActualizacion', fechaRelativa(e.ultima_actualizacion));
+  }
+
+  function pintarTemperatura(e) {
+    if (!e) {
+      setBadge('badgeTemperatura', 'sin-datos', 'Sin datos');
+      setDiagnostico('diagnosticoTemperatura', 'sin-datos-box', 'No existen datos técnicos del módulo de temperatura.');
+      return;
+    }
+
+    const estado = calcularEstadoTemperatura(e);
+
+    setBadge('badgeTemperatura', estado.clase, estado.texto);
+    setDiagnostico('diagnosticoTemperatura', estado.box, estado.mensaje);
+
+    setText('tempWifi', boolText(e.wifi_conectado));
+    setText('tempRssi', e.rssi !== null && e.rssi !== undefined ? `${e.rssi} dBm` : '--');
+    setText('tempServidor', boolText(e.servidor_conectado));
+    setText('tempLedWifi', boolText(e.led_wifi, 'Encendido', 'Apagado'));
+    setText('tempLedEnvio', boolText(e.led_envio, 'Encendido', 'Apagado'));
+    setText('tempI2c', boolText(e.i2c_ok, 'Correcto', 'Fallo'));
+    setText('tempOled', boolText(e.oled_ok, 'Correcto', 'Fallo'));
+    setText('tempSensor', boolText(e.sensor_ok, 'Correcto', 'Fallo'));
+    setText('tempValor', e.ultima_temperatura ? `${Number(e.ultima_temperatura).toFixed(2)} °C` : '--');
+    setText('tempMonitoreo', boolText(e.monitoreo_activo, 'Activo', 'Inactivo'));
+    setText('tempActualizacion', fechaRelativa(e.ultima_actualizacion));
+  }
+
+  function calcularEstadoOximetria(e) {
+    const sinActualizar = estaDesactualizado(e.ultima_actualizacion);
+
+    if (sinActualizar || e.wifi_conectado === false || e.servidor_conectado === false || e.uart_ok === false) {
+      return {
+        clase: 'fallo',
+        box: 'fallo-box',
+        texto: 'Fallo',
+        mensaje: 'El módulo de oximetría presenta una condición crítica: sin actualización reciente, WiFi/servidor desconectado o comunicación UART con falla. Revisar alimentación, red y conexión TX/RX con GND común.'
+      };
+    }
+
+    if ((e.rssi !== null && e.rssi < -75) || fueraRangoSpO2(e.ultimo_spo2) || fueraRangoFC(e.ultima_fc)) {
+      return {
+        clase: 'advertencia',
+        box: 'advertencia-box',
+        texto: 'Advertencia',
+        mensaje: 'El módulo de oximetría funciona, pero existe una advertencia: señal WiFi débil o valores fisiológicos fuera del rango esperado. Se recomienda verificar ubicación del módulo y contraste con equipo de referencia.'
+      };
+    }
+
+    return {
+      clase: 'correcto',
+      box: 'correcto-box',
+      texto: 'Correcto',
+      mensaje: 'El módulo de oximetría se encuentra operativo. La conectividad, comunicación UART y último reporte técnico son correctos.'
+    };
+  }
+
+  function calcularEstadoTemperatura(e) {
+    const sinActualizar = estaDesactualizado(e.ultima_actualizacion);
+
+    if (sinActualizar || e.wifi_conectado === false || e.servidor_conectado === false || e.i2c_ok === false || e.sensor_ok === false) {
+      return {
+        clase: 'fallo',
+        box: 'fallo-box',
+        texto: 'Fallo',
+        mensaje: 'El módulo de temperatura presenta una condición crítica: sin actualización reciente, falla de conexión, bus I²C o sensor MLX90614. Revisar alimentación, SDA, SCL, GND y disponibilidad del servidor.'
+      };
+    }
+
+    if ((e.rssi !== null && e.rssi < -75) || e.oled_ok === false || fueraRangoTemp(e.ultima_temperatura)) {
+      return {
+        clase: 'advertencia',
+        box: 'advertencia-box',
+        texto: 'Advertencia',
+        mensaje: 'El módulo de temperatura responde, pero existe una advertencia: señal WiFi débil, OLED con posible falla o lectura fuera del rango esperado. Revisar distancia de medición y contraste con termómetro de referencia.'
+      };
+    }
+
+    return {
+      clase: 'correcto',
+      box: 'correcto-box',
+      texto: 'Correcto',
+      mensaje: 'El módulo de temperatura se encuentra operativo. La conectividad, sensor MLX90614, bus I²C y último envío técnico son correctos.'
+    };
+  }
+
+  function evaluarGlobal(oxi, temp) {
+    if (!oxi && !temp) {
+      document.getElementById('estadoGlobal').innerText = 'Sin datos';
+      return;
+    }
+
+    const oxiEstado = oxi ? calcularEstadoOximetria(oxi).texto : 'Sin datos';
+    const tempEstado = temp ? calcularEstadoTemperatura(temp).texto : 'Sin datos';
+
+    if (oxiEstado === 'Fallo' || tempEstado === 'Fallo') {
+      document.getElementById('estadoGlobal').innerText = 'Fallo';
+    } else if (oxiEstado === 'Advertencia' || tempEstado === 'Advertencia') {
+      document.getElementById('estadoGlobal').innerText = 'Advertencia';
+    } else {
+      document.getElementById('estadoGlobal').innerText = 'Correcto';
+    }
+  }
+
+  async function cargarHistorial() {
+    try {
+      const res = await fetch(`${API_URL}/mantenimiento/logs`, {
+        headers: headersAuth()
+      });
+
+      const data = await res.json();
+      const tabla = document.getElementById('tablaHistorial');
+
+      tabla.innerHTML = '';
+
+      if (!data.ok || !data.logs || data.logs.length === 0) {
+        tabla.innerHTML = `<tr><td colspan="7">No existen registros de mantenimiento todavía.</td></tr>`;
+        return;
+      }
+
+      data.logs.forEach(log => {
+        const fila = document.createElement('tr');
+
+        fila.innerHTML = `
+          <td>${new Date(log.creado_en).toLocaleString()}</td>
+          <td>${log.usuarios?.email || '--'}</td>
+          <td>${formatearDispositivo(log.dispositivo)}</td>
+          <td>${escapeHtml(log.modulo || '')}</td>
+          <td>${escapeHtml(log.prueba || '')}</td>
+          <td>${formatearResultado(log.resultado)}</td>
+          <td>${escapeHtml(log.detalle || '')}</td>
+        `;
+
+        tabla.appendChild(fila);
+      });
+
+    } catch (error) {
+      console.error(error);
+      document.getElementById('tablaHistorial').innerHTML =
+        `<tr><td colspan="7">Error al cargar historial.</td></tr>`;
+    }
+  }
+
+  async function cargarFallas() {
+    try {
+      const res = await fetch(`${API_URL}/mantenimiento/fallas`, {
+        headers: headersAuth()
+      });
+
+      const data = await res.json();
+      fallasGlobales = data.fallas || [];
+
+      const tabla = document.getElementById('tablaFallas');
+      tabla.innerHTML = '';
+
+      if (!data.ok || fallasGlobales.length === 0) {
+        tabla.innerHTML = `<tr><td colspan="6">No existen fallas registradas.</td></tr>`;
+        return;
+      }
+
+      fallasGlobales.forEach(f => {
+        const fila = document.createElement('tr');
+
+        fila.innerHTML = `
+          <td>${formatearDispositivo(f.dispositivo)}</td>
+          <td>${escapeHtml(f.modulo || '')}</td>
+          <td>${escapeHtml(f.descripcion || '')}</td>
+          <td>${escapeHtml(f.posible_causa || '')}</td>
+          <td>${escapeHtml(f.accion_recomendada || '')}</td>
+          <td>${escapeHtml(f.severidad || '')}</td>
+        `;
+
+        tabla.appendChild(fila);
+      });
+
+    } catch (error) {
+      console.error(error);
+      document.getElementById('tablaFallas').innerHTML =
+        `<tr><td colspan="6">Error al cargar guía de fallas.</td></tr>`;
+    }
+  }
+
+  function abrirRegistro(dispositivo, modulo) {
+    document.getElementById('registroDispositivo').value = dispositivo;
+    document.getElementById('registroModulo').value = modulo || '';
+    document.getElementById('registroPrueba').value = '';
+    document.getElementById('registroResultado').value = 'correcto';
+    document.getElementById('registroDetalle').value = '';
+    limpiarMensaje();
+    document.getElementById('modalRegistro').style.display = 'flex';
+  }
+
+  function cerrarModal() {
+    document.getElementById('modalRegistro').style.display = 'none';
+  }
+
+  async function guardarRegistro() {
+    const dispositivo = document.getElementById('registroDispositivo').value;
+    const modulo = document.getElementById('registroModulo').value.trim();
+    const prueba = document.getElementById('registroPrueba').value.trim();
+    const resultado = document.getElementById('registroResultado').value;
+    const detalle = document.getElementById('registroDetalle').value.trim();
+
+    if (!modulo || !prueba || !detalle) {
+      mostrarMensaje('Completa módulo, prueba y detalle técnico.', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/mantenimiento/log`, {
+        method: 'POST',
+        headers: headersAuth(true),
+        body: JSON.stringify({
+          dispositivo,
+          modulo,
+          prueba,
+          resultado,
+          detalle
+        })
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        throw new Error(data.mensaje || 'No se pudo guardar el registro.');
+      }
+
+      mostrarMensaje('Registro guardado correctamente en Supabase.', 'ok');
+
+      setTimeout(() => {
+        cerrarModal();
+        cargarHistorial();
+      }, 700);
+
+    } catch (error) {
+      mostrarMensaje(error.message, 'error');
+    }
+  }
+
+  async function abrirAjusteTemperatura() {
+    const referencia = prompt('Temperatura del equipo de referencia. Ejemplo: 36.5');
+    const sensor = prompt('Temperatura medida por el MLX90614. Ejemplo: 35.9');
+
+    if (!referencia || !sensor) return;
 
     const ref = parseFloat(referencia);
-    const sen = parseFloat(sensor);
+    const med = parseFloat(sensor);
 
-    if (isNaN(ref) || isNaN(sen)) {
-      mostrarResultado('Valores inválidos');
+    if (isNaN(ref) || isNaN(med)) {
+      alert('Ingresa valores numéricos válidos.');
       return;
     }
 
-    const error = ref - sen;
+    const diferencia = ref - med;
+    const resultado = Math.abs(diferencia) <= 0.5 ? 'correcto' : 'advertencia';
 
-    mostrarResultado(
-      `Verificación por contraste\n` +
-      `Temperatura referencia: ${ref.toFixed(2)} °C\n` +
-      `Temperatura sensor: ${sen.toFixed(2)} °C\n` +
-      `Diferencia: ${error.toFixed(2)} °C\n\n` +
-      `Recomendación: aplicar ajuste de ${error.toFixed(2)} °C en el procesamiento.`
-    );
+    const detalle =
+      `Referencia: ${ref.toFixed(2)} °C | ` +
+      `Sensor: ${med.toFixed(2)} °C | ` +
+      `Diferencia: ${diferencia.toFixed(2)} °C | ` +
+      `Recomendación: repetir contraste y aplicar offset de ${diferencia.toFixed(2)} °C si la diferencia se mantiene.`;
+
+    try {
+      const res = await fetch(`${API_URL}/mantenimiento/log`, {
+        method: 'POST',
+        headers: headersAuth(true),
+        body: JSON.stringify({
+          dispositivo: 'temperatura',
+          modulo: 'MLX90614',
+          prueba: 'Ajuste por contraste con equipo de referencia',
+          resultado,
+          detalle
+        })
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        throw new Error(data.mensaje || 'No se pudo guardar el ajuste.');
+      }
+
+      alert('Ajuste por contraste guardado en Supabase.');
+      cargarHistorial();
+
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  function mostrarFallas(dispositivo) {
+    const fallas = fallasGlobales.filter(f => f.dispositivo === dispositivo || f.dispositivo === 'sistema');
+
+    if (fallas.length === 0) {
+      alert('No existen fallas cargadas para este dispositivo.');
+      return;
+    }
+
+    const texto = fallas.map(f =>
+      `Módulo: ${f.modulo}\n` +
+      `Descripción: ${f.descripcion}\n` +
+      `Posible causa: ${f.posible_causa || '--'}\n` +
+      `Acción recomendada: ${f.accion_recomendada || '--'}\n` +
+      `Severidad: ${f.severidad || '--'}`
+    ).join('\n\n----------------------\n\n');
+
+    alert(texto);
+  }
+
+  function setBadge(id, clase, texto) {
+    const el = document.getElementById(id);
+    el.className = `badge ${clase}`;
+    el.innerText = texto;
+  }
+
+  function setDiagnostico(id, clase, texto) {
+    const el = document.getElementById(id);
+    el.className = `diagnostico ${clase}`;
+    el.innerText = texto;
+  }
+
+  function setText(id, texto) {
+    document.getElementById(id).innerText = texto;
+  }
+
+  function boolText(valor, verdadero = 'Conectado', falso = 'Desconectado') {
+    if (valor === true) return verdadero;
+    if (valor === false) return falso;
+    return '--';
+  }
+
+  function fechaRelativa(fecha) {
+    if (!fecha) return '--';
+
+    const diff = Math.floor((Date.now() - new Date(fecha).getTime()) / 1000);
+
+    if (diff < 0) return 'Ahora';
+    if (diff < 60) return `Hace ${diff} s`;
+    if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+    return new Date(fecha).toLocaleString();
+  }
+
+  function estaDesactualizado(fecha) {
+    if (!fecha) return true;
+
+    const diff = Date.now() - new Date(fecha).getTime();
+    return diff > 60000;
+  }
+
+  function fueraRangoSpO2(valor) {
+    if (valor === null || valor === undefined) return false;
+    return valor < 70 || valor > 100;
+  }
+
+  function fueraRangoFC(valor) {
+    if (valor === null || valor === undefined) return false;
+    return valor < 30 || valor > 220;
+  }
+
+  function fueraRangoTemp(valor) {
+    if (valor === null || valor === undefined) return false;
+    return Number(valor) < 30 || Number(valor) > 42;
+  }
+
+  function formatearDispositivo(dispositivo) {
+    if (dispositivo === 'oximetria') return 'Oximetría';
+    if (dispositivo === 'temperatura') return 'Temperatura';
+    return 'Sistema';
+  }
+
+  function formatearResultado(resultado) {
+    if (resultado === 'correcto') return 'Correcto';
+    if (resultado === 'advertencia') return 'Advertencia';
+    if (resultado === 'fallo') return 'Fallo';
+    return resultado || '--';
+  }
+
+  function mostrarMensaje(texto, tipo) {
+    const el = document.getElementById('mensajeRegistro');
+    el.className = `mensaje ${tipo}`;
+    el.innerText = texto;
+  }
+
+  function limpiarMensaje() {
+    const el = document.getElementById('mensajeRegistro');
+    el.className = 'mensaje';
+    el.innerText = '';
+  }
+
+  function escapeHtml(texto) {
+    return String(texto)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
   function cerrarSesion() {
@@ -233,7 +1098,15 @@
     location.href = 'login.html';
   }
 
-  verificarSesion();
+  async function iniciar() {
+    await verificarSesion();
+    await cargarTodo();
+
+    setInterval(cargarEstados, 10000);
+    setInterval(cargarHistorial, 30000);
+  }
+
+  iniciar();
 </script>
 
 </body>
