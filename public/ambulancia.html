@@ -3,373 +3,587 @@
 <head>
   <meta charset="UTF-8">
   <title>AMBULINK | Ambulancia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
+    :root {
+      --blue-deep:    #0b1e3d;
+      --blue-mid:     #0e2a52;
+      --blue-accent:  #1566c0;
+      --cyan:         #0aa0df;
+      --red:          #e10600;
+      --white:        #ffffff;
+      --muted:        rgba(255,255,255,0.45);
+      --input-bg:     rgba(255,255,255,0.07);
+      --input-border: rgba(255,255,255,0.12);
+      --card-bg:      rgba(255,255,255,0.05);
+      --card-border:  rgba(255,255,255,0.08);
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
-      background: #eaeaea;
-    }
-
-    .app {
-      width: 95%;
-      height: 95vh;
-      margin: 20px auto;
-      background: #059bd8;
-      border-radius: 18px;
-      padding: 18px;
-    }
-
-    .content {
-      width: 100%;
-      height: 100%;
-      background: white;
-      border-radius: 18px;
-      padding: 25px;
-      display: flex;
-    }
-
-    .sidebar {
-      width: 160px;
-      background: #059bd8;
-      border-radius: 14px;
-      padding: 20px;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--blue-deep);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      gap: 40px;
     }
 
-    .sidebar button {
-      background: white;
-      color: red;
-      border: none;
-      border-radius: 20px;
-      padding: 12px 0;
-      font-weight: bold;
-      font-size: 14px;
-      cursor: pointer;
+    /* ── DOT GRID BG ── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .main {
-      flex: 1;
-      padding-left: 30px;
-    }
-
-    .header {
+    /* ═══════════════════════════════
+       TOPBAR
+    ═══════════════════════════════ */
+    .topbar {
+      position: relative;
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--blue-mid);
+      border-bottom: 1px solid var(--card-border);
     }
 
-    .header-left {
+    .topbar-left {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 18px;
     }
 
     .brand {
-      color: red;
-      font-size: 30px;
-      font-weight: 800;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 34px;
+      letter-spacing: 4px;
+      color: var(--white);
+      line-height: 1;
     }
 
-    .status {
-      background: #e10600;
-      color: white;
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-weight: bold;
-      font-size: 14px;
+    .brand span { color: var(--red); }
+
+    .divider-v {
+      width: 1px;
+      height: 28px;
+      background: var(--input-border);
     }
 
-    .btn-blue {
-      background: #009fe3;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-weight: bold;
-      font-size: 14px;
+    /* Status badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .badge-red {
+      background: rgba(225, 6, 0, 0.15);
+      color: #ff6b6b;
+      border: 1px solid rgba(225, 6, 0, 0.3);
+    }
+    .badge-red::before { background: #e10600; box-shadow: 0 0 5px #e10600; }
+
+    .badge-green {
+      background: rgba(27, 177, 76, 0.15);
+      color: #5de98d;
+      border: 1px solid rgba(27, 177, 76, 0.3);
+    }
+    .badge-green::before { background: #1bb14c; box-shadow: 0 0 5px #1bb14c; animation: blink 1.2s infinite; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Header action buttons */
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border: 1px solid transparent;
       cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
     }
+
+    .btn-cyan {
+      background: rgba(10, 160, 223, 0.15);
+      color: var(--cyan);
+      border-color: rgba(10, 160, 223, 0.3);
+    }
+    .btn-cyan:hover { background: rgba(10, 160, 223, 0.25); }
+
+    .btn-red {
+      background: rgba(225, 6, 0, 0.15);
+      color: #ff6b6b;
+      border-color: rgba(225, 6, 0, 0.3);
+    }
+    .btn-red:hover { background: rgba(225, 6, 0, 0.25); }
 
     .btn-green {
-      background: #1bb14c;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-weight: bold;
-      font-size: 14px;
+      background: rgba(27, 177, 76, 0.15);
+      color: #5de98d;
+      border-color: rgba(27, 177, 76, 0.3);
+    }
+    .btn-green:hover { background: rgba(27, 177, 76, 0.25); }
+
+    .btn-solid-red {
+      background: var(--red);
+      color: var(--white);
+      border-color: var(--red);
+    }
+    .btn-solid-red:hover { background: #c80500; }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 7px 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .user-chip-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 6px var(--cyan);
+    }
+
+    /* ═══════════════════════════════
+       LAYOUT
+    ═══════════════════════════════ */
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex: 1;
+      gap: 0;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 72px;
+      background: var(--blue-mid);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 0;
+      gap: 14px;
+    }
+
+    .nav-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--muted);
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: rgba(10,160,223,0.12); border-color: rgba(10,160,223,0.3); color: var(--cyan); }
+    .nav-btn svg { width: 18px; height: 18px; }
+
+    .sidebar-sep {
+      width: 30px;
+      height: 1px;
+      background: var(--card-border);
+      margin: 4px 0;
     }
 
-    .btn-stop {
-      background: #e10600;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-weight: bold;
-      font-size: 14px;
+    .nav-btn.danger:hover { background: rgba(225,6,0,0.12); border-color: rgba(225,6,0,0.3); color: #ff6b6b; }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
     }
 
-    .user {
-      background: #009fe3;
-      color: white;
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-weight: bold;
-      font-size: 14px;
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
-    .box {
-      background: #009fe3;
-      border-radius: 16px;
-      padding: 20px;
-      color: white;
-    }
+    .section-label .accent { width: 3px; height: 18px; background: var(--cyan); border-radius: 2px; }
 
-    .box h3 {
-      margin: 0 0 14px 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 6px;
+    .section-label h3 {
+      font-size: 11px;
       font-weight: 600;
-      font-size: 13px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
-    input,
-    select {
-      width: 100%;
-      height: 36px;
-      border: 3px solid transparent; /* Cambiado para soportar el resaltado de voz */
-      border-radius: 16px;
-      padding: 0 14px;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.3s;
+    /* ── CARD ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px 22px;
     }
 
+    /* ── GRID LAYOUTS ── */
     .top-row {
       display: grid;
-      grid-template-columns: 520px 1fr;
-      gap: 20px;
-      margin-top: 25px;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
     }
 
-    .row {
+    .row-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
+      gap: 16px;
     }
 
     .row-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
+      gap: 16px;
     }
 
+    /* ── FIELD ── */
+    .field { display: flex; flex-direction: column; gap: 7px; }
+
+    .field label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      height: 38px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: 0 12px;
+      color: var(--white);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .field input::placeholder { color: rgba(255,255,255,0.2); }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--cyan);
+      background: rgba(10, 160, 223, 0.07);
+    }
+
+    .field select option { background: #0e2a52; color: white; }
+
+    /* ── VOICE STATES ── */
+    .active-field {
+      border-color: #f1c40f !important;
+      background-color: rgba(241, 196, 15, 0.08) !important;
+      box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+    }
+
+    .confirmed-field {
+      border-color: #2ecc71 !important;
+      background-color: rgba(46, 204, 113, 0.07) !important;
+      color: #5de98d !important;
+      font-weight: 600;
+    }
+
+    /* ── ACTIONS ── */
     .actions {
-      margin-top: 15px;
       display: flex;
       justify-content: flex-end;
+      margin-top: 18px;
     }
 
-    .btn-red {
-      background: #e10600;
-      color: white;
+    .btn-save {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--red);
+      color: var(--white);
       border: none;
+      border-radius: 8px;
       padding: 10px 26px;
-      border-radius: 16px;
-      font-weight: bold;
-      font-size: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
       cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
     }
+    .btn-save:hover { background: #c80500; transform: translateY(-1px); }
+    .btn-save:active { transform: none; }
 
-    /* --- ESTILOS ADICIONALES PARA SISTEMA DE VOZ --- */
-    
-    .active-field { 
-      border-color: #f1c40f !important; 
-      background-color: #fffdec !important; 
-      box-shadow: 0 0 8px #f1c40f;
-    }
-    
-    .confirmed-field { 
-      border-color: #2ecc71 !important; 
-      background-color: #fafffa !important; 
-      color: #1e8449 !important; 
-      font-weight: bold;
-    }
-
+    /* ── VOICE BUTTON ── */
     .btn-voz {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 65px;
-      height: 65px;
+      bottom: 28px;
+      right: 28px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       border: none;
-      background: white;
-      font-size: 28px;
+      background: var(--blue-mid);
+      border: 1px solid var(--card-border);
+      font-size: 24px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       z-index: 1000;
       transition: 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--cyan);
     }
 
     .btn-voz.listening {
-      background: #e10600;
+      background: var(--red);
+      border-color: var(--red);
       color: white;
-      animation: pulse 1s infinite;
+      animation: voice-pulse 1s infinite;
     }
 
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0px rgba(225, 6, 0, 0.4); }
-      100% { box-shadow: 0 0 0 20px rgba(225, 6, 0, 0); }
+    @keyframes voice-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(225,6,0,0.5); }
+      100% { box-shadow: 0 0 0 18px rgba(225,6,0,0); }
     }
 
+    /* ── STATUS BAR ── */
     #status-voz {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      background: #222;
-      color: #0f0;
-      padding: 5px 20px;
-      font-family: monospace;
-      font-size: 11px;
-      z-index: 999;
+      background: rgba(11,30,61,0.95);
+      backdrop-filter: blur(8px);
+      color: var(--cyan);
+      padding: 4px 20px;
+      font-family: 'DM Sans', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
       text-transform: uppercase;
+      z-index: 999;
+      border-top: 1px solid var(--card-border);
+    }
+
+    /* fade in */
+    .card { animation: fadeUp 0.4s ease both; }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="app">
-    <div class="content">
+  <!-- ═══ TOPBAR ═══ -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="brand">AMBU<span>LINK</span></div>
+      <div class="divider-v"></div>
+      <div class="badge badge-red" id="estadoAmbulancia">DETENIDA</div>
+      <div class="divider-v"></div>
+      <button class="btn btn-cyan" onclick="irMonitoreo()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Monitorear Paciente
+      </button>
+      <button id="btnEnCamino" class="btn btn-red" onclick="toggleEnCamino()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        En Camino
+      </button>
+    </div>
 
-      <div class="sidebar">
-        <button onclick="location.href='historial.html'">HISTORIAL</button>
-        <button onclick="logout()">SALIR</button>
-      </div>
-
-      <div class="main">
-
-        <div class="header">
-          <div class="header-left">
-            <div class="brand">AMBULINK</div>
-            <div class="status" id="estadoAmbulancia">DETENIDA</div>
-            <button class="btn-blue" onclick="irMonitoreo()">MONITOREAR PACIENTE</button>
-            <button id="btnEnCamino" class="btn-stop" onclick="toggleEnCamino()">EN CAMINO</button>
-          </div>
-
-          <div class="user">Conectado: ambulancia1@gmail.com</div>
-        </div>
-
-        <div class="top-row">
-
-          <div class="box">
-            <h3>TRIPULACIÓN</h3>
-            <div class="row-3">
-              <div>
-                <label>Chofer</label>
-                <select id="chofer"></select>
-              </div>
-              <div>
-                <label>Paramédico</label>
-                <select id="paramedico"></select>
-              </div>
-            </div>
-          </div>
-
-          <div class="box">
-            <h3>UBICACIÓN</h3>
-            <label>Dirección</label>
-            <input id="ubicacion" placeholder="Dicta: Ubicación...">
-          </div>
-
-        </div>
-
-        <div class="box" style="margin-top:25px;">
-          <h3>PACIENTE</h3>
-
-          <div class="row">
-            <div>
-              <label>Nombre</label>
-              <input id="nombre" placeholder="Dicta: Nombre...">
-            </div>
-            <div>
-              <label>Carnet</label>
-              <input id="carnet" placeholder="Dicta: Carnet...">
-            </div>
-            <div>
-              <label>Edad</label>
-              <input id="edad" type="number" placeholder="0">
-            </div>
-            <div>
-              <label>Sexo</label>
-              <select id="sexo">
-                <option value="">Seleccionar</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row-3" style="margin-top:15px;">
-            <div>
-              <label>Tipo de Sangre</label>
-              <select id="tipo_sangre">
-                <option value="">Seleccionar</option>
-                <option value="A+">A+</option><option value="A-">A-</option>
-                <option value="B+">B+</option><option value="B-">B-</option>
-                <option value="AB+">AB+</option><option value="AB-">AB-</option>
-                <option value="O+">O+</option><option value="O-">O-</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Tipo de Traslado</label>
-              <select id="tipo_traslado">
-                <option value="">Seleccionar</option>
-                <option value="Emergencia">Emergencia</option>
-                <option value="Alta">Alta</option>
-                <option value="Traslado">Traslado</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Diagnóstico</label>
-              <input id="diagnostico" placeholder="Dicta: Informe...">
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="btn-red" onclick="guardar()">Guardar</button>
-          </div>
-
-        </div>
-
+    <div class="topbar-actions">
+      <div class="user-chip">
+        <div class="user-chip-dot"></div>
+        Conectado: ambulancia1@gmail.com
       </div>
     </div>
   </div>
 
+  <!-- ═══ LAYOUT ═══ -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <button class="nav-btn" onclick="location.href='historial.html'" title="Historial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Historial
+      </button>
+
+      <div class="sidebar-sep"></div>
+
+      <button class="nav-btn danger" onclick="logout()" title="Salir">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Salir
+      </button>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- ROW 1: Tripulación + Ubicación -->
+      <div class="top-row">
+
+        <div class="card">
+          <div class="section-label">
+            <div class="accent"></div>
+            <h3>Tripulación</h3>
+          </div>
+          <div class="row-3">
+            <div class="field">
+              <label>Chofer</label>
+              <select id="chofer"></select>
+            </div>
+            <div class="field">
+              <label>Paramédico</label>
+              <select id="paramedico"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-label">
+            <div class="accent"></div>
+            <h3>Ubicación</h3>
+          </div>
+          <div class="field">
+            <label>Dirección</label>
+            <input id="ubicacion" placeholder="Dicta: Ubicación...">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 2: Paciente -->
+      <div class="card">
+        <div class="section-label">
+          <div class="accent"></div>
+          <h3>Paciente</h3>
+        </div>
+
+        <div class="row-4">
+          <div class="field">
+            <label>Nombre</label>
+            <input id="nombre" placeholder="Dicta: Nombre...">
+          </div>
+          <div class="field">
+            <label>Carnet</label>
+            <input id="carnet" placeholder="Dicta: Carnet...">
+          </div>
+          <div class="field">
+            <label>Edad</label>
+            <input id="edad" type="number" placeholder="0">
+          </div>
+          <div class="field">
+            <label>Sexo</label>
+            <select id="sexo">
+              <option value="">Seleccionar</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-3" style="margin-top:16px;">
+          <div class="field">
+            <label>Tipo de Sangre</label>
+            <select id="tipo_sangre">
+              <option value="">Seleccionar</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option>
+              <option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tipo de Traslado</label>
+            <select id="tipo_traslado">
+              <option value="">Seleccionar</option>
+              <option value="Emergencia">Emergencia</option>
+              <option value="Alta">Alta</option>
+              <option value="Traslado">Traslado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Diagnóstico</label>
+            <input id="diagnostico" placeholder="Dicta: Informe...">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-save" onclick="guardar()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Guardar
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VOICE BTN -->
   <button class="btn-voz" id="btnVoz" onclick="toggleVoz()">🎤</button>
-  <div id="status-voz">SISTEMA DE VOZ: STANDBY</div>
+  <div id="status-voz">Sistema de voz: standby</div>
 
   <script src="ambulancia.js"></script>
   <script src="guard.js"></script>
