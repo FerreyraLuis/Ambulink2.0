@@ -3,554 +3,228 @@
 <head>
 <meta charset="UTF-8">
 <title>AMBULINK | Historial</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  :root {
-    --blue-deep:    #0b1e3d;
-    --blue-mid:     #0e2a52;
-    --cyan:         #0aa0df;
-    --red:          #e10600;
-    --green:        #1bb14c;
-    --white:        #ffffff;
-    --muted:        rgba(255,255,255,0.4);
-    --input-bg:     rgba(255,255,255,0.06);
-    --input-border: rgba(255,255,255,0.11);
-    --card-bg:      rgba(255,255,255,0.04);
-    --card-border:  rgba(255,255,255,0.08);
-  }
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:#eaeaea}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+.app{
+  width:95%;
+  height:95vh;
+  margin:20px auto;
+  background:#0aa0df;
+  border-radius:20px;
+  padding:18px
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--blue-deep);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+.content{
+  width:100%;
+  height:100%;
+  background:#fff;
+  border-radius:20px;
+  padding:22px;
+  display:flex;
+  gap:20px
+}
 
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size: 30px 30px;
-    pointer-events: none;
-    z-index: 0;
-  }
+.sidebar{
+  width:160px;
+  background:#0aa0df;
+  border-radius:18px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:20px
+}
 
-  /* ════════════════════════════
-     TOPBAR
-  ════════════════════════════ */
-  .topbar {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 28px;
-    height: 64px;
-    background: var(--blue-mid);
-    border-bottom: 1px solid var(--card-border);
-    flex-shrink: 0;
-  }
+.sidebar button{
+  background:white;
+  color:#0b4aa6;
+  border:none;
+  border-radius:22px;
+  padding:12px 0;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s
+}
 
-  .topbar-left { display: flex; align-items: center; gap: 20px; }
+.sidebar button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 10px rgba(0,0,0,.2)
+}
 
-  .brand {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    letter-spacing: 5px;
-    color: var(--white);
-    line-height: 1;
-    user-select: none;
-  }
-  .brand span { color: var(--red); }
+.main{flex:1;display:flex;flex-direction:column}
 
-  .sep { width: 1px; height: 32px; background: var(--card-border); }
+.top-header{
+  display:grid;
+  grid-template-columns:1fr 1.2fr 1.2fr auto;
+  gap:20px
+}
 
-  .page-title {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
+.brand{color:#e10600;font-size:30px;font-weight:800}
 
-  #fechaActual {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 13px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    background: rgba(10,160,223,0.1);
-    color: var(--white);
-    border: 1px solid rgba(10,160,223,0.25);
-  }
+.badge{
+  background:#e10600;
+  color:white;
+  padding:6px 14px;
+  border-radius:14px;
+  font-size:13px;
+  width:fit-content
+}
 
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
+.card{
+  background:linear-gradient(135deg,#004aad,#0aa0df);
+  color:white;
+  border-radius:18px;
+  padding:18px
+}
 
-  .btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 18px;
-    background: var(--card-bg);
-    color: var(--muted);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
-  }
-  .btn-back:hover { background: rgba(255,255,255,0.08); color: var(--white); transform: translateY(-1px); }
+.card h3{margin:0 0 10px;font-size:18px}
 
-  /* ════════════════════════════
-     LAYOUT
-  ════════════════════════════ */
-  .layout {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+.alert-hemorragia{
+  display:none;
+  margin-top:12px;
+  padding:10px 14px;
+  border-radius:12px;
+  background:#e10600;
+  color:white;
+  font-weight:900;
+  text-align:center;
+}
 
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 80px;
-    background: var(--blue-mid);
-    border-right: 1px solid var(--card-border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px 0;
-    gap: 12px;
-    flex-shrink: 0;
-  }
+input,select{
+  padding:6px;
+  border-radius:12px;
+  border:1px solid #ccc;
+  outline:none;
+}
 
-  .nav-btn {
-    width: 52px; height: 52px;
-    border-radius: 14px;
-    border: 1px solid var(--card-border);
-    background: var(--card-bg);
-    color: var(--muted);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
-  }
-  .nav-btn:hover { background: rgba(10,160,223,0.12); border-color: rgba(10,160,223,0.3); color: var(--cyan); }
-  .nav-btn svg { width: 20px; height: 20px; }
+#btnPDF{
+  background:linear-gradient(135deg,#1566c0,#0aa0df);
+  color:white;
+  border:none;
+  border-radius:14px;
+  padding:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-  /* ── MAIN ── */
-  .main {
-    flex: 1;
-    padding: 22px 26px 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    overflow-y: auto;
-  }
+.table-container{
+  margin-top:25px;
+  flex:1;
+  overflow:auto
+}
 
-  /* ── TOP ROW ── */
-  .top-row {
-    display: grid;
-    grid-template-columns: 260px 1fr 1fr;
-    gap: 18px;
-  }
+table{
+  width:100%;
+  border-spacing:10px
+}
 
-  /* ── CARD ── */
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 20px 22px;
-    animation: fadeUp 0.4s ease both;
-  }
-  .card:nth-child(1) { animation-delay: 0.05s; }
-  .card:nth-child(2) { animation-delay: 0.10s; }
-  .card:nth-child(3) { animation-delay: 0.15s; }
+th{
+  background:#004aad;
+  color:white;
+  padding:14px;
+  border-radius:12px;
+  text-transform:none;
+  font-size:13px
+}
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+td{
+  background:white;
+  border:2px solid #4f7cff;
+  border-radius:12px;
+  padding:12px;
+  text-align:center
+}
 
-  .sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-  .sec-accent { width: 4px; height: 18px; background: var(--cyan); border-radius: 2px; flex-shrink: 0; }
-  .sec-head h3 {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
+td.date{text-align:left}
 
-  /* ── CONTROLES (card izquierda) ── */
-  .controls-card { display: flex; flex-direction: column; gap: 12px; }
-
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .field input[type="date"],
-  .field select {
-    width: 100%;
-    height: 38px;
-    background: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 8px;
-    padding: 0 12px;
-    color: var(--white);
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    outline: none;
-    -webkit-appearance: none;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .field input[type="date"]:focus,
-  .field select:focus {
-    border-color: var(--cyan);
-    background: rgba(10,160,223,0.07);
-  }
-  .field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
-  .field select option { background: #0e2a52; color: white; }
-
-  #caseBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    background: rgba(10,160,223,0.1);
-    color: var(--white);
-    border: 1px solid rgba(10,160,223,0.25);
-    width: fit-content;
-  }
-
-  #btnPDF {
-    display: none;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: linear-gradient(135deg, #1566c0 0%, #0aa0df 100%);
-    color: var(--white);
-    border: none;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(10,160,223,0.3);
-    transition: all 0.2s;
-  }
-  #btnPDF:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,160,223,0.4); }
-
-  /* ── DATOS PACIENTE / PERSONAL ── */
-  .info-row {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-  }
-
-  .info-item {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-  }
-
-  .info-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    flex-shrink: 0;
-    min-width: 110px;
-  }
-
-  .info-value {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--white);
-  }
-
-  /* alerta hemorragia */
-  .alert-hemorragia {
-    display: none;
-    margin-top: 14px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    background: rgba(225,6,0,0.15);
-    border: 1px solid rgba(225,6,0,0.4);
-    color: #ff7070;
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-align: center;
-  }
-
-  .personal-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    font-size: 13px;
-    color: var(--white);
-    margin-bottom: 8px;
-  }
-  .personal-item svg { opacity: 0.5; flex-shrink: 0; }
-
-  /* ── TABLE ── */
-  .table-wrap {
-    flex: 1;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    overflow: hidden;
-    animation: fadeUp 0.4s ease 0.2s both;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .table-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 16px 22px;
-    border-bottom: 1px solid var(--card-border);
-  }
-
-  .table-scroll { overflow: auto; flex: 1; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  thead th {
-    background: rgba(10,160,223,0.08);
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: none;
-    padding: 12px 16px;
-    text-align: center;
-    border-bottom: 1px solid var(--card-border);
-    white-space: nowrap;
-  }
-  thead th:first-child { text-align: left; }
-
-  tbody tr {
-    border-bottom: 1px solid var(--card-border);
-    transition: background 0.15s;
-  }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: rgba(255,255,255,0.03); }
-
-  tbody td {
-    padding: 13px 16px;
-    font-size: 13px;
-    color: var(--white);
-    text-align: center;
-  }
-  tbody td.date { text-align: left; color: var(--muted); font-size: 12px; }
-
-  /* ── PRINT ── */
-  @media print {
-    body { background: white; }
-    .sidebar, button, input, select { display: none !important; }
-    .alert-hemorragia { display: block !important; }
-  }
+@media print{
+  body{background:white}
+  .sidebar,button,input,select{display:none!important}
+  .alert-hemorragia{display:block!important}
+}
 </style>
 </head>
 
 <body>
 
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="brand">AMBU<span>LINK</span></div>
-      <div class="sep"></div>
-      <span class="page-title">Historial de Ambulancia</span>
-      <div class="sep"></div>
-      <div id="fechaActual"></div>
-    </div>
-    <div class="topbar-right">
-      <button class="btn-back" onclick="location.href='ambulancia.html'">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        Volver
-      </button>
+<div class="app">
+<div class="content">
+
+<div class="sidebar">
+  <button onclick="location.href='monitoreo.html'">MONITOREAR</button>
+  <button onclick="location.href='ambulancia.html'">VOLVER</button>
+</div>
+
+<div class="main">
+
+<div class="top-header">
+
+  <div>
+    <div class="brand">AMBULINK</div>
+    <div class="badge" id="fechaActual"></div>
+
+    <input type="date" id="filtroFecha" style="margin-top:8px">
+    <select id="selectCaso" style="margin-top:6px;width:100%">
+      <option value="">Seleccionar caso</option>
+    </select>
+
+    <div class="badge" id="caseBadge" style="margin-top:6px">CASO</div>
+
+    <button id="btnPDF" style="margin-top:10px;display:none">
+      📄 DESCARGAR PDF
+    </button>
+  </div>
+
+  <div class="card">
+    <h3>DATOS DEL PACIENTE</h3>
+    <p><b>Paciente:</b> <span id="pac_nombre">--</span></p>
+    <p><b>Edad:</b> <span id="pac_edad">--</span></p>
+    <p><b>Sexo:</b> <span id="pac_sexo">--</span></p>
+    <p><b>Tipo de Sangre:</b> <span id="pac_sangre">--</span></p>
+    <p><b>Tipo de Traslado:</b> <span id="pac_traslado">--</span></p>
+    <p><b>Ubicación:</b> <span id="pac_ubicacion">--</span></p>
+
+    <div id="bloqueHemorragia" class="alert-hemorragia">
+      ⚠ HEMORRAGIA REGISTRADA
     </div>
   </div>
 
-  <!-- LAYOUT -->
-  <div class="layout">
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <button class="nav-btn" onclick="location.href='monitoreo.html'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Monitor
-      </button>
-      <div class="sidebar-sep" style="width:32px;height:1px;background:var(--card-border);margin:4px 0;"></div>
-      <button class="nav-btn" onclick="location.href='ambulancia.html'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        Volver
-      </button>
-    </div>
-
-    <!-- MAIN -->
-    <div class="main" id="pdfHistorial">
-
-      <div class="top-row">
-
-        <!-- CONTROLES -->
-        <div class="card controls-card">
-          <div class="sec-head">
-            <div class="sec-accent"></div>
-            <h3>Filtros</h3>
-          </div>
-
-          <div class="field">
-            <label>Fecha</label>
-            <input type="date" id="filtroFecha">
-          </div>
-
-          <div class="field">
-            <label>Caso</label>
-            <select id="selectCaso">
-              <option value="">Seleccionar caso</option>
-            </select>
-          </div>
-
-          <div id="caseBadge">CASO</div>
-
-          <button id="btnPDF">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Descargar PDF
-          </button>
-        </div>
-
-        <!-- DATOS PACIENTE -->
-        <div class="card">
-          <div class="sec-head">
-            <div class="sec-accent"></div>
-            <h3>Datos del Paciente</h3>
-          </div>
-          <div class="info-row">
-            <div class="info-item">
-              <span class="info-label">Paciente</span>
-              <span class="info-value" id="pac_nombre">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Edad</span>
-              <span class="info-value" id="pac_edad">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Sexo</span>
-              <span class="info-value" id="pac_sexo">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Tipo de Sangre</span>
-              <span class="info-value" id="pac_sangre">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Tipo de Traslado</span>
-              <span class="info-value" id="pac_traslado">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Ubicación</span>
-              <span class="info-value" id="pac_ubicacion">--</span>
-            </div>
-          </div>
-          <div id="bloqueHemorragia" class="alert-hemorragia">⚠ HEMORRAGIA REGISTRADA</div>
-        </div>
-
-        <!-- PERSONAL -->
-        <div class="card">
-          <div class="sec-head">
-            <div class="sec-accent"></div>
-            <h3>Personal Asignado</h3>
-          </div>
-          <div class="personal-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            <span id="par1">--</span>
-          </div>
-          <div class="personal-item">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            <span id="par2">--</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- TABLA -->
-      <div class="table-wrap">
-        <div class="table-header">
-          <div class="sec-accent"></div>
-          <h3 style="font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted)">Registros de Monitoreo</h3>
-        </div>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Fecha y Hora</th>
-                <th>Presión Diastólica (mmHg)</th>
-                <th>Presión Sistólica (mmHg)</th>
-                <th>Frec. Respiratoria (rpm)</th>
-                <th>SpO₂ (%)</th>
-                <th>Temperatura (°C)</th>
-                <th>Frec. Cardíaca (lpm)</th>
-                <th>Escala Glasgow (puntos)</th>
-              </tr>
-            </thead>
-            <tbody id="tablaHistorial"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
+  <div class="card">
+    <h3>PERSONAL ASIGNADO</h3>
+    <p id="par1">🚑 --</p>
+    <p id="par2">🚑 --</p>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="historial.js"></script>
+</div>
+
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Fecha y Hora</th>
+<th>Presión Diastólica (mmHg)</th>
+<th>Presión Sistólica (mmHg)</th>
+<th>Frec. Respiratoria (rpm)</th>
+<th>SpO₂ (%)</th>
+<th>Temperatura (°C)</th>
+<th>Frec. Cardíaca (lpm)</th>
+<th>Escala Glasgow (puntos)</th>
+</tr>
+</thead>
+<tbody id="tablaHistorial"></tbody>
+</table>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="historial.js"></script>
 
 </body>
 </html>
