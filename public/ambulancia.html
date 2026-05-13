@@ -1,279 +1,385 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>AMBULINK | Ambulancia</title>
+  <meta charset="UTF-8">
+  <title>AMBULINK | Ambulancia</title>
 
-<style>
-* {
-  box-sizing: border-box;
-  font-family: Arial, Helvetica, sans-serif;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-body {
-  margin: 0;
-  background: #eaeaea;
-}
+    body {
+      margin: 0;
+      background: #eaeaea;
+    }
 
-/* CONTENEDOR PRINCIPAL */
-.app {
-  width: 95%;
-  height: 95vh;
-  margin: 20px auto;
-  background: #0aa0df;
-  border-radius: 18px;
-  padding: 18px;
-}
+    .app {
+      width: 95%;
+      height: 95vh;
+      margin: 20px auto;
+      background: #059bd8;
+      border-radius: 18px;
+      padding: 18px;
+    }
 
-.content {
-  width: 100%;
-  height: 100%;
-  background: white;
-  border-radius: 18px;
-  padding: 25px;
-  display: flex;
-}
+    .content {
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 18px;
+      padding: 25px;
+      display: flex;
+    }
 
-/* SIDEBAR MEJORADO */
-.sidebar {
-  width: 170px;
-  background: #0aa0df;
-  border-radius: 14px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 30px;
-}
+    .sidebar {
+      width: 160px;
+      background: #059bd8;
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 40px;
+    }
 
-.sidebar button {
-  background: white;
-  color: #0b4aa6;
-  border: none;
-  border-radius: 20px;
-  padding: 12px 0;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.2s;
-}
+    .sidebar button {
+      background: white;
+      color: red;
+      border: none;
+      border-radius: 20px;
+      padding: 12px 0;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-.sidebar button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+    .main {
+      flex: 1;
+      padding-left: 30px;
+    }
 
-/* MAIN */
-.main {
-  flex: 1;
-  padding-left: 30px;
-}
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-/* HEADER */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
+    .brand {
+      color: red;
+      font-size: 30px;
+      font-weight: 800;
+    }
 
-.brand {
-  color: #e10600;
-  font-size: 30px;
-  font-weight: 800;
-}
+    .status {
+      background: #e10600;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-weight: bold;
+      font-size: 14px;
+    }
 
-/* STATUS */
-.status {
-  background: #e10600;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-weight: bold;
-}
+    .btn-blue {
+      background: #009fe3;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-/* BOTONES PRO */
-.btn-blue {
-  background: linear-gradient(135deg,#1566c0,#0aa0df);
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-weight: bold;
-  cursor: pointer;
-}
+    .btn-green {
+      background: #1bb14c;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-.btn-green {
-  background: #1bb14c;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-weight: bold;
-  cursor: pointer;
-}
+    .btn-stop {
+      background: #e10600;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-weight: bold;
+      font-size: 14px;
+    }
 
-.btn-stop {
-  background: #e10600;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-weight: bold;
-}
+    .user {
+      background: #009fe3;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-weight: bold;
+      font-size: 14px;
+    }
 
-.user {
-  background: #009fe3;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-weight: bold;
-}
+    .box {
+      background: #009fe3;
+      border-radius: 16px;
+      padding: 20px;
+      color: white;
+    }
 
-/* CAJAS */
-.box {
-  background: linear-gradient(135deg,#009fe3,#0aa0df);
-  border-radius: 16px;
-  padding: 20px;
-  color: white;
-}
+    .box h3 {
+      margin: 0 0 14px 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
 
-.box h3 {
-  margin-bottom: 14px;
-}
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 13px;
+    }
 
-/* INPUTS MEJORADOS */
-input, select {
-  width: 100%;
-  height: 36px;
-  border-radius: 12px;
-  border: none;
-  padding: 0 12px;
-  font-size: 14px;
-  outline: none;
-  background: white;
-  color: #111;
-}
+    input,
+    select {
+      width: 100%;
+      height: 36px;
+      border: 3px solid transparent; /* Cambiado para soportar el resaltado de voz */
+      border-radius: 16px;
+      padding: 0 14px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s;
+    }
 
-/* GRID */
-.top-row {
-  display: grid;
-  grid-template-columns: 520px 1fr;
-  gap: 20px;
-  margin-top: 25px;
-}
+    .top-row {
+      display: grid;
+      grid-template-columns: 520px 1fr;
+      gap: 20px;
+      margin-top: 25px;
+    }
 
-.row {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 20px;
-}
+    .row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
 
-.row-3 {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 15px;
-}
+    .row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
 
-/* BOTÓN GUARDAR */
-.btn-red {
-  background: linear-gradient(135deg,#1566c0,#0aa0df);
-  color: white;
-  border: none;
-  padding: 10px 26px;
-  border-radius: 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
+    .actions {
+      margin-top: 15px;
+      display: flex;
+      justify-content: flex-end;
+    }
 
-.btn-red:hover {
-  box-shadow: 0 4px 12px rgba(10,160,223,0.4);
-}
+    .btn-red {
+      background: #e10600;
+      color: white;
+      border: none;
+      padding: 10px 26px;
+      border-radius: 16px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-/* VOZ */
-.btn-voz {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 65px;
-  height: 65px;
-  border-radius: 50%;
-  border: none;
-  background: white;
-  font-size: 28px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
+    /* --- ESTILOS ADICIONALES PARA SISTEMA DE VOZ --- */
+    
+    .active-field { 
+      border-color: #f1c40f !important; 
+      background-color: #fffdec !important; 
+      box-shadow: 0 0 8px #f1c40f;
+    }
+    
+    .confirmed-field { 
+      border-color: #2ecc71 !important; 
+      background-color: #fafffa !important; 
+      color: #1e8449 !important; 
+      font-weight: bold;
+    }
 
-.btn-voz.listening {
-  background: #e10600;
-  color: white;
-  animation: pulse 1s infinite;
-}
+    .btn-voz {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      border: none;
+      background: white;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      z-index: 1000;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(225,6,0,0.4); }
-  100% { box-shadow: 0 0 0 20px rgba(225,6,0,0); }
-}
+    .btn-voz.listening {
+      background: #e10600;
+      color: white;
+      animation: pulse 1s infinite;
+    }
 
-#status-voz {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #222;
-  color: #0f0;
-  padding: 5px;
-  font-size: 11px;
-}
-</style>
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0px rgba(225, 6, 0, 0.4); }
+      100% { box-shadow: 0 0 0 20px rgba(225, 6, 0, 0); }
+    }
+
+    #status-voz {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #222;
+      color: #0f0;
+      padding: 5px 20px;
+      font-family: monospace;
+      font-size: 11px;
+      z-index: 999;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="app">
-<div class="content">
+  <div class="app">
+    <div class="content">
 
-<div class="sidebar">
-<button onclick="location.href='historial.html'">HISTORIAL</button>
-<button onclick="logout()">SALIR</button>
-</div>
+      <div class="sidebar">
+        <button onclick="location.href='historial.html'">HISTORIAL</button>
+        <button onclick="logout()">SALIR</button>
+      </div>
 
-<div class="main">
+      <div class="main">
 
-<div class="header">
-<div class="header-left">
-<div class="brand">AMBULINK</div>
-<div class="status" id="estadoAmbulancia">DETENIDA</div>
-<button class="btn-blue" onclick="irMonitoreo()">MONITOREAR</button>
-<button id="btnEnCamino" class="btn-stop" onclick="toggleEnCamino()">EN CAMINO</button>
-</div>
+        <div class="header">
+          <div class="header-left">
+            <div class="brand">AMBULINK</div>
+            <div class="status" id="estadoAmbulancia">DETENIDA</div>
+            <button class="btn-blue" onclick="irMonitoreo()">MONITOREAR PACIENTE</button>
+            <button id="btnEnCamino" class="btn-stop" onclick="toggleEnCamino()">EN CAMINO</button>
+          </div>
 
-<div class="user">Conectado: ambulancia1@gmail.com</div>
-</div>
+          <div class="user">Conectado: ambulancia1@gmail.com</div>
+        </div>
 
-<!-- RESTO IGUAL (NO TOCADO) -->
+        <div class="top-row">
 
-</div>
-</div>
-</div>
+          <div class="box">
+            <h3>TRIPULACIÓN</h3>
+            <div class="row-3">
+              <div>
+                <label>Chofer</label>
+                <select id="chofer"></select>
+              </div>
+              <div>
+                <label>Paramédico</label>
+                <select id="paramedico"></select>
+              </div>
+            </div>
+          </div>
 
-<button class="btn-voz" id="btnVoz" onclick="toggleVoz()">🎤</button>
-<div id="status-voz">SISTEMA DE VOZ: STANDBY</div>
+          <div class="box">
+            <h3>UBICACIÓN</h3>
+            <label>Dirección</label>
+            <input id="ubicacion" placeholder="Dicta: Ubicación...">
+          </div>
 
-<script src="ambulancia.js"></script>
-<script src="guard.js"></script>
+        </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  protegerPagina('ambulancia');
-  cargarParamedicos();
-});
-</script>
+        <div class="box" style="margin-top:25px;">
+          <h3>PACIENTE</h3>
+
+          <div class="row">
+            <div>
+              <label>Nombre</label>
+              <input id="nombre" placeholder="Dicta: Nombre...">
+            </div>
+            <div>
+              <label>Carnet</label>
+              <input id="carnet" placeholder="Dicta: Carnet...">
+            </div>
+            <div>
+              <label>Edad</label>
+              <input id="edad" type="number" placeholder="0">
+            </div>
+            <div>
+              <label>Sexo</label>
+              <select id="sexo">
+                <option value="">Seleccionar</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row-3" style="margin-top:15px;">
+            <div>
+              <label>Tipo de Sangre</label>
+              <select id="tipo_sangre">
+                <option value="">Seleccionar</option>
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Tipo de Traslado</label>
+              <select id="tipo_traslado">
+                <option value="">Seleccionar</option>
+                <option value="Emergencia">Emergencia</option>
+                <option value="Alta">Alta</option>
+                <option value="Traslado">Traslado</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Diagnóstico</label>
+              <input id="diagnostico" placeholder="Dicta: Informe...">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-red" onclick="guardar()">Guardar</button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-voz" id="btnVoz" onclick="toggleVoz()">🎤</button>
+  <div id="status-voz">SISTEMA DE VOZ: STANDBY</div>
+
+  <script src="ambulancia.js"></script>
+  <script src="guard.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      protegerPagina('ambulancia');
+      cargarParamedicos();
+    });
+  </script>
 
 </body>
 </html>
