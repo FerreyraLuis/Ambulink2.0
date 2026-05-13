@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>AMBULINK | Ambulancia</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --blue-deep:    #0b1e3d;
       --blue-mid:     #0e2a52;
-      --blue-accent:  #1566c0;
       --cyan:         #0aa0df;
       --red:          #e10600;
+      --green:        #1bb14c;
       --white:        #ffffff;
-      --muted:        rgba(255,255,255,0.45);
-      --input-bg:     rgba(255,255,255,0.07);
-      --input-border: rgba(255,255,255,0.12);
-      --card-bg:      rgba(255,255,255,0.05);
+      --muted:        rgba(255,255,255,0.4);
+      --input-bg:     rgba(255,255,255,0.06);
+      --input-border: rgba(255,255,255,0.11);
+      --card-bg:      rgba(255,255,255,0.04);
       --card-border:  rgba(255,255,255,0.08);
     }
 
@@ -30,185 +30,165 @@
       flex-direction: column;
     }
 
-    /* ── DOT GRID BG ── */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
-      background-size: 28px 28px;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 30px 30px;
       pointer-events: none;
       z-index: 0;
     }
 
-    /* ═══════════════════════════════
+    /* ════════════════════════════
        TOPBAR
-    ═══════════════════════════════ */
+    ════════════════════════════ */
     .topbar {
       position: relative;
       z-index: 10;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 28px;
+      padding: 0 28px;
+      height: 64px;
       background: var(--blue-mid);
       border-bottom: 1px solid var(--card-border);
+      flex-shrink: 0;
     }
 
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
+    .topbar-left { display: flex; align-items: center; gap: 20px; }
 
     .brand {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 34px;
-      letter-spacing: 4px;
+      font-size: 36px;
+      letter-spacing: 5px;
       color: var(--white);
       line-height: 1;
+      user-select: none;
     }
-
     .brand span { color: var(--red); }
 
-    .divider-v {
-      width: 1px;
-      height: 28px;
-      background: var(--input-border);
-    }
+    .sep { width: 1px; height: 32px; background: var(--card-border); }
 
-    /* Status badge */
-    .badge {
+    /* Estado badge */
+    #estadoAmbulancia {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 6px 14px;
+      gap: 8px;
+      padding: 7px 16px;
       border-radius: 8px;
       font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: rgba(225,6,0,0.12);
+      color: #ff7070;
+      border: 1px solid rgba(225,6,0,0.28);
+      transition: all 0.4s;
+    }
+    #estadoAmbulancia::before {
+      content: "";
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 6px var(--red);
+      flex-shrink: 0;
+    }
+
+    /* Monitorear */
+    .btn-monitor {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      background: rgba(10,160,223,0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(10,160,223,0.28);
+      border-radius: 8px;
+      font-size: 13px;
       font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-monitor:hover { background: rgba(10,160,223,0.22); transform: translateY(-1px); }
+
+    /* EN CAMINO — bold & glowing */
+    #btnEnCamino {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 22px;
+      background: linear-gradient(135deg, #c80500 0%, #ff2a00 100%);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-    }
-
-    .badge::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-    }
-
-    .badge-red {
-      background: rgba(225, 6, 0, 0.15);
-      color: #ff6b6b;
-      border: 1px solid rgba(225, 6, 0, 0.3);
-    }
-    .badge-red::before { background: #e10600; box-shadow: 0 0 5px #e10600; }
-
-    .badge-green {
-      background: rgba(27, 177, 76, 0.15);
-      color: #5de98d;
-      border: 1px solid rgba(27, 177, 76, 0.3);
-    }
-    .badge-green::before { background: #1bb14c; box-shadow: 0 0 5px #1bb14c; animation: blink 1.2s infinite; }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    /* Header action buttons */
-    .topbar-actions { display: flex; align-items: center; gap: 10px; }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      border: 1px solid transparent;
       cursor: pointer;
-      transition: all 0.2s;
       font-family: 'DM Sans', sans-serif;
+      box-shadow: 0 4px 18px rgba(225,6,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
+    #btnEnCamino::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+    #btnEnCamino:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(225,6,0,0.5); }
+    #btnEnCamino:hover::after { transform: translateX(100%); }
+    #btnEnCamino:active { transform: translateY(0); }
 
-    .btn-cyan {
-      background: rgba(10, 160, 223, 0.15);
-      color: var(--cyan);
-      border-color: rgba(10, 160, 223, 0.3);
-    }
-    .btn-cyan:hover { background: rgba(10, 160, 223, 0.25); }
-
-    .btn-red {
-      background: rgba(225, 6, 0, 0.15);
-      color: #ff6b6b;
-      border-color: rgba(225, 6, 0, 0.3);
-    }
-    .btn-red:hover { background: rgba(225, 6, 0, 0.25); }
-
-    .btn-green {
-      background: rgba(27, 177, 76, 0.15);
-      color: #5de98d;
-      border-color: rgba(27, 177, 76, 0.3);
-    }
-    .btn-green:hover { background: rgba(27, 177, 76, 0.25); }
-
-    .btn-solid-red {
-      background: var(--red);
-      color: var(--white);
-      border-color: var(--red);
-    }
-    .btn-solid-red:hover { background: #c80500; }
+    .topbar-right { display: flex; align-items: center; }
 
     .user-chip {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 8px;
-      padding: 7px 14px;
-      color: var(--muted);
-      font-size: 12px;
+      padding: 8px 16px;
+      color: rgba(255,255,255,0.55);
+      font-size: 13px;
     }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 7px var(--cyan); }
 
-    .user-chip-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 6px var(--cyan);
-    }
-
-    /* ═══════════════════════════════
+    /* ════════════════════════════
        LAYOUT
-    ═══════════════════════════════ */
+    ════════════════════════════ */
     .layout {
       position: relative;
       z-index: 1;
       display: flex;
       flex: 1;
-      gap: 0;
+      overflow: hidden;
     }
 
     /* ── SIDEBAR ── */
     .sidebar {
-      width: 72px;
+      width: 80px;
       background: var(--blue-mid);
       border-right: 1px solid var(--card-border);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 28px 0;
-      gap: 14px;
+      padding: 30px 0;
+      gap: 12px;
+      flex-shrink: 0;
     }
 
     .nav-btn {
-      width: 46px;
-      height: 46px;
-      border-radius: 12px;
+      width: 52px; height: 52px;
+      border-radius: 14px;
       border: 1px solid var(--card-border);
       background: var(--card-bg);
       color: var(--muted);
@@ -217,86 +197,67 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 5px;
       font-size: 9px;
+      font-weight: 600;
       letter-spacing: 0.5px;
       text-transform: uppercase;
       font-family: 'DM Sans', sans-serif;
       transition: all 0.2s;
     }
     .nav-btn:hover { background: rgba(10,160,223,0.12); border-color: rgba(10,160,223,0.3); color: var(--cyan); }
-    .nav-btn svg { width: 18px; height: 18px; }
-
-    .sidebar-sep {
-      width: 30px;
-      height: 1px;
-      background: var(--card-border);
-      margin: 4px 0;
-    }
-
-    .nav-btn.danger:hover { background: rgba(225,6,0,0.12); border-color: rgba(225,6,0,0.3); color: #ff6b6b; }
+    .nav-btn.danger:hover { background: rgba(225,6,0,0.12); border-color: rgba(225,6,0,0.3); color: #ff7070; }
+    .nav-btn svg { width: 20px; height: 20px; }
+    .sidebar-sep { width: 32px; height: 1px; background: var(--card-border); margin: 4px 0; }
 
     /* ── MAIN ── */
     .main {
       flex: 1;
-      padding: 24px 28px;
+      padding: 22px 26px 90px;
       display: flex;
       flex-direction: column;
       gap: 18px;
       overflow-y: auto;
     }
 
-    /* ── SECTION LABEL ── */
-    .section-label {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .section-label .accent { width: 3px; height: 18px; background: var(--cyan); border-radius: 2px; }
-
-    .section-label h3 {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
     /* ── CARD ── */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 20px 22px;
+      border-radius: 16px;
+      padding: 22px 26px 26px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── GRID LAYOUTS ── */
-    .top-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
+    /* ── SECTION HEADER ── */
+    .sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .sec-accent { width: 4px; height: 20px; background: var(--cyan); border-radius: 2px; }
+    .sec-head h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
     }
 
-    .row-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .row-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
+    /* ── GRIDS ── */
+    .top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .row-4   { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+    .row-3   { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
 
     /* ── FIELD ── */
-    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field { display: flex; flex-direction: column; gap: 8px; }
 
     .field label {
-      font-size: 10px;
-      font-weight: 500;
+      font-size: 11px;
+      font-weight: 600;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--muted);
@@ -305,174 +266,164 @@
     .field input,
     .field select {
       width: 100%;
-      height: 38px;
+      height: 42px;
       background: var(--input-bg);
       border: 1px solid var(--input-border);
-      border-radius: 8px;
-      padding: 0 12px;
+      border-radius: 9px;
+      padding: 0 14px;
       color: var(--white);
-      font-size: 13px;
+      font-size: 14px;
       font-family: 'DM Sans', sans-serif;
       outline: none;
-      transition: border-color 0.2s, background 0.2s;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
       -webkit-appearance: none;
     }
-
-    .field input::placeholder { color: rgba(255,255,255,0.2); }
-
+    .field input::placeholder { color: rgba(255,255,255,0.18); }
     .field input:focus,
     .field select:focus {
       border-color: var(--cyan);
-      background: rgba(10, 160, 223, 0.07);
+      background: rgba(10,160,223,0.07);
+      box-shadow: 0 0 0 3px rgba(10,160,223,0.1);
     }
-
     .field select option { background: #0e2a52; color: white; }
 
-    /* ── VOICE STATES ── */
-    .active-field {
-      border-color: #f1c40f !important;
-      background-color: rgba(241, 196, 15, 0.08) !important;
-      box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
-    }
+    /* voice states */
+    .active-field    { border-color: #f59e0b !important; background: rgba(245,158,11,0.08) !important; box-shadow: 0 0 0 3px rgba(245,158,11,0.15) !important; }
+    .confirmed-field { border-color: #1bb14c !important; background: rgba(27,177,76,0.07)  !important; box-shadow: 0 0 0 3px rgba(27,177,76,0.12)  !important; color: #5de98d !important; font-weight: 600; }
 
-    .confirmed-field {
-      border-color: #2ecc71 !important;
-      background-color: rgba(46, 204, 113, 0.07) !important;
-      color: #5de98d !important;
-      font-weight: 600;
-    }
-
-    /* ── ACTIONS ── */
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 18px;
-    }
+    /* ── GUARDAR — verde, grande ── */
+    .actions { display: flex; justify-content: flex-end; margin-top: 22px; }
 
     .btn-save {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: var(--red);
+      gap: 10px;
+      background: linear-gradient(135deg, #1bb14c 0%, #15923f 100%);
       color: var(--white);
       border: none;
-      border-radius: 8px;
-      padding: 10px 26px;
-      font-size: 12px;
+      border-radius: 10px;
+      padding: 14px 36px;
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       font-family: 'DM Sans', sans-serif;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 20px rgba(27,177,76,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .btn-save:hover { background: #c80500; transform: translateY(-1px); }
-    .btn-save:active { transform: none; }
+    .btn-save::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s;
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(27,177,76,0.45); }
+    .btn-save:hover::after { transform: translateX(100%); }
+    .btn-save:active { transform: translateY(0); }
 
-    /* ── VOICE BUTTON ── */
+    /* ════════════════════════════
+       VOICE BUTTON — vistoso
+    ════════════════════════════ */
     .btn-voz {
       position: fixed;
-      bottom: 28px;
-      right: 28px;
-      width: 60px;
-      height: 60px;
+      bottom: 34px;
+      right: 34px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       border: none;
-      background: var(--blue-mid);
-      border: 1px solid var(--card-border);
-      font-size: 24px;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       z-index: 1000;
-      transition: 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--cyan);
+      font-size: 26px;
+      transition: all 0.3s;
+      background: linear-gradient(135deg, #0e2a52 0%, #0b1e3d 100%);
+      box-shadow:
+        0 0 0 3px rgba(10,160,223,0.5),
+        0 0 0 6px rgba(10,160,223,0.15),
+        0 8px 28px rgba(0,0,0,0.5);
     }
-
+    .btn-voz:hover {
+      box-shadow: 0 0 0 4px rgba(10,160,223,0.7), 0 0 0 8px rgba(10,160,223,0.2), 0 10px 32px rgba(0,0,0,0.5);
+      transform: scale(1.07);
+    }
     .btn-voz.listening {
-      background: var(--red);
-      border-color: var(--red);
-      color: white;
-      animation: voice-pulse 1s infinite;
+      background: linear-gradient(135deg, #c80500 0%, #ff2a00 100%);
+      animation: mic-pulse 1s ease-in-out infinite;
+    }
+    @keyframes mic-pulse {
+      0%   { box-shadow: 0 0 0 4px rgba(225,6,0,0.6), 0 0 0 10px rgba(225,6,0,0.2), 0 8px 28px rgba(225,6,0,0.4); }
+      50%  { box-shadow: 0 0 0 8px rgba(225,6,0,0.35), 0 0 0 18px rgba(225,6,0,0.08), 0 8px 28px rgba(225,6,0,0.4); }
+      100% { box-shadow: 0 0 0 4px rgba(225,6,0,0.6), 0 0 0 10px rgba(225,6,0,0.2), 0 8px 28px rgba(225,6,0,0.4); }
     }
 
-    @keyframes voice-pulse {
-      0%   { box-shadow: 0 0 0 0 rgba(225,6,0,0.5); }
-      100% { box-shadow: 0 0 0 18px rgba(225,6,0,0); }
-    }
-
-    /* ── STATUS BAR ── */
+    /* ── STATUS VOZ ── */
     #status-voz {
       position: fixed;
-      bottom: 0;
-      left: 0;
+      bottom: 0; left: 0;
       width: 100%;
-      background: rgba(11,30,61,0.95);
-      backdrop-filter: blur(8px);
+      background: rgba(9,18,36,0.96);
+      backdrop-filter: blur(10px);
       color: var(--cyan);
-      padding: 4px 20px;
-      font-family: 'DM Sans', monospace;
+      padding: 5px 22px;
+      font-family: 'DM Sans', sans-serif;
       font-size: 10px;
-      letter-spacing: 2px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
       z-index: 999;
-      border-top: 1px solid var(--card-border);
-    }
-
-    /* fade in */
-    .card { animation: fadeUp 0.4s ease both; }
-    .card:nth-child(1) { animation-delay: 0.05s; }
-    .card:nth-child(2) { animation-delay: 0.10s; }
-    .card:nth-child(3) { animation-delay: 0.15s; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+      border-top: 1px solid rgba(10,160,223,0.2);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ═══ TOPBAR ═══ -->
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-left">
       <div class="brand">AMBU<span>LINK</span></div>
-      <div class="divider-v"></div>
-      <div class="badge badge-red" id="estadoAmbulancia">DETENIDA</div>
-      <div class="divider-v"></div>
-      <button class="btn btn-cyan" onclick="irMonitoreo()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <div class="sep"></div>
+      <div id="estadoAmbulancia">DETENIDA</div>
+      <div class="sep"></div>
+
+      <button class="btn-monitor" onclick="irMonitoreo()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Monitorear Paciente
       </button>
-      <button id="btnEnCamino" class="btn btn-red" onclick="toggleEnCamino()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+      <button id="btnEnCamino" onclick="toggleEnCamino()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         En Camino
       </button>
     </div>
 
-    <div class="topbar-actions">
+    <div class="topbar-right">
       <div class="user-chip">
-        <div class="user-chip-dot"></div>
-        Conectado: ambulancia1@gmail.com
+        <div class="user-dot"></div>
+        ambulancia1@gmail.com
       </div>
     </div>
   </div>
 
-  <!-- ═══ LAYOUT ═══ -->
+  <!-- LAYOUT -->
   <div class="layout">
 
     <!-- SIDEBAR -->
     <div class="sidebar">
-      <button class="nav-btn" onclick="location.href='historial.html'" title="Historial">
+      <button class="nav-btn" onclick="location.href='historial.html'">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         Historial
       </button>
-
       <div class="sidebar-sep"></div>
-
-      <button class="nav-btn danger" onclick="logout()" title="Salir">
+      <button class="nav-btn danger" onclick="logout()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Salir
       </button>
@@ -481,12 +432,12 @@
     <!-- MAIN -->
     <div class="main">
 
-      <!-- ROW 1: Tripulación + Ubicación -->
+      <!-- Tripulación + Ubicación -->
       <div class="top-row">
 
         <div class="card">
-          <div class="section-label">
-            <div class="accent"></div>
+          <div class="sec-head">
+            <div class="sec-accent"></div>
             <h3>Tripulación</h3>
           </div>
           <div class="row-3">
@@ -502,8 +453,8 @@
         </div>
 
         <div class="card">
-          <div class="section-label">
-            <div class="accent"></div>
+          <div class="sec-head">
+            <div class="sec-accent"></div>
             <h3>Ubicación</h3>
           </div>
           <div class="field">
@@ -514,10 +465,10 @@
 
       </div>
 
-      <!-- ROW 2: Paciente -->
+      <!-- Paciente -->
       <div class="card">
-        <div class="section-label">
-          <div class="accent"></div>
+        <div class="sec-head">
+          <div class="sec-accent"></div>
           <h3>Paciente</h3>
         </div>
 
@@ -544,7 +495,7 @@
           </div>
         </div>
 
-        <div class="row-3" style="margin-top:16px;">
+        <div class="row-3" style="margin-top:18px;">
           <div class="field">
             <label>Tipo de Sangre</label>
             <select id="tipo_sangre">
@@ -572,8 +523,8 @@
 
         <div class="actions">
           <button class="btn-save" onclick="guardar()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Guardar
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Guardar Registro
           </button>
         </div>
       </div>
