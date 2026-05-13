@@ -3,145 +3,366 @@
 <head>
   <meta charset="UTF-8">
   <title>Proyecto | Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
+    :root {
+      --blue-deep:   #0b1e3d;
+      --blue-mid:    #0e2a52;
+      --blue-accent: #1566c0;
+      --cyan:        #0aa0df;
+      --red:         #e10600;
+      --white:       #ffffff;
+      --off-white:   #e8edf5;
+      --muted:       rgba(255,255,255,0.45);
+      --input-bg:    rgba(255,255,255,0.07);
+      --input-border:rgba(255,255,255,0.12);
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
+      font-family: 'DM Sans', sans-serif;
       height: 100vh;
-      background: white;
+      background: var(--blue-deep);
       display: flex;
-      justify-content: center;
-      align-items: center;
+      overflow: hidden;
     }
 
-    /* ===== MARCO AZUL CLARO ===== */
-    .login-container {
-      width: 50%;
-      height: 90%;
-      background: #0aa0df;
-      border-radius: 16px;
+    /* ─── LEFT PANEL ─── */
+    .panel-left {
+      width: 48%;
+      height: 100%;
+      background: var(--blue-mid);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      overflow: hidden;
     }
 
-    /* ===== CAJA BLANCA ===== */
-    .login-container::before {
+    /* geometric circle decoration */
+    .panel-left::before {
       content: "";
       position: absolute;
-      inset: 30px;
-      background: white;
-      border-radius: 16px;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      border: 80px solid rgba(10, 160, 223, 0.08);
+      top: -120px;
+      left: -140px;
+    }
+    .panel-left::after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      border: 2px solid rgba(10, 160, 223, 0.15);
+      bottom: -80px;
+      right: -60px;
     }
 
-    /* ===== CONTENIDO CENTRAL ===== */
-    .login-content {
+    .brand-wrap {
       position: relative;
       z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* ===== TITULO ROJO ===== */
-    .brand {
-      color: #e10600;
-      font-size: 48px;
-      font-weight: bold;
-      margin-bottom: 25px;
-      letter-spacing: 2px;
-    }
-
-    /* ===== BLOQUE AZUL OSCURO ===== */
-    .form-box {
-      background: #0b4aa6;
-      width: 420px;
-      padding: 45px;
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .form-box h2 {
-      color: white;
       text-align: center;
-      margin: 0 0 25px 0;
+    }
+
+    .brand-tag {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 88px;
+      letter-spacing: 6px;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .brand span {
+      color: var(--red);
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+
+    /* pulse ring */
+    .pulse {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 1px solid rgba(10, 160, 223, 0.2);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-out 3s ease-out infinite;
+      z-index: 1;
+    }
+    .pulse:nth-child(2) { animation-delay: 1s; }
+    .pulse:nth-child(3) { animation-delay: 2s; }
+
+    @keyframes pulse-out {
+      0%   { width: 160px; height: 160px; opacity: 0.5; }
+      100% { width: 500px; height: 500px; opacity: 0; }
+    }
+
+    /* cross/plus medical icon */
+    .medical-icon {
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      opacity: 0.07;
+      z-index: 1;
+    }
+    .medical-icon svg { width: 80px; height: 80px; fill: var(--white); }
+
+    /* ─── RIGHT PANEL ─── */
+    .panel-right {
+      width: 52%;
+      height: 100%;
+      background: var(--blue-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* subtle dot grid */
+    .panel-right::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .form-wrap {
+      position: relative;
+      z-index: 2;
+      width: 380px;
+    }
+
+    .form-header {
+      margin-bottom: 36px;
+    }
+
+    .form-header h2 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 0.5px;
+    }
+
+    .form-header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-weight: 300;
+    }
+
+    .accent-bar {
+      width: 36px;
+      height: 3px;
+      background: var(--cyan);
+      border-radius: 2px;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.35;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      padding: 13px 14px 13px 42px;
+      color: var(--white);
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .field input::placeholder { color: rgba(255,255,255,0.2); }
+
+    .field input:focus {
+      border-color: var(--cyan);
+      background: rgba(10, 160, 223, 0.07);
+    }
+
+    .btn-login {
+      margin-top: 30px;
+      width: 100%;
+      padding: 14px;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-login::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+
+    .btn-login:hover {
+      background: #c80500;
+      transform: translateY(-1px);
+    }
+
+    .btn-login:hover::after {
+      transform: translateX(100%);
+    }
+
+    .btn-login:active { transform: translateY(0); }
+
+    .mensaje {
+      font-size: 12px;
+      color: #ff8080;
+      margin-top: 14px;
+      min-height: 18px;
+      font-weight: 400;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--input-border);
+      margin: 28px 0;
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: rgba(255,255,255,0.18);
+      text-align: center;
       letter-spacing: 1px;
     }
 
-    .form-box label {
-      color: white;
-      font-size: 14px;
-    }
-
-    .form-box input {
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
-      outline: none;
-      font-size: 14px;
-    }
-
-    .form-box button {
-      margin-top: 25px;
-      width: 130px;
-      align-self: flex-end;
-      padding: 10px;
-      background: #e10600;
-      color: white;
-      border: none;
-      border-radius: 22px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .form-box button:hover {
-      opacity: 0.9;
-    }
-
-    .mensaje {
-      color: #ffdede;
-      font-size: 13px;
-      margin-top: 10px;
+    /* ─── FADE IN ─── */
+    .form-wrap { animation: fadeUp 0.5s ease both; }
+    .brand-wrap { animation: fadeUp 0.5s ease 0.1s both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 
 </head>
 <body>
 
-  <div class="login-container">
+  <!-- LEFT -->
+  <div class="panel-left">
+    <div class="pulse"></div>
+    <div class="pulse"></div>
+    <div class="pulse"></div>
 
-    <div class="login-content">
-
-      <!-- AMBULINK FUERA DEL BLOQUE -->
-      <div class="brand">AMBULINK</div>
-
-      <!-- BLOQUE AZUL -->
-      <div class="form-box">
-        <h2>LOGIN</h2>
-
-        <label>email</label>
-        <input type="email" id="email">
-
-        <label>contraseña</label>
-        <input type="password" id="password">
-
-        <button onclick="login()">Log in</button>
-
-        <p id="mensaje" class="mensaje"></p>
-      </div>
-
+    <div class="brand-wrap">
+      <span class="brand-tag">Sistema de gestión</span>
+      <div class="brand">AMBU<span>LINK</span></div>
+      <p class="brand-sub">Plataforma médica integrada</p>
     </div>
 
+    <div class="medical-icon">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="38" y="5" width="24" height="90" rx="6"/>
+        <rect x="5" y="38" width="90" height="24" rx="6"/>
+      </svg>
+    </div>
   </div>
+
+  <!-- RIGHT -->
+  <div class="panel-right">
+    <div class="form-wrap">
+
+      <div class="form-header">
+        <div class="accent-bar"></div>
+        <h2>Bienvenido de vuelta</h2>
+        <p>Ingresa tus credenciales para continuar</p>
+      </div>
+
+      <div class="field">
+        <label>Correo electrónico</label>
+        <div class="input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input type="email" id="email" placeholder="usuario@ambulink.com">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input type="password" id="password" placeholder="••••••••">
+        </div>
+      </div>
+
+      <button class="btn-login" onclick="login()">Iniciar sesión</button>
+
+      <p id="mensaje" class="mensaje"></p>
+
+      <hr class="divider">
+      <p class="footer-note">© 2025 AMBULINK · Acceso restringido</p>
+
+    </div>
   </div>
 
   <!-- ✅ SUPABASE CDN (OBLIGATORIO) -->
