@@ -8,80 +8,23 @@
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 body{margin:0;background:#eaeaea}
 
-.app{
-  width:95%;
-  height:95vh;
-  margin:20px auto;
-  background:#0aa0df;
-  border-radius:20px;
-  padding:18px
-}
+.app{width:95%;height:95vh;margin:20px auto;background:#059bd8;border-radius:20px;padding:18px}
+.content{width:100%;height:100%;background:#fff;border-radius:20px;padding:22px;display:flex;gap:20px}
 
-.content{
-  width:100%;
-  height:100%;
-  background:#fff;
-  border-radius:20px;
-  padding:22px;
-  display:flex;
-  gap:20px
-}
-
-.sidebar{
-  width:160px;
-  background:#0aa0df;
-  border-radius:18px;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:20px
-}
-
-.sidebar button{
-  background:white;
-  color:#0b4aa6;
-  border:none;
-  border-radius:22px;
-  padding:12px 0;
-  font-weight:bold;
-  cursor:pointer;
-  transition:.2s
-}
-
-.sidebar button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 4px 10px rgba(0,0,0,.2)
-}
+.sidebar{width:160px;background:#059bd8;border-radius:18px;padding:18px;display:flex;flex-direction:column;justify-content:center;gap:20px}
+.sidebar button{background:white;color:#e10600;border:none;border-radius:22px;padding:12px 0;font-weight:bold}
 
 .main{flex:1;display:flex;flex-direction:column}
 
-.top-header{
-  display:grid;
-  grid-template-columns:1fr 1.2fr 1.2fr auto;
-  gap:20px
-}
+.top-header{display:grid;grid-template-columns:1fr 1.2fr 1.2fr auto;gap:20px}
 
 .brand{color:#e10600;font-size:30px;font-weight:800}
+.badge{background:#e10600;color:white;padding:6px 14px;border-radius:14px;font-size:13px;width:fit-content}
 
-.badge{
-  background:#e10600;
-  color:white;
-  padding:6px 14px;
-  border-radius:14px;
-  font-size:13px;
-  width:fit-content
-}
-
-.card{
-  background:linear-gradient(135deg,#004aad,#0aa0df);
-  color:white;
-  border-radius:18px;
-  padding:18px
-}
-
+.card{background:#004aad;color:white;border-radius:18px;padding:18px}
 .card h3{margin:0 0 10px;font-size:18px}
 
+/* 🔴 ALERTA HEMORRAGIA */
 .alert-hemorragia{
   display:none;
   margin-top:12px;
@@ -93,58 +36,11 @@ body{margin:0;background:#eaeaea}
   text-align:center;
 }
 
-input,select{
-  padding:6px;
-  border-radius:12px;
-  border:1px solid #ccc;
-  outline:none;
-}
-
-#btnPDF{
-  background:linear-gradient(135deg,#1566c0,#0aa0df);
-  color:white;
-  border:none;
-  border-radius:14px;
-  padding:10px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.table-container{
-  margin-top:25px;
-  flex:1;
-  overflow:auto
-}
-
-table{
-  width:100%;
-  border-spacing:10px
-}
-
-th{
-  background:#004aad;
-  color:white;
-  padding:14px;
-  border-radius:12px;
-  text-transform:none;
-  font-size:13px
-}
-
-td{
-  background:white;
-  border:2px solid #4f7cff;
-  border-radius:12px;
-  padding:12px;
-  text-align:center
-}
-
+.table-container{margin-top:25px;flex:1;overflow:auto}
+table{width:100%;border-spacing:12px}
+th{background:#004aad;color:white;padding:14px;border-radius:14px}
+td{background:white;border:2px solid #4f7cff;border-radius:14px;padding:14px;text-align:center}
 td.date{text-align:left}
-
-@media print{
-  body{background:white}
-  .sidebar,button,input,select{display:none!important}
-  .alert-hemorragia{display:block!important}
-}
 </style>
 </head>
 
@@ -166,8 +62,8 @@ td.date{text-align:left}
     <div class="brand">AMBULINK</div>
     <div class="badge" id="fechaActual"></div>
 
-    <input type="date" id="filtroFecha" style="margin-top:8px">
-    <select id="selectCaso" style="margin-top:6px;width:100%">
+    <input type="date" id="filtroFecha" style="margin-top:8px;padding:6px;border-radius:12px">
+    <select id="selectCaso" style="margin-top:6px;padding:6px;border-radius:12px;width:100%">
       <option value="">Seleccionar caso</option>
     </select>
 
@@ -222,6 +118,7 @@ td.date{text-align:left}
 </div>
 </div>
 
+<!-- Librerías para PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="historial.js"></script>
