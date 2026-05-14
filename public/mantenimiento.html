@@ -581,6 +581,71 @@
 
     .ticker-dot.off { background: var(--muted); }
 
+
+
+    /* ── GUÍA AMBULINK ── */
+    .guide-grid {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .guide-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: var(--surface);
+      box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+    }
+
+    .guide-card h3 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .guide-card p {
+      font-size: 13px;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+
+    .guide-card ul {
+      padding-left: 18px;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .guide-card li { margin-bottom: 6px; }
+
+    .guide-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .guide-tag-ok { background: #dcfce7; color: #15803d; }
+    .guide-tag-warn { background: #fef3c7; color: #b45309; }
+    .guide-tag-danger { background: #fee2e2; color: #b91c1c; }
+    .guide-tag-info { background: #dbeafe; color: #1d4ed8; }
+
+    .contact-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #7f1d1d;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .contact-box b { color: #991b1b; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 700px) {
       main { padding: 16px; }
@@ -616,7 +681,7 @@
       ▶ Iniciar modo mantenimiento global
     </button>
     <button class="btn btn-ghost" onclick="cargarTodoManual()">↺ Actualizar</button>
-    <button class="btn btn-ghost" onclick="abrirRegistro('sistema','Conectividad')">+ Registrar revisión</button>
+    <button class="btn btn-ghost" onclick="abrirRegistro('sistema','Revisión general')">+ Registrar revisión</button>
     <span class="ticker" id="tickerStatus">
       <span class="ticker-dot off" id="tickerDot"></span>
       <span id="tickerLabel">Modo inactivo</span>
@@ -688,9 +753,9 @@
       </div>
 
       <div class="device-actions">
-        <button class="btn btn-ghost btn-sm" onclick="abrirRegistro('oximetria','UART')">Registrar UART</button>
-        <button class="btn btn-ghost btn-sm" onclick="abrirRegistro('oximetria','LED WiFi')">Registrar LED</button>
-        <button class="btn btn-ghost btn-sm" onclick="mostrarFallasDispositivo('oximetria')">Guía fallas</button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirRegistro('oximetria','Revisión general')">
+          + Registrar revisión de oximetría
+        </button>
       </div>
     </div>
 
@@ -732,13 +797,72 @@
       </div>
 
       <div class="device-actions">
-        <button class="btn btn-ghost btn-sm" onclick="abrirRegistro('temperatura','MLX90614')">Registrar sensor</button>
-        <button class="btn btn-ghost btn-sm" onclick="abrirAjusteTemperatura()">Ajuste contraste</button>
-        <button class="btn btn-ghost btn-sm" onclick="mostrarFallasDispositivo('temperatura')">Guía fallas</button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirRegistro('temperatura','Revisión general')">
+          + Registrar revisión de temperatura
+        </button>
       </div>
     </div>
 
   </div><!-- /device-grid -->
+
+
+  <!-- GUÍA PREVENTIVA AMBULINK -->
+  <div class="section-card">
+    <div class="section-head">
+      <span class="section-title">Guía de mantenimiento preventivo y soporte técnico</span>
+      <span class="section-count">AMBULINK · Cochabamba, Bolivia</span>
+    </div>
+
+    <div class="guide-grid">
+      <div class="guide-card">
+        <span class="guide-tag guide-tag-info">OXIMETRÍA</span>
+        <h3>Módulo de Oximetría</h3>
+        <p>Esta guía ayuda a revisar el funcionamiento general del módulo que recibe SpO₂ y frecuencia cardiaca desde el oxímetro.</p>
+        <ul>
+          <li>Verificar que el ESP32 esté encendido y conectado a la red WiFi.</li>
+          <li>Confirmar que el servidor aparezca como OK en el panel.</li>
+          <li>Revisar que el oxímetro esté alimentado y correctamente conectado.</li>
+          <li>Verificar que exista GND común y comunicación UART estable.</li>
+          <li>Si no aparecen SpO₂ o FC, registrar la revisión y avisar al técnico responsable.</li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <span class="guide-tag guide-tag-info">TEMPERATURA</span>
+        <h3>Módulo de Temperatura</h3>
+        <p>Esta guía permite comprobar el estado general del módulo basado en ESP32, MLX90614 y pantalla OLED.</p>
+        <ul>
+          <li>Verificar que el ESP32 esté encendido y conectado a WiFi.</li>
+          <li>Confirmar que la pantalla OLED muestre información correctamente.</li>
+          <li>Revisar alimentación de 3.3 V, GND, SDA y SCL.</li>
+          <li>Mantener una distancia de medición constante y evitar suciedad frente al sensor.</li>
+          <li>Si la lectura es incoherente o no aparece, registrar la revisión y avisar al técnico responsable.</li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <span class="guide-tag guide-tag-warn">AJUSTE / CONTRASTE</span>
+        <h3>Verificación con equipo de referencia</h3>
+        <p>El personal puede observar y comparar valores con un equipo de referencia, pero no debe modificar código, calibraciones internas ni conexiones críticas sin autorización.</p>
+        <ul>
+          <li>En oximetría, comparar SpO₂ y FC con un oxímetro de referencia.</li>
+          <li>En temperatura, comparar la medición con un termómetro infrarrojo de referencia.</li>
+          <li>Si la diferencia se repite en varias mediciones, registrar la observación.</li>
+          <li>Todo ajuste real debe ser realizado por el técnico responsable.</li>
+        </ul>
+      </div>
+
+      <div class="contact-box">
+        <b>Soporte técnico obligatorio</b><br><br>
+        Ante fallas de sensor, comunicación, base de datos, WiFi, OLED, UART, LEDs, alimentación o comportamiento extraño del sistema, contactar a:<br><br>
+        <b>Luis Diego Ferreyra Contreras</b><br>
+        Teléfono: 68537005<br>
+        Correo: ferreyra0413@gmail.com<br>
+        Ubicación: Cochabamba, Bolivia<br><br>
+        No se recomienda abrir sensores, modificar conexiones internas o cambiar parámetros de ajuste sin autorización técnica.
+      </div>
+    </div>
+  </div>
 
   <!-- HISTORIAL -->
   <div class="section-card">
@@ -803,7 +927,7 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-head">
-      <span class="modal-title">Registrar mantenimiento</span>
+      <span class="modal-title">Registrar revisión de mantenimiento</span>
       <button class="modal-close" onclick="cerrarModal()">✕</button>
     </div>
     <div class="modal-body">
@@ -815,10 +939,10 @@
       </select>
 
       <label>Módulo revisado</label>
-      <input id="rModulo" placeholder="Ej: WiFi, UART, OLED, MLX90614" />
+      <input id="rModulo" placeholder="Ej: Revisión general, conectividad, sensor, alimentación" />
 
       <label>Prueba realizada</label>
-      <input id="rPrueba" placeholder="Ej: Verificación funcional, inspección visual" />
+      <input id="rPrueba" placeholder="Ej: Verificación funcional, inspección visual, prueba de lectura" />
 
       <label>Resultado</label>
       <select id="rResultado">
@@ -828,13 +952,13 @@
       </select>
 
       <label>Detalle técnico</label>
-      <textarea id="rDetalle" placeholder="Describe qué se revisó y qué se observó…"></textarea>
+      <textarea id="rDetalle" placeholder="Escribe aquí la revisión realizada, observaciones, valores comparados o falla encontrada…"></textarea>
 
       <div class="alert" id="alertRegistro"></div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarRegistro()">Guardar en Supabase</button>
+      <button class="btn btn-primary" onclick="guardarRegistro()">Guardar</button>
     </div>
   </div>
 </div>
@@ -1297,7 +1421,7 @@ async function cargarFallas() {
     const tbody = document.getElementById('tablaFallas');
 
     if (!data.ok || !fallasGlobal.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty"><div class="empty-icon">🔧</div>Sin fallas registradas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="empty"><div class="empty-icon">🔧</div>Sin fallas registradas en la base de datos. Usa la guía preventiva superior y contacta al técnico responsable si el problema continúa.</td></tr>';
       setText('fallasCount', '0 fallas');
       return;
     }
@@ -1372,7 +1496,7 @@ async function guardarRegistro() {
   const detalle     = document.getElementById('rDetalle').value.trim();
 
   if (!modulo || !prueba || !detalle) {
-    mostrarAlerta('Completa módulo, prueba y detalle técnico.', 'error');
+    mostrarAlerta('Completa el módulo revisado, la prueba realizada y el detalle técnico.', 'error');
     return;
   }
 
