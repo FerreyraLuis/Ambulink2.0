@@ -11,6 +11,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 🔧 MODO MANTENIMIENTO POR DISPOSITIVO
+let mantenimientoActivo = {
+  oximetria: false,
+  temperatura: false
+};
+
 // 🔐 SUPABASE CLIENTES
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -522,9 +528,6 @@ app.get('/clinica/ambulancias', async (req, res) => {
 /* ===============================
    AUTH / ME
 =============================== */
-/* ===============================
-   AUTH / ME
-=============================== */
 app.get('/auth/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -614,6 +617,107 @@ async function validarMantenimiento(req, res) {
 }
 
 /* ===============================
+   MANTENIMIENTO - MODO GENERAL
+   Compatible con frontend anterior
+=============================== */
+app.get('/mantenimiento/modo', async (req, res) => {
+  try {
+    res.json({
+      ok: true,
+      activo: mantenimientoActivo.oximetria || mantenimientoActivo.temperatura,
+      modos: mantenimientoActivo
+    });
+  } catch (err) {
+    console.error('ERROR GET /mantenimiento/modo:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+app.post('/mantenimiento/modo', async (req, res) => {
+  try {
+    const usuario = await validarMantenimiento(req, res);
+    if (!usuario) return;
+
+    const { activo } = req.body;
+
+    mantenimientoActivo.oximetria = Boolean(activo);
+    mantenimientoActivo.temperatura = Boolean(activo);
+
+    res.json({
+      ok: true,
+      activo: Boolean(activo),
+      modos: mantenimientoActivo,
+      mensaje: Boolean(activo)
+        ? 'Modo mantenimiento activado para todos los dispositivos'
+        : 'Modo mantenimiento desactivado para todos los dispositivos'
+    });
+
+  } catch (err) {
+    console.error('ERROR POST /mantenimiento/modo:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+/* ===============================
+   MANTENIMIENTO - MODO POR DISPOSITIVO
+=============================== */
+app.get('/mantenimiento/modo/:dispositivo', async (req, res) => {
+  try {
+    const { dispositivo } = req.params;
+
+    if (!['oximetria', 'temperatura'].includes(dispositivo)) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Dispositivo inválido'
+      });
+    }
+
+    res.json({
+      ok: true,
+      dispositivo,
+      activo: mantenimientoActivo[dispositivo]
+    });
+
+  } catch (err) {
+    console.error('ERROR GET /mantenimiento/modo/:dispositivo:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+app.post('/mantenimiento/modo/:dispositivo', async (req, res) => {
+  try {
+    const usuario = await validarMantenimiento(req, res);
+    if (!usuario) return;
+
+    const { dispositivo } = req.params;
+    const { activo } = req.body;
+
+    if (!['oximetria', 'temperatura'].includes(dispositivo)) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Dispositivo inválido'
+      });
+    }
+
+    mantenimientoActivo[dispositivo] = Boolean(activo);
+
+    res.json({
+      ok: true,
+      dispositivo,
+      activo: mantenimientoActivo[dispositivo],
+      modos: mantenimientoActivo,
+      mensaje: mantenimientoActivo[dispositivo]
+        ? `Modo mantenimiento activado para ${dispositivo}`
+        : `Modo mantenimiento desactivado para ${dispositivo}`
+    });
+
+  } catch (err) {
+    console.error('ERROR POST /mantenimiento/modo/:dispositivo:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+/* ===============================
    MANTENIMIENTO - ESTADO DISPOSITIVOS
 =============================== */
 app.get('/mantenimiento/estado', async (req, res) => {
@@ -621,17 +725,82 @@ app.get('/mantenimiento/estado', async (req, res) => {
     const usuario = await validarMantenimiento(req, res);
     if (!usuario) return;
 
+    const dispositivosActivos = Object.keys(mantenimientoActivo)
+      .filter(dispositivo => mantenimientoActivo[dispositivo]);
+
+    if (dispositivosActivos.length === 0) {
+      return res.json({
+        ok: true,
+        mantenimiento_activo: false,
+        modos: mantenimientoActivo,
+        estados: []
+      });
+    }
+
     const { data, error } = await supabase
       .from('estado_dispositivos')
       .select('*')
+      .in('dispositivo', dispositivosActivos)
       .order('dispositivo', { ascending: true });
 
     if (error) throw error;
 
-    res.json({ ok: true, estados: data || [] });
+    res.json({
+      ok: true,
+      mantenimiento_activo: true,
+      modos: mantenimientoActivo,
+      estados: data || []
+    });
 
   } catch (err) {
     console.error('ERROR /mantenimiento/estado:', err);
+    res.status(500).json({ ok: false, mensaje: err.message });
+  }
+});
+
+/* ===============================
+   MANTENIMIENTO - ESTADO POR DISPOSITIVO
+=============================== */
+app.get('/mantenimiento/estado/:dispositivo', async (req, res) => {
+  try {
+    const usuario = await validarMantenimiento(req, res);
+    if (!usuario) return;
+
+    const { dispositivo } = req.params;
+
+    if (!['oximetria', 'temperatura'].includes(dispositivo)) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Dispositivo inválido'
+      });
+    }
+
+    if (!mantenimientoActivo[dispositivo]) {
+      return res.json({
+        ok: true,
+        mantenimiento_activo: false,
+        dispositivo,
+        estado: null
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('estado_dispositivos')
+      .select('*')
+      .eq('dispositivo', dispositivo)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    res.json({
+      ok: true,
+      mantenimiento_activo: true,
+      dispositivo,
+      estado: data || null
+    });
+
+  } catch (err) {
+    console.error('ERROR /mantenimiento/estado/:dispositivo:', err);
     res.status(500).json({ ok: false, mensaje: err.message });
   }
 });
@@ -659,7 +828,20 @@ app.post('/mantenimiento/estado', async (req, res) => {
     } = req.body;
 
     if (!['oximetria', 'temperatura'].includes(dispositivo)) {
-      return res.status(400).json({ ok: false, mensaje: 'Dispositivo inválido' });
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Dispositivo inválido'
+      });
+    }
+
+    if (!mantenimientoActivo[dispositivo]) {
+      return res.json({
+        ok: true,
+        guardado: false,
+        mantenimiento_activo: false,
+        dispositivo,
+        mensaje: `Modo mantenimiento inactivo para ${dispositivo}`
+      });
     }
 
     const { data, error } = await supabase
@@ -688,7 +870,13 @@ app.post('/mantenimiento/estado', async (req, res) => {
 
     if (error) throw error;
 
-    res.json({ ok: true, estado: data });
+    res.json({
+      ok: true,
+      guardado: true,
+      mantenimiento_activo: true,
+      dispositivo,
+      estado: data
+    });
 
   } catch (err) {
     console.error('ERROR POST /mantenimiento/estado:', err);
@@ -790,6 +978,7 @@ app.get('/mantenimiento/fallas', async (req, res) => {
     res.status(500).json({ ok: false, mensaje: err.message });
   }
 });
+
 /* ===============================
    START SERVER
 =============================== */
