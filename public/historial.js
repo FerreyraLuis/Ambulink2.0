@@ -87,35 +87,37 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+function valor(dato) {
+  if (dato === null || dato === undefined || dato === '') return '--';
+  return String(dato);
+}
+
 // --- Función para generar PDF ---
 function generarPDF(p, signos, pars, id) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // --- Título ---
   doc.setFontSize(26);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(200, 0, 0);
   doc.text("AMBULINK", 15, 20);
 
-  // --- Fecha y caso debajo ---
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(33, 33, 33);
   doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 15, 28);
   doc.text(`Caso: ${id}`, 15, 36);
 
-  // --- Paramédicos alineados a la derecha con subrayado ---
   doc.setFont('helvetica', 'bold');
   doc.text("Paramédicos:", 150, 28, { align: 'right' });
   doc.setLineWidth(0.5);
-  doc.line(150, 30, 190, 30); // subrayado del título
+  doc.line(150, 30, 190, 30);
+
   doc.setFont('helvetica', 'normal');
   pars.forEach((par, i) => {
     doc.text(`${par.paramedicos.nombre} ${par.paramedicos.apellido}`, 150, 36 + i * 8, { align: 'right' });
   });
 
-  // --- Título centrado y subrayado: Información del paciente ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   const infoTitle = "INFORMACIÓN DEL PACIENTE";
@@ -124,7 +126,6 @@ function generarPDF(p, signos, pars, id) {
   doc.setLineWidth(0.5);
   doc.line(105 - infoWidth / 2, 57, 105 + infoWidth / 2, 57);
 
-  // Datos del paciente alineados profesionalmente (rectos, tipo columnas)
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   const col1X = 16;
@@ -141,7 +142,6 @@ function generarPDF(p, signos, pars, id) {
   doc.text(`Ubicación: ${p.ubicacion}`, col2X, startY + lineHeight * 2);
   doc.text(`Hemorragia: ${p.hemorragia ? 'SI' : 'NO'}`, col2X, startY + lineHeight * 3);
 
-  // --- Título de la tabla centrado y subrayado ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   const tablaTitle = "TABLA DE SIGNOS VITALES";
@@ -150,16 +150,15 @@ function generarPDF(p, signos, pars, id) {
   doc.setLineWidth(0.5);
   doc.line(105 - tablaWidth / 2, 97, 105 + tablaWidth / 2, 97);
 
-  // --- Tabla de signos vitales ---
   const rows = signos.map(s => [
     new Date(s.fecha).toLocaleString(),
-    s.presion_diastolica ? `${s.presion_diastolica} mmHg` : '--',
-    s.presion_sistolica ? `${s.presion_sistolica} mmHg` : '--',
-    s.frecuencia_respiratoria ? `${s.frecuencia_respiratoria} rpm` : '--',
-    s.spo2 ? `${s.spo2} %` : '--',
-    s.temperatura ? `${s.temperatura} °C` : '--',
-    s.frecuencia_cardiaca ? `${s.frecuencia_cardiaca} lpm` : '--',
-    s.escala_glasgow ?? '--'
+    valor(s.presion_diastolica),
+    valor(s.presion_sistolica),
+    valor(s.frecuencia_respiratoria),
+    valor(s.spo2),
+    valor(s.temperatura),
+    valor(s.frecuencia_cardiaca),
+    valor(s.escala_glasgow)
   ]);
 
   doc.autoTable({
@@ -173,6 +172,5 @@ function generarPDF(p, signos, pars, id) {
     styles: { fontSize: 10 }
   });
 
-  // --- Guardar PDF ---
   doc.save(`Historial_Clinico_AMBULINK_Caso${id}.pdf`);
 }
